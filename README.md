@@ -1,0 +1,2 @@
+# Detecting Spam Mail and Phishing using Large Language Models
+This repository contains all files used to develop e-mail spam detection using fine-tuning of small LLMs. This `README` will be updated in sync with the progress of the project.
