@@ -1,0 +1,324 @@
+\chapter{Typowe elementy składowe pracy dyplomowej z informatyki}
+\section{Tabele}
+\begin{comment}
+    \begin{itemize}
+        \item Każda tabela powinna być opisana w treści pracy.
+        \item Podpis ma być przed tabelą.
+    \end{itemize}
+\end{comment}
+W tabeli \ref{tab:result} przedstawiono wyniki pomiarów.
+\begin{table}[!h]
+    \caption{Pomiary zużycia energii elektrycznej\label{tab:result}.}
+    \centering
+    \begin{tabular}{|l||r@{,}l|}
+        \hline
+        \textbf{L.p.} & \multicolumn{2}{|c|}{\textbf{Wartość}}          \\
+        \hline
+        \hline
+        \cline{2-3}
+        %\textbf{L.p.} & \multicolumn{1}{r@{\,\vline\,}}{Całkowita} & Ułamkowa \\
+        \hline
+        1             & 12345                                  & 6789   \\
+        \cline{2-3}
+                      & 45                                     & 89     \\
+        \hline
+        2             & 45                                     & 678901 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+Jeżeli tabela zawiera dużą liczbę wierszy i może nie zmieścić się na stronie \pauza patrz tabela \ref{tab:longtable} \pauza skorzystaj z pakietu \emph{longtable} \cite{longtable}.
+\begin{longtable}{|p{14ex}|p{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|p{1.5em}|}
+    \caption{Tabela, która zawiera dużą liczbę wierszy\label{tab:longtable}.}
+    \endfirsthead
+    \hline
+               & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & \\
+    \cline{2-9}
+               &   &   &   &   &   &   &   &   & \\
+    \hline
+    \endhead
+    \endfoot
+    \hline\hline
+               & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & \\
+    \cline{2-9}
+               &   &   &   &   &   &   &   &   & \\
+    \hline\hline
+    Student 1  &   &   &   &   &   &   &   &   & \\
+    \cline{2-9}
+               &   &   &   &   &   &   &   &   & \\
+    \hline\hline
+    Student 2  &   &   &   &   &   &   &   &   & \\
+    \cline{2-9}
+               &   &   &   &   &   &   &   &   & \\
+    \hline\hline
+    Student 3  &   &   &   &   &   &   &   &   & \\
+    \cline{2-9}
+               &   &   &   &   &   &   &   &   & \\
+    \hline\hline
+    Student 4  &   &   &   &   &   &   &   &   & \\
+    \cline{2-9}
+               &   &   &   &   &   &   &   &   & \\
+    \hline\hline
+    Student 5  &   &   &   &   &   &   &   &   & \\
+    \cline{2-9}
+               &   &   &   &   &   &   &   &   & \\
+    \hline\hline
+    Student 6  &   &   &   &   &   &   &   &   & \\
+    \cline{2-9}
+               &   &   &   &   &   &   &   &   & \\
+    \hline\hline
+    Student 7  &   &   &   &   &   &   &   &   & \\
+    \cline{2-9}
+               &   &   &   &   &   &   &   &   & \\
+    \hline\hline
+     Student 8  &   &   &   &   &   &   &   &   & \\
+     \cline{2-9}
+                &   &   &   &   &   &   &   &   & \\
+     \hline\hline
+     Student 9  &   &   &   &   &   &   &   &   & \\
+    \cline{2-9}
+                &   &   &   &   &   &   &   &   & \\
+    \hline\hline
+    % Student 10 &   &   &   &   &   &   &   &   & \\
+    % \cline{2-9}
+    %            &   &   &   &   &   &   &   &   & \\
+    % \hline\hline
+    % Student 11 &   &   &   &   &   &   &   &   & \\
+    % \cline{2-9}
+    %            &   &   &   &   &   &   &   &   & \\
+    % \hline\hline
+    % Student 12 &   &   &   &   &   &   &   &   & \\
+    % \cline{2-9}
+    %            &   &   &   &   &   &   &   &   & \\
+    % \hline\hline
+    % Student 13 &   &   &   &   &   &   &   &   & \\
+    % \cline{2-9}
+    %            &   &   &   &   &   &   &   &   & \\
+    % \hline\hline
+\end{longtable}
+
+Tabele, w których występuje długi tekst, a co za tym idzie może się on nie zmieścić \pauza musi zostać zawinięty, z pomocą przychodzi środowisko 'tabularx' \cite{tabularx} \pauza  patrz tabela \ref{tab:tabularx}.
+\begin{table}[!ht]
+    \caption{Tabela zawierająca długi tekst\label{tab:tabularx}.}
+    \centering
+    \begin{tabularx}{300pt}{|c|X|c|X|}
+        \hline
+        \multicolumn{2}{|c|}{Wpis wielokolumnowy!} &
+        TRZY                                       &
+        CZTERY                                       \\
+        \hline
+        jeden                                      &
+        \raggedright\arraybackslash Szerokość tej kolumny zależy od
+        szerokości tabeli.                         &
+        trzy                                       &
+        \raggedright\arraybackslash Kolumna czwarta będzie zachowywać się w taki sam sposób jak
+        druga kolumna o tej samej szerokości.        \\
+        \hline
+    \end{tabularx}
+\end{table}
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Rysunki}
+\begin{comment}  
+    \begin{itemize}
+        \item Rysunki powinny być przerysowane samodzielnie albo używane tylko te,
+          których twórcy zezwolili na ich rozpowszechnianie oraz kopiowanie, czyli
+          np. rysunki objęte licencją Creative Commons.
+        \item Każdy rysunek powinien być opisany w treści pracy.
+    \end{itemize}
+\end{comment}
+\subsection{Wewnętrzne}
+Klasa \emph{agh-wi}, automatycznie, dołącza pakiet \emph{TikZ} \cite{tikz} \pauza dostarcza on komend pozwalających na tworzenie grafik. Przykładowe grafiki pokazano na rysunku \ref{fig:tikz1} oraz \ref{fig:tikz2}.
+ %%%%%%%%%%%%%%%%%
+\begin{figure}[!h]
+    \begin{center}
+        \tikz \draw[thick,rounded corners=8pt]
+        (0,0) -- (0,2) -- (1,3.25) -- (2,2) -- (2,0) -- (0,2) -- (2,2) -- (0,0) -- (2,0);
+    \end{center}
+    \caption{Prosty rysunek \emph{TikZ}\label{fig:tikz1}.}
+\end{figure}
+ %%%%%%%%%%%%%%%%%
+\begin{figure}[!ht]
+    \begin{center}
+        \begin{tikzpicture}
+            \draw[step=.5cm,gray,very thin] (-1.4,-1.4) grid (1.4,1.4);
+            \draw (-1.5,0) -- (1.5,0);
+            \draw (0,-1.5) -- (0,1.5);
+            \draw (0,0) circle [radius=1cm];
+        \end{tikzpicture}
+    \end{center}
+    \caption{Bardziej złożony rysunek \emph{TikZ}\label{fig:tikz2}.}
+\end{figure}
+ %%%%%%%%%%%%%%%%%
+
+Oprócz rysunków eksponowanych możliwe jest tworzenie grafik będących  \tikz{\fill[orange] (0ex,0ex) circle (1ex);  \fill[red] (1ex,1ex) circle (1ex);} częścią \tikz{\draw (0pt,0pt) -- (20pt,6pt);} zdania. 
+
+\emph{TikZ} pozwala również na kreślenie po powierzchni strony, np. możemy narysować strzałki pomiędzy elementami strony.
+\begin{shaded}
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ % Zmodyfikowana wersja przykładu ze strony  https://texample.net/tikz/examples/global-nodes/
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Ułamek \pauza patrz wzór \ref{eqn:tikz} \pauza składa się z: 
+\begin{itemize}
+    \item Licznika \tikz[na] \node (n1) {};
+\end{itemize}
+ %%%%%%%%%%%%%%%%%
+\begin{equation}
+    a =  \frac{\tikz[baseline] \node[fill=blue!20,rectangle] (t1){$x+y$};}{\tikz[baseline] \node[fill=red!20, ellipse] (t2){$y-z$}; }
+    \label{eqn:tikz}
+\end{equation}
+ %%%%%%%%%%%%%%%%%
+\begin{itemize}
+    \item Mianownika \tikz\node[na] (n2) {};
+\end{itemize}
+ %%%%%%%%%%%%%%%%%
+\begin{tikzpicture}[overlay]
+    \path  (n1) edge [->,bend left] (t1);
+    \path  (n2) edge [->,bend right] (t2);
+\end{tikzpicture}
+\end{shaded}
+\subsection{Zewnętrzne}
+Oczywiście możliwe jest również dołączanie rysunków zewnętrznych \pauza
+pakiet \emph{graphicx} \cite{graphicx} pozwala na wstawianie grafik zapisanych w  plikach: '.png', '.jpg' oraz '.pdf'. Rysunek \ref{fig:logo} wstawiono przy użyciu tego pakietu.
+\begin{figure}[!ht]
+    \begin{center}
+        \IfFileExists{img/logo_podstawowe.png}{
+            \includegraphics[width=0.7\linewidth]{img/logo_podstawowe}
+        }
+        {Nie znaleziono pliku 'img/logo\_podstawowe.png' \pauza pobierz go ze strony \url{https://www.informatyka.agh.edu.pl/media/uploads/Logo WI/PNG/logo_podstawowe.png}}
+    \end{center}
+    \caption{Logo Wydziału Informatyki.}
+    \label{fig:logo}
+\end{figure}
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Kody źródłowe}
+Najpopularniejszymi pakietami, które umożliwiają składanie kodów źródłowych programów, są:
+\begin{description}
+    \item[listings \cite{listings}] \pauza kod źródłowy jest formatowany bezpośrednio przez \LaTeX{}\dywiz{}a \pauza nie jest używany żaden, zewnętrzny, formater kodu.
+        \begin{lstlisting}[language=C++, float=ht, label=lst:code1, caption={Przykładowy kod źródłowy sformatowany za pomocą pakietu 'listings'.}]
+/* Pierwszy program w C++ */
+
+#include <iostream>
+
+int main() {
+    std::cout << "Hello World!";
+    return 0;
+}
+    \end{lstlisting}
+    \item[minted \cite{minted}] \pauza formatuje kod źródłowy przy użyciu biblioteki języka Python  o nazwie \emph{Pygments} \cite{pygments}.
+        \begin{listing}[!ht]
+            \caption{Przykładowy listing sformatowany za pomocą pakietu 'minted'.\label{lst:code2}}
+            \begin{minted}{c++}
+/* Pierwszy program w C++ */
+
+#include <iostream>
+
+int main() {
+    std::cout << "Hello World!";
+    return 0;
+}
+    \end{minted}
+        \end{listing}
+\end{description}
+
+\begin{comment}
+    \begin{itemize}
+        \item Podpis ma być przed kodem źródłowym.
+        \item \alert{Proszę używać tylko jednego z tych pakietów}; w przeciwnym razie otrzymasz taki efekt, jak w przykładowej pracy \pauza obydwa listingi mają ten sam numer.
+    \end{itemize}
+\end{comment}
+
+Kod źródłowy w C++ sformatowany przy użyciu pakietu \emph{listings}, pokazano na listingu \ref{lst:code1}; sformatowany przy użyciu pakietu \emph{minted}, pokazano na listingu \ref{lst:code2}.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Algorytmy}
+Pakiet \emph{algorithm2e} \cite{algorithm2e} to jeden z kilku, które pozwalają zapisywać algorytmy w formie pseudokodu \pauza patrz
+algorytm \ref{alg:algo_disjdecomp}.
+\begin{comment}
+    Podpis ma być przed algorytmem.
+\end{comment}
+\begin{algorithm}[!htb]
+    \caption{Disjoint decomposition.}\label{alg:algo_disjdecomp}
+    %%%%%%%%%%%%%%%%%%%%%%%%%%     
+    \SetKwData{Left}{left}\SetKwData{This}{this}\SetKwData{Up}{up}
+    \SetKwFunction{Union}{Union}\SetKwFunction{FindCompress}{FindCompress}
+    \SetKwInOut{Input}{input}\SetKwInOut{Output}{output}
+    \Input{A bitmap $Im$ of size $w\times l$}
+    \Output{A partition of the bitmap}
+    \BlankLine
+    \emph{special treatment of the first line}\;
+    \For{$i\leftarrow 2$ \KwTo $l$}{
+        \emph{special treatment of the first element of line $i$}\;
+        \For{$j\leftarrow 2$ \KwTo $w$}{\label{forins}
+            \Left$\leftarrow$ \FindCompress{$Im[i,j-1]$}\;
+            \Up$\leftarrow$ \FindCompress{$Im[i-1,]$}\;
+            \This$\leftarrow$ \FindCompress{$Im[i,j]$}\;
+            \If(\tcp*[h]{O(\Left,\This)==1}){\Left compatible with \This}{\label{lt}
+                \lIf{\Left $<$ \This}{\Union{\Left,\This}}
+                \lElse{\Union{\This,\Left}}
+            }
+            \If(\tcp*[f]{O(\Up,\This)==1}){\Up compatible with \This}{\label{ut}
+                \lIf{\Up $<$ \This}{\Union{\Up,\This}}
+                \tcp{\This is put under \Up to keep tree as flat as possible}\label{cmt}
+                \lElse{\Union{\This,\Up}}\tcp*[h]{\This linked to \Up}\label{lelse}
+            }
+        }
+        \lForEach{element $e$ of the line $i$}{\FindCompress{p}}
+    }
+\end{algorithm}\DecMargin{1em}
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Wzory}
+\LaTeX{} bardzo dobrze sprawdza się w przypadku prac dyplomowych zawierających wzory matematyczne\footnote{ W przypadku złożonych wzorów warto zastosować pakiet \emph{amsmath} \cite{amsmath}.}.
+\subsection{Przykłady}
+Wzór $E = mc^{2}$\nomenclature{$c$}{Prędkość światła w próżni} jest częścią zdania.
+
+\begin{equation}
+    \left|\sum_{i=1}^n a_ib_i\right|
+    \le
+    \left(\sum_{i=1}^n a_i^2\right)^{1/2}
+    \left(\sum_{i=1}^n b_i^2\right)^{1/2}
+\end{equation}
+
+ % Do wstawienia poniższych wzorów użyto środowisk (otoczeń) zdefiniowanych w pakiecie 'amsmath'
+Wartości zmiennej opisano wzorem \ref{eq:r1}.
+\begin{equation}
+    \label{eq:r1}
+    x=\begin{cases}
+        y           & \text{dla } y > 0    \\
+        \frac{z}{y} & \text{dla } y \leq 0
+    \end{cases}
+\end{equation}
+
+Wzór \ref{eq:r2} to wzór wielowierszowy.
+\begin{align}
+    \label{eq:r2}
+    2x^2 + 3(x-1)(x-2) & =2x^2 + 3(x^2-3x+2)             \\
+                       & = 2x^2 + 3x^2 - 9x + 6\nonumber \\
+                       & = 5x^2 - 9x + 6\nonumber
+\end{align}
+\begin{comment}
+    Należy używać tylko dwóch rodzajów wzorów:
+    \begin{enumerate}
+        \item \enquote{W linii}.
+        \item Eksponowane, numerowane.
+    \end{enumerate}
+\end{comment}
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Twierdzenia i podobne struktury}
+Twierdzenie nr \ref{tw} opublikował, w roku 1691, francuski matematyk Michel Rolle.
+\begin{theorem}[Rolle'a]
+    \label{tw}
+    Jeśli dana funkcja f: $\mathbb R \to \mathbb R$ jest:
+    \begin{enumerate}
+        \item ciągła w przedziale $[a,b]$
+        \item jest różniczkowalna w przedziale $(a,b)$
+        \item na końcach przedziału $[a,b]$ przyjmuje równe wartości: $f(a) = f(b)$,
+    \end{enumerate}
+    to w przedziale $(a,b)$ istnieje co najmniej jeden punkt c taki, że $f'(c) = 0$.
+\end{theorem}
+
+Teraz coś z informatyki \ldots
+\begin{definition}
+    Bit to najmniejsza jednostka informacji w komputerze.
+\end{definition}
+\begin{definition}
+    Bajtem nazywamy ciąg ośmiu bitów.
+\end{definition}
