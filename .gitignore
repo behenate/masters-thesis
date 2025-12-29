@@ -1,0 +1,16 @@
+*/.history/
+.history/
+
+*/.aux/
+*/main.synctex.gz
+
+*/.env
+*/.venv
+*/datasets
+datasets
+
+__pycache__
+
+**/.vscode/
+.DS_Store
+**/.DS_store
