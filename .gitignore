@@ -10,6 +10,7 @@
 datasets
 
 __pycache__
+*.egg-info/
 
 **/.vscode/
 .DS_Store

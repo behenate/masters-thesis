@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "spam-dataset-tools"
+version = "0.1.0"
+description = "Dataset download and combination utilities for the spam and phishing thesis project."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "pandas",
+  "pyarrow",
+  "requests",
+]
+
+[project.optional-dependencies]
+lora-fine-tuning = [
+  "accelerate",
+  "datasets",
+  "ipykernel",
+  "jupyterlab",
+  "numpy",
+  "peft",
+  "torch",
+  "transformers",
+  "bitsandbytes",
+]
+
+[tool.setuptools.packages.find]
+include = ["dataset*"]

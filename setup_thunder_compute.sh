@@ -3,8 +3,8 @@
 set -euo pipefail
 
 CUDA_DOWNLOAD_URL="https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=22.04&target_type=deb_local"
-VENV_DIR=".venv"
 BASHRC_FILE="${HOME}/.bashrc"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 log_step() {
   printf '\n[%s] %s\n' "$(date '+%H:%M:%S')" "$1"
@@ -57,18 +57,8 @@ log_info "CUDA paths exported for the current run."
 log_step "Step 3/5: Verifying CUDA compiler"
 nvcc --version
 
-log_step "Step 4/5: Creating Python virtual environment"
-python3 -m venv "$VENV_DIR"
-# shellcheck disable=SC1091
-source "${VENV_DIR}/bin/activate"
-log_info "Virtual environment activated from ${VENV_DIR}."
+log_step "Step 4/5: Running Python environment setup"
+INSTALL_FLASH_ATTN=1 "${SCRIPT_DIR}/setup.sh"
 
-log_step "Step 5/5: Installing Python dependencies"
-python3 -m pip install --upgrade pip
-pip3 install pandas torch transformers peft numpy requests parquet pyarrow datasets datetime bitsandbytes
-pip3 install packaging ninja
-pip3 install flash-attn --no-build-isolation
-
-log_step "Setup complete"
-log_info "The virtual environment is ready in ${VENV_DIR}."
+log_step "Step 5/5: Final reminder"
 log_info "If your notebook or shell was already open, restart it before running the workload."
