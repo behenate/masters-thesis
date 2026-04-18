@@ -2,6 +2,7 @@ import os
 import json
 import requests
 import zipfile
+from collections.abc import Iterable
 
 
 def _kaggle_auth():
@@ -14,6 +15,18 @@ def _kaggle_auth():
     key = os.environ.get("KAGGLE_KEY")
     if username and key:
         return (username, key)
+    return None
+
+
+def get_existing_dataset_path(paths: str | Iterable[str]) -> str | None:
+    candidates = [paths] if isinstance(paths, str) else list(paths)
+
+    for path in candidates:
+        full_path = os.path.abspath(os.path.expanduser(path))
+        if os.path.exists(full_path):
+            print(f"Dataset already downloaded: {full_path}")
+            return full_path
+
     return None
 
 

@@ -1,6 +1,7 @@
 import os
 import sys
 import email
+import re
 import pandas as pd
 
 _root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -58,14 +59,47 @@ def extract_spam_assassin() -> pd.DataFrame:
             subject = ""
             body = raw
 
+        if not subject or not body:
+            fallback_subject, fallback_body = extract_flattened_email(raw)
+            if not subject:
+                subject = fallback_subject
+            if not body:
+                body = fallback_body
+
         records.append({"subject": subject, "body": body, "label": int(row["target"]), "source": "spam_assassin"})
 
     return pd.DataFrame(records)
 
 
-def combine() -> str:
-    os.makedirs(os.path.dirname(OUTPUT), exist_ok=True)
+def extract_flattened_email(raw: str) -> tuple[str, str]:
+    subject_match = re.search(
+        r"\bSubject:\s*(.*?)\s+(?=(?:Date:|MIME-Version:|Content-Type:|Content-Transfer-Encoding:|"
+        r"Message-Id:|X-[A-Za-z-]+:|Status:|To:|From:|Cc:|Reply-To:|$))",
+        raw,
+        flags=re.IGNORECASE,
+    )
+    subject = subject_match.group(1).strip() if subject_match else ""
 
+    body = ""
+    body_patterns = [
+        r"\bContent-Transfer-Encoding:\s*[^\s]+\s+(.*)$",
+        r"\bContent-Type:\s*[^:]+?\s+(.*)$",
+        r"\bMIME-Version:\s*[^\s]+\s+(.*)$",
+    ]
+
+    for pattern in body_patterns:
+        match = re.search(pattern, raw, flags=re.IGNORECASE)
+        if match:
+            body = match.group(1).strip()
+            break
+
+    if not body:
+        body = raw.strip()
+
+    return subject, body
+
+
+def build_dataset() -> pd.DataFrame:
     print("Processing spam_ham...")
     spam_ham_df = extract_spam_ham()
     print(f"  {len(spam_ham_df)} rows — spam: {spam_ham_df['label'].sum()}, ham: {(spam_ham_df['label']==0).sum()}")
@@ -75,9 +109,16 @@ def combine() -> str:
     print(f"  {len(spam_assassin_df)} rows — spam: {spam_assassin_df['label'].sum()}, ham: {(spam_assassin_df['label']==0).sum()}")
 
     combined = pd.concat([spam_ham_df, spam_assassin_df], ignore_index=True)
+    print(f"\nCombined: {len(combined)} rows — spam: {combined['label'].sum()}, ham: {(combined['label']==0).sum()}")
+    return combined
+
+
+def combine() -> str:
+    os.makedirs(os.path.dirname(OUTPUT), exist_ok=True)
+
+    combined = build_dataset()
     combined.to_parquet(OUTPUT, index=False)
 
-    print(f"\nCombined: {len(combined)} rows — spam: {combined['label'].sum()}, ham: {(combined['label']==0).sum()}")
     print(f"Saved to: {OUTPUT}")
     return OUTPUT
 

@@ -61,9 +61,7 @@ def extract_ceas_2008() -> pd.DataFrame:
     return pd.DataFrame(records)
 
 
-def combine() -> str:
-    os.makedirs(os.path.dirname(OUTPUT), exist_ok=True)
-
+def build_dataset() -> pd.DataFrame:
     print("Processing trec_2007...")
     trec_df = extract_trec_2007()
     print(f"  {len(trec_df)} rows — spam: {trec_df['label'].sum()}, ham: {(trec_df['label']==0).sum()}")
@@ -77,11 +75,17 @@ def combine() -> str:
     spam = combined[combined["label"] == 1].sample(n=TARGET_PER_CLASS, random_state=SEED)
     ham = combined[combined["label"] == 0].sample(n=TARGET_PER_CLASS, random_state=SEED)
     balanced = pd.concat([spam, ham], ignore_index=True).sample(frac=1, random_state=SEED).reset_index(drop=True)
-
-    balanced.to_parquet(OUTPUT, index=False)
-
     print(f"\nBalanced: {len(balanced)} rows — spam: {balanced['label'].sum()}, ham: {(balanced['label']==0).sum()}")
     print(f"Source breakdown:\n{balanced['source'].value_counts().to_string()}")
+    return balanced
+
+
+def combine() -> str:
+    os.makedirs(os.path.dirname(OUTPUT), exist_ok=True)
+
+    balanced = build_dataset()
+    balanced.to_parquet(OUTPUT, index=False)
+
     print(f"Saved to: {OUTPUT}")
     return OUTPUT
 

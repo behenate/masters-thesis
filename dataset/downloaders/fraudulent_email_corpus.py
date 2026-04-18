@@ -5,15 +5,19 @@ _root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _root not in sys.path:
     sys.path.insert(0, _root)
 
-from dataset_downloader import download_dataset, _kaggle_auth
+from dataset_downloader import download_dataset, get_existing_dataset_path
 import zipfile
 
 DATASET_URL = "https://www.kaggle.com/api/v1/datasets/download/rtatman/fraudulent-email-corpus"
 DATASET_DIR = os.path.join(_root, "raw_datasets", "fraudulent_email_corpus")
+EXPECTED_PATH = os.path.join(DATASET_DIR, "fradulent_emails.txt")
 
 
 def download() -> str | None:
     os.makedirs(DATASET_DIR, exist_ok=True)
+    existing = get_existing_dataset_path(EXPECTED_PATH)
+    if existing:
+        return existing
     archive_path = os.path.join(DATASET_DIR, "fraudulent_email_corpus.zip")
 
     try:
