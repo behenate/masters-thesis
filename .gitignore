@@ -21,3 +21,6 @@ __pycache__
 
 dataset/combined_datasets/
 dataset/raw_datasets/
+
+**/.aim
+**/.aim-runtime

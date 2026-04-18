@@ -15,18 +15,27 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+aim-tracking = [
+  "aim",
+  "scikit-learn",
+  "tensorboard",
+]
+
 lora-fine-tuning = [
   "ipywidgets",
   "accelerate",
+  "aim",
   "datasets",
   "ipykernel",
   "jupyterlab",
   "numpy",
   "peft",
+  "scikit-learn",
+  "tensorboard",
   "torch",
   "transformers",
   "bitsandbytes",
 ]
 
 [tool.setuptools.packages.find]
-include = ["dataset*"]
+include = ["aim_tracking*", "dataset*"]

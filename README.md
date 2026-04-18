@@ -48,5 +48,20 @@ For GPU environments that should also install `flash-attn`, run:
 INSTALL_FLASH_ATTN=1 ./setup.sh
 ```
 
-### VSCode setup
+### Aim
 
+The repository uses Aim to track the training parameters. In order to start a web interface run `./.venv/bin/aim up`
+
+To expose the Aim dashboard through ngrok and print a shortened public link, run:
+
+```bash
+./share_aim_dashboard.sh
+```
+
+The script uses `lnk.ua` by default for shortening.
+
+If you want to keep the raw ngrok URL instead, run:
+
+```bash
+SHORTEN_PUBLIC_URL=0 ./share_aim_dashboard.sh
+```
