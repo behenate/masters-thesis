@@ -1,23 +1,13 @@
-# Qwen 1.5b fine-tuning
+# LoRA fine-tuning
 
-Initial attempt at fine-tuning Qwen 1.5b with quantization.
+Fine-tuning LLMs with LoRA.
 
-# Usage
+# Visual Studio Code setup
 
-Create and activate the python environment. Install dependencies.
-
-```
-# Create the environment
-python3 -m venv .venv
-
-# Activate the environment
-source ./.venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
-```
-
-In order for vscode to see the .venv for the jupyter notebook you may have to:
-
-- Press `File` -> `Add folder to workspace` -> Select the lora fine tuning folder
-- Select the jupyter environment `Cmd+Shift+P` -> Search for `Jupyter environment`
+- Follow the setup steps from the repository root
+- Open desired notebook
+- Press `Cmd+Shift+P`
+- Search `Notebook:Select Notebook Kernel`
+- Choose `Jupyter Kernel...`
+- Select the `Thesis` kernel.
+- You can also select the `.venv` from the root directory in `Python Environments...` submenu

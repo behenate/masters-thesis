@@ -4,8 +4,8 @@
 */.aux/
 */main.synctex.gz
 
-*/.env
-*/.venv
+**/.env
+**/.venv
 */datasets
 datasets
 

@@ -1,4 +1,5 @@
 # Detecting Spam Mail and Phishing using Large Language Models
+
 This repository contains all files used to develop e-mail spam detection using fine-tuning of small LLMs. This `README` will be updated in sync with the progress of the project.
 
 ## Setup
@@ -24,6 +25,7 @@ This installs the project in editable mode together with the dependencies needed
 ### Cloud GPU deployment
 
 On a CUDA machine, install the NVIDIA CUDA toolkit first. The helper script below checks for `nvcc`, adds CUDA paths to `~/.bashrc`, and then runs the shared Python setup with GPU-specific extras such as `flash-attn`.
+Script is compatible with Ubuntu 22.04
 
 ```bash
 ./setup_thunder_compute.sh
@@ -45,3 +47,6 @@ For GPU environments that should also install `flash-attn`, run:
 ```bash
 INSTALL_FLASH_ATTN=1 ./setup.sh
 ```
+
+### VSCode setup
+
