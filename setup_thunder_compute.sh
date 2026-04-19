@@ -81,8 +81,8 @@ fi
 log_step "Step 3/5: Verifying CUDA compiler"
 nvcc --version
 
-log_step "Step 4/5: Running Python environment setup"
-INSTALL_FLASH_ATTN=1 "${SCRIPT_DIR}/setup.sh"
+log_step "Step 4/5: Running Python environment setup (skips flash attention)"
+INSTALL_FLASH_ATTN=0 "${SCRIPT_DIR}/setup.sh"
 
 log_step "Step 5/5: Final reminder"
 log_info "If your notebook or shell was already open, restart it before running the workload."
