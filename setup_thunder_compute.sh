@@ -52,15 +52,6 @@ else
   log_info "CUDA toolkit not found."
   log_info "Attempting automatic installation for Ubuntu 22.04."
   install_cuda_toolkit
-
-  if command -v nvcc >/dev/null 2>&1; then
-    log_info "CUDA toolkit installation completed."
-  else
-    log_info "CUDA toolkit still not available after installation attempt."
-    log_info "Check the NVIDIA instructions at:"
-    log_info "${CUDA_DOWNLOAD_URL}"
-    exit 1
-  fi
 fi
 
 log_step "Step 2/5: Ensuring CUDA paths are in ${BASHRC_FILE}"
@@ -77,6 +68,15 @@ ensure_line_in_file "$BASHRC_FILE" 'export LD_LIBRARY_PATH=/usr/local/cuda/lib64
 export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}
 export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 log_info "CUDA paths exported for the current run."
+
+if command -v nvcc >/dev/null 2>&1; then
+  log_info "CUDA toolkit setup completed."
+else
+  log_info "CUDA toolkit still not available after setup attempt."
+  log_info "Check the NVIDIA instructions at:"
+  log_info "${CUDA_DOWNLOAD_URL}"
+  exit 1
+fi
 
 log_step "Step 3/5: Verifying CUDA compiler"
 nvcc --version

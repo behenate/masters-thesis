@@ -8,6 +8,7 @@ AIM_BIN="${AIM_BIN:-${VENV_DIR}/bin/aim}"
 AIM_HOST="${AIM_HOST:-127.0.0.1}"
 AIM_PORT="${AIM_PORT:-43800}"
 AIM_REPO="${AIM_REPO:-${SCRIPT_DIR}}"
+ENV_FILE="${ENV_FILE:-${SCRIPT_DIR}/.env}"
 NGROK_BIN="${NGROK_BIN:-ngrok}"
 NGROK_API_URL="${NGROK_API_URL:-http://127.0.0.1:4040/api/tunnels}"
 STARTUP_TIMEOUT_SECONDS="${STARTUP_TIMEOUT_SECONDS:-30}"
@@ -23,6 +24,15 @@ log_step() {
 
 log_info() {
   printf '  - %s\n' "$1"
+}
+
+load_env_file() {
+  if [ -f "${ENV_FILE}" ]; then
+    # shellcheck disable=SC1090
+    set -a
+    source "${ENV_FILE}"
+    set +a
+  fi
 }
 
 cleanup() {
@@ -133,6 +143,7 @@ print_failure_logs() {
 trap cleanup EXIT INT TERM
 
 mkdir -p "${RUNTIME_DIR}"
+load_env_file
 
 log_step "Step 1/5: Checking required commands"
 if [ ! -x "${AIM_BIN}" ]; then
@@ -143,7 +154,13 @@ fi
 
 if ! command -v "${NGROK_BIN}" >/dev/null 2>&1; then
   log_info "ngrok is not available on PATH."
-  log_info "Install ngrok and authenticate it with: ngrok config add-authtoken <token>"
+  log_info "Install ngrok via Apt with the following commands:"
+  log_info "curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null"
+  log_info "echo \"deb https://ngrok-agent.s3.amazonaws.com bookworm main\" | sudo tee /etc/apt/sources.list.d/ngrok.list"
+  log_info "sudo apt update"
+  log_info "sudo apt install ngrok"
+  log_info "Store your token in ${ENV_FILE} as NGROK_AUTHTOKEN=..."
+  log_info "Then run: ngrok config add-authtoken \"\$NGROK_AUTHTOKEN\""
   exit 1
 fi
 
@@ -154,6 +171,13 @@ fi
 
 log_info "Aim binary: ${AIM_BIN}"
 log_info "ngrok binary: $(command -v "${NGROK_BIN}")"
+
+if [ -n "${NGROK_AUTHTOKEN:-}" ]; then
+  log_info "Configuring ngrok authtoken from ${ENV_FILE}."
+  "${NGROK_BIN}" config add-authtoken "${NGROK_AUTHTOKEN}" >/dev/null
+else
+  log_info "NGROK_AUTHTOKEN is not set in ${ENV_FILE}; assuming ngrok is already configured."
+fi
 
 log_step "Step 2/5: Starting Aim dashboard"
 "${AIM_BIN}" up \

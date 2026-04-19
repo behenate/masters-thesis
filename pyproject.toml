@@ -14,7 +14,17 @@ dependencies = [
   "requests",
 ]
 
+[project.scripts]
+aim-master-merge = "aim_master.merge_repos:main"
+aim-master-export = "aim_master.export_metrics:main"
+
 [project.optional-dependencies]
+aim-master = [
+  "aim",
+  "pandas",
+  "prompt_toolkit",
+]
+
 aim-tracking = [
   "aim",
   "scikit-learn",
@@ -38,4 +48,4 @@ lora-fine-tuning = [
 ]
 
 [tool.setuptools.packages.find]
-include = ["aim_tracking*", "dataset*"]
+include = ["aim_master*", "aim_tracking*", "dataset*"]

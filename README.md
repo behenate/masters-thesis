@@ -59,9 +59,56 @@ To expose the Aim dashboard through ngrok and print a shortened public link, run
 ```
 
 The script uses `lnk.ua` by default for shortening.
+If you want the script to configure ngrok automatically, create a root `.env` file from `.env.template` and set `NGROK_AUTHTOKEN`.
 
 If you want to keep the raw ngrok URL instead, run:
 
 ```bash
 SHORTEN_PUBLIC_URL=0 ./share_aim_dashboard.sh
 ```
+
+## Dataset combining
+
+The dataset utilities expose `combine_datasets(...)` from [dataset/combine.py](/Users/wojciechdrozdz/uni/Magisterka/Semestr%20III/Praca%20Magisterska/dataset/combine.py).
+
+Example:
+
+```python
+from dataset.combine import combine_datasets
+
+dataset_path = combine_datasets(
+    ["trec_2007", "ceas_2008"],
+    spam_ham_ratio=0.5,
+    duplicate_detection="high",
+    generate_duplicate_report=False,
+)
+```
+
+Duplicate detection modes:
+
+- `basic`: the original exact duplicate rule using `subject + body + label`
+- `medium`: deduplicate by `body` only, with whitespace removed
+- `high`: the strongest mode, deduplicating by aggressively normalized `body`
+
+`high` is the default.
+
+If you want a CSV describing the duplicate groups that were removed, enable:
+
+```python
+combine_datasets(
+    ["spam_assassin", "spam_ham"],
+    duplicate_detection="high",
+    generate_duplicate_report=True,
+)
+```
+
+The duplicate report stores every sample in each duplicate group in wide columns such as:
+
+- `sample_0_subject`
+- `sample_0_body`
+- `sample_0_label`
+- `sample_0_source`
+- `sample_1_subject`
+- `sample_1_body`
+
+and so on for every sample in the group.
