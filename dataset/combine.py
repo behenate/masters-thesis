@@ -1,8 +1,11 @@
 import email
+import html
 import hashlib
 import json
 import mailbox
 import os
+import re
+import unicodedata
 from collections.abc import Iterable, Sequence
 
 import pandas as pd
@@ -41,7 +44,13 @@ OUTPUT_DIR = os.path.join(
     "combined_datasets",
     "generated",
 )
+REPORTS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "reports")
 RAW_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "raw_datasets")
+HTML_TAG_RE = re.compile(r"<[^>]+>")
+URL_RE = re.compile(r"(https?://\S+|www\.\S+)", re.IGNORECASE)
+EMAIL_RE = re.compile(r"\b[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}\b", re.IGNORECASE)
+NON_ALNUM_RE = re.compile(r"[^a-z0-9]+")
+DUPLICATE_DETECTION_LEVELS = {"basic", "medium", "high"}
 
 
 def _extract_subject_and_body_from_message(msg: email.message.Message) -> tuple[str, str]:
@@ -287,27 +296,71 @@ def _validate_spam_ham_ratio(spam_ham_ratio: float) -> None:
         raise ValueError("spam_ham_ratio must be between 0.0 and 1.0, or -1 to disable balancing.")
 
 
+def _validate_duplicate_detection(duplicate_detection: str) -> str:
+    normalized = str(duplicate_detection).strip().lower()
+    if normalized not in DUPLICATE_DETECTION_LEVELS:
+        available = ", ".join(sorted(DUPLICATE_DETECTION_LEVELS))
+        raise ValueError(f"duplicate_detection must be one of: {available}")
+    return normalized
+
+
 def _ratio_token(spam_ham_ratio: float) -> str:
     if spam_ham_ratio == -1:
         return "all_samples"
     return f"spam_{str(spam_ham_ratio).replace('.', '_')}"
 
 
-def _combined_dataset_path(dataset_names: list[str], spam_ham_ratio: float) -> str:
+def _combined_dataset_path(
+    dataset_names: list[str],
+    spam_ham_ratio: float,
+    duplicate_detection: str,
+) -> str:
     spec = {
         "dataset_names": dataset_names,
+        "duplicate_detection": duplicate_detection,
         "spam_ham_ratio": spam_ham_ratio,
     }
     digest = hashlib.sha1(
         json.dumps(spec, sort_keys=True, separators=(",", ":")).encode("utf-8")
     ).hexdigest()[:10]
     stem = "__".join(dataset_names)
-    filename = f"{stem}__{_ratio_token(spam_ham_ratio)}__{digest}.parquet"
+    filename = f"{stem}__dedupe_{duplicate_detection}__{_ratio_token(spam_ham_ratio)}__{digest}.parquet"
     return os.path.join(OUTPUT_DIR, filename)
 
 
 def _shuffle_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     return df.sample(frac=1, random_state=SEED).reset_index(drop=True)
+
+
+def _normalized_body_fingerprint_medium(body: str) -> str:
+    return re.sub(r"\s+", "", str(body))
+
+
+def _normalized_body_fingerprint_high(body: str) -> str:
+    normalized = unicodedata.normalize("NFKC", str(body))
+    normalized = html.unescape(normalized)
+    normalized = normalized.lower()
+    normalized = HTML_TAG_RE.sub(" ", normalized)
+    normalized = URL_RE.sub(" ", normalized)
+    normalized = EMAIL_RE.sub(" ", normalized)
+    normalized = NON_ALNUM_RE.sub("", normalized)
+    return normalized
+
+
+def _duplicate_key_frame(df: pd.DataFrame, duplicate_detection: str) -> pd.DataFrame:
+    if duplicate_detection == "basic":
+        keyed = df[["subject", "body", "label"]].copy()
+        keyed.columns = ["key_subject", "key_body", "key_label"]
+        return keyed
+
+    if duplicate_detection == "medium":
+        return pd.DataFrame({
+            "key_body": df["body"].map(_normalized_body_fingerprint_medium),
+        })
+
+    return pd.DataFrame({
+        "key_body": df["body"].map(_normalized_body_fingerprint_high),
+    })
 
 
 def _drop_empty_subject_or_body(df: pd.DataFrame) -> pd.DataFrame:
@@ -320,11 +373,101 @@ def _drop_empty_subject_or_body(df: pd.DataFrame) -> pd.DataFrame:
     return filtered
 
 
-def _drop_duplicate_messages(df: pd.DataFrame) -> pd.DataFrame:
-    deduplicated = df.drop_duplicates(subset=["subject", "body", "label"]).reset_index(drop=True)
+def _drop_duplicate_messages(df: pd.DataFrame, duplicate_detection: str) -> pd.DataFrame:
+    keyed = df.reset_index(drop=True).copy()
+    duplicate_keys = _duplicate_key_frame(keyed, duplicate_detection)
+    deduplicated = pd.concat([keyed, duplicate_keys], axis=1)
+    deduplicated = deduplicated.drop_duplicates(subset=list(duplicate_keys.columns)).reset_index(drop=True)
+    deduplicated = deduplicated[df.columns.tolist()]
     removed = len(df) - len(deduplicated)
     print(f"Removed duplicate rows: {removed}")
     return deduplicated
+
+
+def _duplicate_report_path(
+    dataset_names: list[str],
+    spam_ham_ratio: float,
+    duplicate_detection: str,
+) -> str:
+    spec = {
+        "dataset_names": dataset_names,
+        "duplicate_detection": duplicate_detection,
+        "spam_ham_ratio": spam_ham_ratio,
+        "report": "duplicates",
+    }
+    digest = hashlib.sha1(
+        json.dumps(spec, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()[:10]
+    stem = "__".join(dataset_names)
+    filename = f"{stem}__dedupe_{duplicate_detection}__{_ratio_token(spam_ham_ratio)}__{digest}__duplicates.csv"
+    return os.path.join(REPORTS_DIR, filename)
+
+
+def _generate_duplicate_report(
+    df: pd.DataFrame,
+    *,
+    dataset_names: list[str],
+    spam_ham_ratio: float,
+    duplicate_detection: str,
+) -> str:
+    report_path = _duplicate_report_path(dataset_names, spam_ham_ratio, duplicate_detection)
+    os.makedirs(REPORTS_DIR, exist_ok=True)
+
+    indexed = df.reset_index(names="original_row_index").copy()
+    duplicate_keys = _duplicate_key_frame(indexed, duplicate_detection)
+    duplicate_keys = duplicate_keys.rename(columns={column: f"_{column}" for column in duplicate_keys.columns})
+    indexed = pd.concat([indexed, duplicate_keys], axis=1)
+    key_columns = list(duplicate_keys.columns)
+
+    grouped_rows = []
+    duplicate_groups = indexed.groupby(key_columns, sort=False, dropna=False)
+    duplicate_group_id = 0
+
+    for _, group in duplicate_groups:
+        if len(group) <= 1:
+            continue
+        duplicate_group_id += 1
+        group = group.reset_index(drop=True)
+        kept = group.iloc[0]
+        all_rows = []
+        for _, row in group.iterrows():
+            all_rows.append({
+                "original_row_index": int(row["original_row_index"]),
+                "subject": str(row["subject"]),
+                "body": str(row["body"]),
+                "label": int(row["label"]),
+                "source": str(row["source"]),
+            })
+
+        kept_row = all_rows[0]
+        grouped_row = {
+            "duplicate_group_id": duplicate_group_id,
+            "duplicate_detection": duplicate_detection,
+            "duplicate_count": len(group),
+            "labels": json.dumps(sorted({row["label"] for row in all_rows})),
+            "sources": json.dumps(sorted({row["source"] for row in all_rows}), ensure_ascii=False),
+            "kept_original_row_index": kept_row["original_row_index"],
+            "kept_subject": kept_row["subject"],
+            "kept_source": kept_row["source"],
+            "kept_label": kept_row["label"],
+            "all_original_row_indexes": json.dumps([row["original_row_index"] for row in all_rows]),
+        }
+
+        for sample_index, sample in enumerate(all_rows):
+            grouped_row[f"sample_{sample_index}_original_row_index"] = sample["original_row_index"]
+            grouped_row[f"sample_{sample_index}_subject"] = sample["subject"]
+            grouped_row[f"sample_{sample_index}_body"] = sample["body"]
+            grouped_row[f"sample_{sample_index}_label"] = sample["label"]
+            grouped_row[f"sample_{sample_index}_source"] = sample["source"]
+
+        grouped_rows.append(grouped_row)
+
+    report = pd.DataFrame(grouped_rows)
+    if not report.empty:
+        report = report.sort_values(["duplicate_count", "duplicate_group_id"], ascending=[False, True]).reset_index(drop=True)
+    report.to_csv(report_path, index=False)
+    print(f"Duplicate report saved to: {report_path}")
+    return report_path
 
 
 def _apply_spam_ham_ratio(df: pd.DataFrame, spam_ham_ratio: float) -> pd.DataFrame:
@@ -365,16 +508,36 @@ def _apply_spam_ham_ratio(df: pd.DataFrame, spam_ham_ratio: float) -> pd.DataFra
     return pd.concat([spam_df, ham_df], ignore_index=True)
 
 
-def combine_datasets(dataset_names: str | Sequence[str], spam_ham_ratio: float = -1) -> str:
+def combine_datasets(
+    dataset_names: str | Sequence[str],
+    spam_ham_ratio: float = -1,
+    duplicate_detection: str = "high",
+    generate_duplicate_report: bool = False,
+) -> str:
     _validate_spam_ham_ratio(spam_ham_ratio)
+    duplicate_detection = _validate_duplicate_detection(duplicate_detection)
     atomic_dataset_names = _resolve_atomic_dataset_names(dataset_names)
-    output_path = _combined_dataset_path(atomic_dataset_names, spam_ham_ratio)
+    output_path = _combined_dataset_path(atomic_dataset_names, spam_ham_ratio, duplicate_detection)
+    report_path = _duplicate_report_path(atomic_dataset_names, spam_ham_ratio, duplicate_detection)
 
     if os.path.exists(output_path):
         print(f"Combined dataset already exists: {output_path}")
-        return output_path
+        if generate_duplicate_report:
+            if os.path.exists(report_path):
+                print("Duplicate report requested; regenerating it to ensure the latest report format.")
+            else:
+                print("Duplicate report requested and missing; rebuilding inputs to generate it.")
+        else:
+            return output_path
+    elif not generate_duplicate_report:
+        os.makedirs(OUTPUT_DIR, exist_ok=True)
 
     os.makedirs(OUTPUT_DIR, exist_ok=True)
+    if generate_duplicate_report:
+        os.makedirs(REPORTS_DIR, exist_ok=True)
+
+    if os.path.exists(output_path) and not generate_duplicate_report:
+        return output_path
 
     print("=== Downloading required raw datasets ===")
     for name in atomic_dataset_names:
@@ -393,7 +556,14 @@ def combine_datasets(dataset_names: str | Sequence[str], spam_ham_ratio: float =
     print(f"\nCombined rows before balancing: {len(combined)}")
 
     combined = _drop_empty_subject_or_body(combined)
-    combined = _drop_duplicate_messages(combined)
+    if generate_duplicate_report:
+        _generate_duplicate_report(
+            combined,
+            dataset_names=atomic_dataset_names,
+            spam_ham_ratio=spam_ham_ratio,
+            duplicate_detection=duplicate_detection,
+        )
+    combined = _drop_duplicate_messages(combined, duplicate_detection)
     combined = _apply_spam_ham_ratio(combined, spam_ham_ratio)
     combined = _shuffle_dataframe(combined)
     combined.to_parquet(output_path, index=False)
