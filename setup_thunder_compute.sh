@@ -6,6 +6,7 @@ CUDA_DOWNLOAD_URL="https://developer.nvidia.com/cuda-downloads?target_os=Linux&t
 CUDA_KEYRING_URL="https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb"
 CUDA_KEYRING_DEB="cuda-keyring_1.1-1_all.deb"
 CUDA_TOOLKIT_PACKAGE="cuda-toolkit-13-2"
+NGROK_BASE_URL="https://bin.equinox.io/c/bNyj1mQVY4c"
 BASHRC_FILE="${HOME}/.bashrc"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -45,7 +46,37 @@ install_cuda_toolkit() {
   sudo apt-get -y install "${CUDA_TOOLKIT_PACKAGE}"
 }
 
-log_step "Step 1/5: Checking CUDA toolkit"
+install_ngrok() {
+  local arch
+  local ngrok_archive
+  local ngrok_url
+
+  arch="$(uname -m)"
+  case "$arch" in
+    x86_64|amd64)
+      ngrok_archive="ngrok-v3-stable-linux-amd64.tgz"
+      ;;
+    aarch64|arm64)
+      ngrok_archive="ngrok-v3-stable-linux-arm64.tgz"
+      ;;
+    *)
+      log_info "Unsupported architecture for automatic ngrok install: ${arch}"
+      log_info "Install manually from https://ngrok.com/download"
+      exit 1
+      ;;
+  esac
+
+  ngrok_url="${NGROK_BASE_URL}/${ngrok_archive}"
+
+  log_info "Downloading ngrok from ${ngrok_url}."
+  wget -O "${ngrok_archive}" "${ngrok_url}"
+
+  log_info "Installing ngrok to /usr/local/bin."
+  sudo tar xvzf "${ngrok_archive}" -C /usr/local/bin
+  rm -f "${ngrok_archive}"
+}
+
+log_step "Step 1/6: Checking CUDA toolkit"
 if command -v nvcc >/dev/null 2>&1; then
   log_info "CUDA toolkit already available."
 else
@@ -54,7 +85,7 @@ else
   install_cuda_toolkit
 fi
 
-log_step "Step 2/5: Ensuring CUDA paths are in ${BASHRC_FILE}"
+log_step "Step 2/6: Ensuring CUDA paths are in ${BASHRC_FILE}"
 touch "$BASHRC_FILE"
 
 if [ ! -w "$BASHRC_FILE" ]; then
@@ -78,11 +109,21 @@ else
   exit 1
 fi
 
-log_step "Step 3/5: Verifying CUDA compiler"
+log_step "Step 3/6: Verifying CUDA compiler"
 nvcc --version
 
-log_step "Step 4/5: Running Python environment setup (skips flash attention)"
+log_step "Step 4/6: Checking ngrok"
+if command -v ngrok >/dev/null 2>&1; then
+  log_info "ngrok already available."
+else
+  install_ngrok
+fi
+
+log_info "ngrok setup completed."
+ngrok version
+
+log_step "Step 5/6: Running Python environment setup (skips flash attention)"
 INSTALL_FLASH_ATTN=0 "${SCRIPT_DIR}/setup.sh"
 
-log_step "Step 5/5: Final reminder"
+log_step "Step 6/6: Final reminder"
 log_info "If your notebook or shell was already open, restart it before running the workload."
