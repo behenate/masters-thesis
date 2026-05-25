@@ -1,0 +1,42 @@
+\begin{tikzpicture}
+\begin{axis}[
+    width=0.78\textwidth,
+    height=0.46\textwidth,
+    ybar,
+    ymode=log,
+    ymin=0.8,
+    ymax=6000,
+    ylabel={Liczba grup (skala logarytmiczna)},
+    xlabel={Liczba wiadomości w grupie duplikatów},
+    symbolic x coords={g2,g3,g4,g5,g6to10,g11to20,g21to50,g51to100,g101to500,g501plus},
+    xticklabels={2,3,4,5,6--10,11--20,21--50,51--100,101--500,501+},
+    xtick=data,
+    axis x line*=bottom,
+    axis y line*=left,
+    ymajorgrids,
+    grid style={plotGrid},
+    tick style={draw=none},
+    xticklabel style={font=\scriptsize, rotate=35, anchor=east},
+    yticklabel style={font=\footnotesize},
+    label style={font=\small},
+    nodes near coords,
+    every node near coord/.append style={font=\scriptsize, anchor=south},
+]
+\addplot[
+    fill=plotAccent,
+    draw=none,
+    bar width=9pt,
+] coordinates {
+    (g2,3532)
+    (g3,583)
+    (g4,263)
+    (g5,153)
+    (g6to10,426)
+    (g11to20,164)
+    (g21to50,100)
+    (g51to100,29)
+    (g101to500,21)
+    (g501plus,6)
+};
+\end{axis}
+\end{tikzpicture}

@@ -1,37 +1,508 @@
 \chapter{Część badawcza}
-    \section{Wybór otwartoźródłowego modelu językowego}
-        \subsection{Przegląd dostępnych modeli (np. Llama, Mistral, Falcon, itp.)}
-        \subsection{Kryteria wyboru modelu (wydajność, rozmiar, licencja, możliwości fine-tuning'u)}
-        \subsection{Uzasadnienie wyboru konkretnego modelu}
-    \section{Metodologia badawcza}
-        \subsection{Opis wykorzystanych zbiorów danych}
-            \subsubsection{Zbiór treningowy}
-            \subsubsection{Zbiór walidacyjny}
-            \subsubsection{Zbiór testowy}
-        \subsection{Przygotowanie danych (Preprocessing)}
-        \subsection{Proces fine-tuning'u modelu}
-            \subsubsection{Architektura zadania klasyfikacyjnego}
-            \subsubsection{Parametry i hiperparametry uczenia}
-            \subsubsection{Wykorzystane narzędzia i biblioteki}
-        \subsection{Metryki oceny skuteczności}
-            \subsubsection{Dokładność (Accuracy)}
-            \subsubsection{Precyzja (Precision)}
-            \subsubsection{Pełność (Recall)}
-            \subsubsection{Miara F1 (F1-Score)}
-            \subsubsection{Inne istotne metryki (np. AUC)}
-    \section{Implementacja i przeprowadzenie eksperymentów}
-        \subsection{Środowisko eksperymentalne}
-        Witajcie co tam  HALo!
-        \subsection{Przebieg procesu fine-tuning'u}
-        KUUURWA
-    \section{Analiza skuteczności dostrojonego modelu}
-        \subsection{Wyniki na zbiorze testowym}
-        \subsection{Porównanie z wynikami istniejących metod (z Rozdziału 2)}
-        \subsection{Analiza błędów klasyfikacji (False Positives, False Negatives)}
-        \subsection{Ocena elastyczności modelu i odporności na nowe typy spamu} % Odporność na ewolucję zagrożeń
-    \section{Analiza możliwości wdrożenia produkcyjnego}
-        \subsection{Wymagania sprzętowe i czas wnioskowania (inference time)}
-        \subsection{Koszty obliczeniowe (fine-tuning i wnioskowanie)}
-        \subsection{Skalowalność rozwiązania}
-        \subsection{Potencjalne wyzwania i ograniczenia wdrożeniowe}
-        \subsection{Praktyczność zastosowania w porównaniu do tradycyjnych filtrów}
+
+\section{Wybór otwartoźródłowego modelu językowego}
+    \subsection{Przegląd dostępnych modeli}
+    \subsection{Kryteria wyboru modelu}
+    \subsection{Uzasadnienie wyboru konkretnego modelu}
+
+\section{Metodologia badawcza}
+
+\subsection{Analiza wykorzystanych zbiorów danych}
+
+Wybór i przygotowanie danych może mieć równie duży wpływ na końcowy wynik jak sama
+architektura modelu lub wykorzystane parametry treningu. 
+
+Jedną z podstawowych częścią pracy jest więc utworzenie zbioru wiadomości elektronicznych, który zostanie przeznaczony
+do zadania binarnej klasyfikacji. Wiadomości zostały oznaczone jako pożądane
+(\emph{ham}, klasa negatywna) lub jako niepożądane (\emph{spam}, klasa pozytywna).
+Do klasy pozytywnej zostały przypisane wszystkie podkategorie wiadomości niepożądanych takie
+jak spam, wiadomości oszukańcze, phishingowe lub podejrzane wiadomości marketingowe. Decyzja ta została
+podjęta głównie ze względu na trudności w znalezieniu dużych zbiorów, które dokonowałyby rozróżnień na poszczególne podklasy.
+
+Korpusy publiczne różnią się nie tylko liczbą rekordów, lecz także sposobem zapisu wiadomości, 
+semantyką etykiet, obecnością metadanych oraz formatem treści. Z tego powodu analiza obejmuje 
+ocenę pochodzenia danych, rozkładu klas, długości wiadomości, obecności duplikatów oraz 
+potencjalnego ryzyka przecieku informacji między częścią treningową i testową.
+
+W pracy przyjęto, że wszystkie zbiory są sprowadzane do wspólnego schematu
+rekordu: \texttt{subject}, \texttt{body}, \texttt{label} oraz \texttt{source}.
+Pole \texttt{subject} przechowuje temat wiadomości, \texttt{body} jej treść,
+\texttt{label} wartość liczbową klasy, a \texttt{source} nazwę korpusu
+źródłowego.  Taki schemat pozwala porównywać korpusy o różnej strukturze bez wymuszania 
+korzystania z metadanych, które nie występują we wszystkich źródłach.
+
+Do eksperymentów wykorzystano korpusy wymienione w tabeli~\ref{tab:raw-dataset-inventory}. 
+
+{\small
+\begin{longtable}{p{0.25\textwidth}rrrrp{0.22\textwidth}}
+\caption{Charakterystyka zbiorów danych}
+\label{tab:raw-dataset-inventory}\\
+\hline
+\textbf{Zbiór} & \textbf{Wiersze} & \textbf{Ham} & \textbf{Spam} & \textbf{Spam [\%]} & \textbf{Uwagi} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Zbiór} & \textbf{Wiersze} & \textbf{Ham} & \textbf{Spam} & \textbf{Spam [\%]} & \textbf{Uwagi} \\
+\hline
+\endhead
+\hline
+\endfoot
+\texttt{enron}\autocite{kaggle-enron-email-dataset} & 517 401 & 517 401 & 0 & 0,0 & zbiór wiadomości pożądanych, traktowany jako klasa negatywna \\
+\texttt{trec\_2007}\autocite{kaggle-trec-2007} & 75 419 & 25 220 & 50 199 & 66,6 & korpus TREC 2007 \\
+\texttt{ceas\_2008}\autocite{kaggle-ceas-2008} & 39 154 & 17 312 & 21 842 & 55,8 & dane CEAS 2008 \\
+\texttt{fraud\_email}\autocite{kaggle-fraud-email-dataset} & 11 929 & 6 742 & 5 187 & 43,5 & \\
+\texttt{spam\_assassin}\autocite{kaggle-spam-assassin-email-classification} & 5 796 & 3 900 & 1 896 & 32,7 & \\
+\texttt{spam\_ham}\autocite{kaggle-spam-mails-dataset} & 5 171 & 3 672 & 1 499 & 29,0 & \\
+\begin{tabular}[t]{@{}l@{}}\texttt{fraudulent\_email}\\\texttt{\_corpus}\end{tabular}\autocite{kaggle-fraudulent-email-corpus} & 3 978 & 0 & 3 978 & 100,0 & korpus oszukańczych wiadomości phisingowych zwanych potocznie \textit{nigeryjskimi}\autocite{nigerian-mail-characteristics} \\
+\texttt{nazario}\autocite{kaggle-nazario-5-datatest} & 3 065 & 1 500 & 1 565 & 51,1 & zbiór wiadomości phishingowych \\
+\texttt{ling}\autocite{kaggle-lingspam-dataset} & 2 893 & 2 412 & 481 & 16,6 & \\
+\end{longtable}
+}
+
+Łącznie analizowane zbiory surowe obejmują 664 806 wiadomości. Nie wszystkie źródła zostały jednak
+bezpośrednio połączone w jeden korpus treningowy. Największy zbiór, \texttt{enron}, zawiera
+wyłącznie wiadomości klasy negatywnej. Z kolei \texttt{fraudulent\_email\_corpus}
+zawiera wyłącznie przykłady klasy pozytywnej. Bezpośrednie wykorzystanie wszystkich danych
+mogłoby oznaczać, że model zamiast uczyć się różnic między treścią
+spamu i poczty legalnej nauczyłby się rozpoznawać pochodzenie przykładu.
+Przykładowo, jeśli większość wiadomości legalnych pochodziłaby z jednego
+archiwum firmowego, a większość wiadomości niepożądanych z innego publicznego
+korpusu, klasyfikator mógłby wykorzystywać artefakty konkretnego zbioru danych,
+a nie ogólne cechy spamu. Taki problem jest szczególnie niebezpieczny w
+eksperymentach z dużymi modelami językowymi, ponieważ modele te potrafią
+wychwytywać subtelne i nieintencjonalne wzorce formatowania\autocite{shortcut-learning}.
+
+Rysunek~\ref{fig:raw-dataset-sizes} pokazuje skalę różnic między korpusami.
+Połączenie wszystkich danych bez próbkowania prowadziłoby do dominacji zbioru
+\texttt{enron}. Taka dominacja byłaby niepożądana nie tylko ze względu na
+nierównowagę klas, lecz także ze względu na pochodzenie większości danych \textit{ham}
+z jednego korpusu.
+
+\begin{figure}[htbp]
+\centering
+\input{tex/plots/raw_dataset_sizes}
+\caption{Porównanie liczności dostępnych surowych zbiorów danych. Skala pozioma jest logarytmiczna.}
+\label{fig:raw-dataset-sizes}
+\end{figure}
+
+Rysunek~\ref{fig:raw-class-balance} przedstawia rozkład klas w źródłowych
+korpusach. Widoczne są trzy typy zbiorów. Pierwszą grupę tworzą zbiory względnie
+zbalansowane, takie jak \texttt{nazario}, \texttt{ceas\_2008} oraz
+\texttt{fraud\_email}. Drugą grupę tworzą zbiory o wyraźnej przewadze jednej z
+klas, na przykład \texttt{trec\_2007}, \texttt{ling}, \texttt{spam\_assassin} i
+\texttt{spam\_ham}. Trzecią grupę stanowią korpusy jednoklasowe:
+\texttt{enron} oraz \texttt{fraudulent\_email\_corpus}. Dla modelowania
+klasyfikacyjnego najbezpieczniejsze są zbiory, które zawierają obie klasy i w
+których rozkład klas nie jest skrajnie zaburzony. Zbiory jednoklasowe mogą być
+użyteczne jako materiał pomocniczy, ale wymagają ostrożnego łączenia z innymi
+źródłami, aby nie stworzyć sztucznego zadania rozpoznawania korpusu zamiast
+rozpoznawania spamu.
+
+\begin{figure}[htbp]
+\centering
+\input{tex/plots/raw_class_balance}
+\caption{Rozkład klas w surowych korpusach. Klasa pozytywna oznacza spam, phishing lub wiadomość oszukańczą.}
+\label{fig:raw-class-balance}
+\end{figure}
+
+\subsubsection{Charakterystyka poszczególnych źródeł}
+\textsc{enron}
+
+Zbiór \texttt{enron} jest największym z wybranych źródeł danych.
+Zawiera 517 401 wiadomości, z których wszystie przynależą do klasy negatywnej. 
+Jego zaletą jest duża liczność i naturalny charakter korespondencji,
+jednak jednocześnie jest to zbiór specyficzny domenowo. Pochodzi z archiwum
+organizacyjnego, dlatego może zawierać wiele powtarzalnych struktur, tematów,
+podpisów, cytowań oraz wątków wewnętrznych. Włączenie go w całości do zbioru
+treningowego mogłoby sztucznie zwiększyć liczbę przykładów prawdziwej korespondencji, ale
+niekoniecznie poprawiłoby zdolność modelu do ogólnego rozpoznawania wiadomości
+pożądanych. Z tego powodu w analizie końcowej nie wybrano wariantu opartego na
+pełnym zbiorze \texttt{enron}.
+
+\textsc{ling}
+
+Zbiór \texttt{ling} obejmuje 2 893 rekordy: 2 412 wiadomości pożądanych oraz
+481 przykładów klasy pozytywnej. Jest znacznie mniejszy od głównych korpusów,
+ale ma przejrzysty format z osobnym tematem, treścią i etykietą.
+
+\textsc{nazario}
+
+Zbiór \texttt{nazario} obejmuje 3 065 rekordów i jest prawie zbalansowany:
+1 500 wiadomości pożądanych oraz 1 565 przykładów klasy pozytywnej. Jego zaletą
+jest obecność pól tematu, treści oraz dodatkowych metadanych, takich jak nadawca,
+odbiorca, data i adresy URL.
+
+\textsc{trec\_2007}
+
+Zbiór \texttt{trec\_2007} zawiera 75 419 wiadomości, z czego 50 199 należy do
+klasy pozytywnej, a 25 220 do klasy negatywnej. Jego zaletą jest relatywnie
+duża liczność i obecność surowej treści wiadomości. Rozkład klas jest jednak
+przesunięty w kierunku spamu, który stanowi około 66,6\% rekordów.
+
+\textsc{ceas\_2008}
+
+Zbiór \texttt{ceas\_2008} zawiera 39 154 wiadomości i również ma przewagę klasy
+pozytywnej, ale jest ona mniejsza niż w \texttt{trec\_2007}. W zbiorze znajduje
+się 21 842 wiadomości spamowych oraz 17 312 prawdziwych. Istotną zaletą tego
+korpusu jest obecność pól takich jak temat, treść, nadawca, odbiorca, data i
+adresy URL. Dla niniejszej pracy najważniejsze są jednak temat i treść, ponieważ
+celem jest sprawdzenie możliwości dostrajania modelu językowego do klasyfikacji
+na podstawie tekstu wiadomości. Obecność adresów URL jest cenna analitycznie,
+ale nie wszystkie korpusy posiadają to pole, dlatego w podstawowym schemacie
+zostało ono pominięte.
+
+\textsc{fraud\_email i fraudulent\_email\_corpus}
+
+Zbiory \texttt{fraud\_email} oraz \texttt{fraudulent\_email\_corpus} dotyczą
+wiadomości oszukańczych. Pierwszy z nich jest binarny i zawiera 11 929
+rekordów, natomiast drugi jest jednoklasowy i zawiera 3 978 wiadomości
+traktowanych jako klasa pozytywna. Dane te są wartościowe z punktu widzenia
+semantycznej różnorodności spamu, ponieważ wiadomości oszukańcze mogą różnić
+się od typowych reklam farmaceutycznych, newsletterów czy masowego phishingu.\\
+
+\textsc{spam\_assassin i spam\_ham}
+
+Zbiory \texttt{spam\_assassin} i \texttt{spam\_ham} są mniejsze, ale dobrze
+pasują do klasycznego zadania klasyfikacji spam/ham. \texttt{spam\_assassin}
+zawiera 5 796 rekordów, a \texttt{spam\_ham} 5 171. W obu przypadkach klasa
+pozytywna jest mniejszością. Reprezentują inny format i historię przygotowania danych niż
+korpusy CEAS i TREC użyte w treningu.
+
+\subsubsection{Wybór głównego zbioru do eksperymentów}
+
+W eksperymentach nie korzystano z jednego niezmiennego wariantu danych.
+Najczęściej używanym zbiorem treningowym był korpus zbudowany z połączenia
+wszystkich źródeł poza \texttt{enron}, \texttt{fraudulent\_email\_corpus} oraz
+\texttt{spam\_ham}. W części eksperymentów stosowano także węższe warianty
+oparte na zbiorach \texttt{trec\_2007}, \texttt{ceas\_2008} albo ich
+połączeniu. Taki dobór pozwalał sprawdzać zarówno zachowanie modelu na większym,
+bardziej zróżnicowanym korpusie, jak i na danych pochodzących z bardziej
+jednorodnych źródeł.
+
+Niektóre zbiory celowo wykluczono z treningu. \texttt{enron} pomijano ze
+względu na bardzo dużą liczność i jednoklasowy charakter. Jego włączenie mogłoby
+zdominować klasę negatywną oraz sprawić, że model uczyłby się specyfiki
+wewnętrznej korespondencji jednej organizacji zamiast ogólnych cech wiadomości
+legalnych. Z kolei \texttt{fraudulent\_email\_corpus} pozostawiono poza
+treningiem ze względu na jednoklasowość oraz potrzebę posiadania całkowicie
+niezależnego zbioru do sprawdzenia generalizacji na wiadomościach oszukańczych.
+\texttt{spam\_ham} był traktowany podobnie: jako prosty, zewnętrzny punkt
+odniesienia dla klasycznego zadania spam/ham.
+
+Po zbalansowaniu najczęściej używany wariant treningowy zawierał 88 054
+wiadomości: 44 027 przykładów klasy negatywnej i 44 027 przykładów klasy
+pozytywnej. Zbiór powstał po usunięciu pustych rekordów, zastosowaniu
+agresywnej deduplikacji treści oraz próbkowaniu do proporcji 50/50. W składzie
+źródłowym dominowały \texttt{trec\_2007} i \texttt{ceas\_2008}, uzupełnione o
+\texttt{spam\_assassin}, \texttt{ling} oraz \texttt{nazario}. 
+
+Rysunek~\ref{fig:primary-source-composition} pokazuje skład źródłowy
+najczęściej używanego wariantu treningowego.
+
+\begin{figure}[htbp]
+\centering
+\input{tex/plots/primary_source_composition}
+\caption{Udział źródeł w najczęściej używanym zbiorze treningowym.}
+\label{fig:primary-source-composition}
+\end{figure}
+
+Rysunek~\ref{fig:primary-source-composition} przedstawia skład źródłowy
+najczęściej używanego zbioru treningowego. Warto zauważyć, że balans klas nie
+oznacza balansu źródeł. Więcej rekordów pochodzi z \texttt{trec\_2007} niż z
+pozostałych korpusów. Pole \texttt{source} zostało z tego powodu zachowane w
+danych analitycznych, aby po treningu możliwe było sprawdzenie wyników
+oddzielnie dla poszczególnych źródeł. Duża różnica skuteczności między źródłami
+oznaczałaby ograniczoną odporność na zmianę dystrybucji danych.
+
+\subsubsection{Zbiór treningowy}
+
+Zbiór treningowy służył do aktualizacji parametrów modelu w procesie
+fine-tuningu i stanowił 80\% całego przygotowanego wariantu danych.
+
+Podobnie jak pozostałe podzbiory, był wydzielany dopiero po normalizacji, oczyszczeniu, deduplikacji i
+balansowaniu wybranego wariantu danych. Dzięki temu każda konfiguracja
+eksperymentalna korzystała ze spójnego podziału, a ta sama lub bardzo podobna
+wiadomość nie mogła trafić jednocześnie do zbioru treningowego oraz testowego.
+Zbiór treningowy zawierał przykłady obu klas w równych proporcjach, ponieważ
+wcześniej zastosowano balansowanie do relacji 50/50.
+
+\subsubsection{Zbiór walidacyjny}
+
+Zbiór walidacyjny stanowiący 10\% całego zbioru był używany do podejmowania decyzji w
+trakcie eksperymentów: wyboru liczby epok, konfiguracji hiperparametrów,
+momentu zatrzymania treningu oraz porównania wariantów promptu lub formatu
+odpowiedzi. Ponieważ w pracy analizowane są modele językowe, zbiór walidacyjny pełni także
+rolę praktycznej kontroli formatu generowanej odpowiedzi. Gdy model miał
+zwracać etykietę w określonej strukturze, na przykład jako tekst
+\texttt{spam}/\texttt{ham} albo obiekt JSON, na zbiorze walidacyjnym sprawdzano,
+czy odpowiedzi były poprawnie parsowalne.
+
+\subsubsection{Zbiór testowy}
+
+Zbiór testowy pozostał odseparowany do samego końca eksperymentów i stanowił
+10\% przygotowanego wariantu danych. Nie był używany do strojenia
+hiperparametrów ani do podejmowania decyzji w trakcie treningu. Jego rolą była
+końcowa ocena skuteczności na przykładach pochodzących z tej samej dystrybucji
+co zbiór treningowy. Oprócz tego model sprawdzano także na zbiorach
+nieużywanych w treningu, aby ocenić odporność na zmianę źródła danych.
+
+\subsection{Przygotowanie danych}
+
+\subsubsection{Normalizacja schematu}
+
+Pierwszym krokiem przygotowania danych było sprowadzenie różnych formatów
+źródłowych do jednego schematu. Niektóre pliki zawierają osobne kolumny
+\texttt{subject} i \texttt{body}; inne przechowują całą wiadomość w jednym polu
+tekstowym; jeszcze inne mają format zbliżony do surowego e-maila z nagłówkami.
+Zastosowano strategię pozwalającą zachować maksymalną liczbę przykładów.
+W przypadku wiadomości surowych wydzielano temat oraz treść. Jeżeli wiadomość
+była wieloczęściowa, analizowano część tekstową. Jeżeli nie udało się poprawnie
+sparsować struktury, całą dostępną treść traktowano jako ciało wiadomości.
+
+Drugim elementem normalizacji było ujednolicenie etykiet. W różnych zbiorach
+klasa pozytywna bywa oznaczana jako \texttt{spam}, \texttt{1}, \texttt{Class=1}
+albo przez sam fakt pochodzenia z korpusu oszukańczego. W pracy przyjęto
+konwencję, że \texttt{label=1} oznacza wiadomość niepożądaną, phishingową lub
+oszukańczą, natomiast \texttt{label=0} oznacza wiadomość prawdziwą.
+
+\input{tex/tables/raw_dataset_schema_inventory}
+
+\subsubsection{Usuwanie pustych rekordów}
+
+Po normalizacji odrzucano rekordy z pustym tematem lub pustą treścią.
+Przykład pozbawiony treści albo tematu wnosi niewiele do uczenia, a może wprowadzać artefakty techniczne.
+Jeżeli pewien korpus zawierałby dużo pustych rekordów tylko w jednej klasie, model mógłby nauczyć się, że brak
+danych jest cechą klasy, co nie byłoby wiarygodną regułą w realnym wdrożeniu.
+
+\subsubsection{Deduplikacja}
+
+Deduplikacja to kluczowy etap przygotowania danych, który zapobiega
+przeciekowi informacji między zbiorem treningowym a testowym. Bez tego
+modele językowe o dużej pojemności mogłyby zapamiętywać powtarzające się
+wiadomości zamiast uczyć się ogólnych reguł klasyfikacji.
+
+W pracy zastosowano kilkuwarstwową metodę wykrywania duplikatów, opartą na
+porównaniu tematu, treści i etykiety wiadomości. Przed porównaniem tekst
+normalizowano: usuwano białe znaki, tagi i encje HTML, adresy URL,
+e-maile oraz znaki niealfanumeryczne. Zastosowano również konwersję na
+małe litery oraz normalizację Unicode. Krok ten jest niezbędny, ponieważ
+publiczne zbiory e-mailowe często różnią się jedynie drobnymi szczegółami
+formatowania, nagłówkami lub linkami śledzącymi.
+
+\begin{figure}[htbp]
+\centering
+\input{tex/plots/deduplication_sample_counts}
+\caption{Liczba rekordów przed deduplikacją oraz po deduplikacji.}
+\label{fig:deduplication-sample-counts}
+\end{figure}
+
+
+W tej części analizowano zbiór utworzony z połączenia wszystkich źródeł poza
+\texttt{enron}. Po normalizacji
+otrzymano 147 405 rekordów. Następnie odrzucono 20 766 wiadomości z pustym
+tematem lub pustą treścią, pozostawiając 126 639 przykładów do deduplikacji.
+Deduplikacja na poziomie \texttt{high} wykryła 5277 grup duplikatów i usunęła
+26 883 nadmiarowe rekordy. Po tym etapie pozostało 99 756 wiadomości. Mediana
+rozmiaru grupy duplikatów wyniosła 2, a największa grupa zawierała 2618
+wiadomości.
+
+Rysunek~\ref{fig:deduplication-sample-counts} zestawia dwa poziomy analizy:
+osobne korpusy źródłowe oraz zbiór połączony ze wszystkich źródeł poza
+\texttt{enron}.
+Dzięki temu widać zarówno wpływ deduplikacji na dane używane do dalszego
+łączenia, jak i skalę powtórzeń w poszczególnych źródłach. Największą różnicę
+widać w osobno pokazanym zbiorze \texttt{enron}. Jest to korpus poczty z jednej
+firmy, w którym ta sama wiadomość mogła trafić do wielu odbiorców, tworząc dużą
+liczbę powtórzeń.
+
+Rysunek~\ref{fig:duplicate-group-sizes} pokazuje, że większość grup duplikatów
+jest niewielka. Jest to typowe dla korpusów e-mailowych: część wiadomości
+występuje dokładnie lub prawie dokładnie dwa razy, natomiast bardzo duże grupy
+są rzadsze. Ze względu na długi ogon rozkładu większe grupy zostały połączone
+w przedziały. Nawet niewielkie grupy są jednak istotne, ponieważ przy losowym
+podziale danych mogłyby zostać rozdzielone między trening i test.
+
+\begin{figure}[htbp]
+\centering
+\input{tex/plots/duplicate_group_sizes}
+\caption{Rozmiary grup duplikatów po połączeniu zbiorów danych poza \texttt{enron}.}
+\label{fig:duplicate-group-sizes}
+\end{figure}
+
+\subsubsection{Balansowanie klas}
+
+Po oczyszczeniu i deduplikacji zastosowano balansowanie klas do proporcji 50/50.
+Po deduplikacji zbiór utworzony ze wszystkich źródeł poza \texttt{enron}
+zawierał 51 296 wiadomości legalnych oraz 48 460 wiadomości niepożądanych.
+Balansowanie usunęło więc jedynie nadmiar przykładów z klasy negatywnej.
+Po balansowaniu zbiór ten zawierał 96 920 rekordów: 48 460 wiadomości pozytywnych i
+48 460 negatywnych. Dzięki temu metryka dokładności staje się łatwiejsza do
+interpretacji, ponieważ klasy mają równy udział. Model nie jest też zachęcany
+do preferowania klasy większościowej. Porównanie wariantów eksperymentalnych
+jest stabilniejsze, ponieważ zmiany wyników nie wynikają z przypadkowego
+przesunięcia proporcji klas.
+
+Balansowanie ma jednak również ograniczenia. Rzeczywisty strumień poczty
+użytkownika nie będzie zbalansowany. W większości środowisk spam może
+stanowić mały procent wiadomości, w innych znacznie większy. Dlatego wyniki na
+zbiorze zbalansowanym należy interpretować jako ocenę zdolności rozróżniania
+klas, a nie bezpośrednią symulację produkcyjnego rozkładu wiadomości.
+
+\subsubsection{Analiza długości wiadomości}
+
+Długość wiadomości jest ważną cechą danych, ponieważ wpływa na koszt
+przetwarzania przez model językowy, dobór maksymalnej liczby tokenów oraz
+potencjalne ucinanie wejścia. W analizowanym wariancie mediana długości treści wynosi
+162 słowa, natomiast 95. percentyl wynosi 1025 słów. Oznacza to, że większość
+wiadomości mieści się w umiarkowanym limicie kontekstu, ale istnieje istotna
+grupa długich wiadomości. Jeżeli model ma ograniczony maksymalny kontekst, zbyt
+krótkie obcięcie treści mogłoby usuwać informacje ważne dla klasyfikacji.
+
+\begin{figure}[htbp]
+\centering
+\input{tex/plots/body_word_count_boxplot}
+\caption{Rozkład długości treści wiadomości według etykiety w analizowanym wariancie danych.}
+\label{fig:body-word-count-boxplot}
+\end{figure}
+
+Rysunek~\ref{fig:body-word-count-boxplot} pokazuje różnice długości między
+klasami. Wiadomości legalne mają medianę 212 słów, pierwszy kwartyl 120 słów,
+trzeci kwartyl 406 słów i 95. percentyl 1399 słów. Wiadomości spamowe są
+krótsze: mediana wynosi 101 słów, pierwszy kwartyl 41 słów, trzeci kwartyl
+277 słów, a 95. percentyl 699 słów. Krótsza treść może wynikać z charakteru analizowanych kampanii spamowych,
+ale w innych zbiorach spam może być dłuższy, na przykład w wiadomościach oszukańczych typu
+\emph{advance-fee fraud}\autocite{advance-fee-fraud}.
+
+Analiza według źródeł ujawnia dodatkowe różnice. W \texttt{ceas\_2008}
+wiadomości legalne mają medianę 201 słów, a spam jedynie 40 słów. W
+\texttt{trec\_2007} wiadomości legalne mają medianę 224 słowa, natomiast spam
+147 słów. W \texttt{fraudulent\_email\_corpus} mediana wiadomości pozytywnych
+wynosi 452 słowa, a w \texttt{spam\_assassin} spam ma medianę 386 słów. Oznacza
+to, że różnica długości między klasami nie jest stabilną właściwością samego
+problemu, lecz zależy od źródła danych. Model może wykorzystywać tę informację,
+co negatywnie wpłynie na jego realną skuteczność. Jeżeli klasyfikator opierałby
+się głównie na długości, generalizacja do nowych typów spamu mogłaby być
+ograniczona.
+
+\subsubsection{Analiza słownictwa}
+
+Dodatkowo przeprowadzono prostą analizę słów najbardziej powiązanych z klasą
+pozytywną i negatywną. Ranking oparto na wygładzonym ilorazie szans liczonym
+dla tokenów występujących w temacie i treści wiadomości. Wśród terminów silnie
+związanych ze spamem pojawiają się między innymi \texttt{anatrim},
+\texttt{canadianpharmacy}, \texttt{usaa}, \texttt{producttestpanel} oraz
+\texttt{billyboy}. Część z nich odpowiada klasycznym kampaniom reklamowym i
+farmaceutycznym, a część odzwierciedla konkretne źródła wiadomości
+phishingowych. Z kolei wśród terminów powiązanych z wiadomościami legalnymi
+pojawiają się między innymi \texttt{theweathernetwork}, \texttt{accuweather},
+\texttt{reproducible}, \texttt{speakup} oraz \texttt{cbsnews}.
+
+\begin{figure}[htbp]
+\centering
+\input{tex/plots/spam_associated_terms}
+\caption{Terminy najsilniej powiązane z klasą pozytywną według wygładzonego ilorazu szans.}
+\label{fig:spam-associated-terms}
+\end{figure}
+
+Rysunek~\ref{fig:spam-associated-terms} wskazuje, że wysoka pozycja słów
+farmaceutycznych potwierdza, że część spamu w korpusie ma charakter reklamowy.
+Jednocześnie obecność bardzo specyficznych tokenów pokazuje ryzyko uczenia się
+artefaktów zbioru. Duży model językowy może poprawnie klasyfikować takie
+wiadomości, ale dobra skuteczność na korpusie zawierającym powtarzalne słowa
+kampanii nie musi automatycznie oznaczać odporności na nowy, bardziej
+wyrafinowany phishing.
+
+\subsection{Proces fine-tuning'u modelu}
+    \subsubsection{Architektura zadania klasyfikacyjnego}
+
+    W eksperymentach porównano kilka sposobów sformułowania zadania
+    klasyfikacji. Pierwszym była klasyczna klasyfikacja sekwencji, w której model
+    otrzymywał temat i treść wiadomości, a warstwa klasyfikacyjna zwracała
+    prawdopodobieństwo klasy \texttt{spam} albo \texttt{ham}. Drugim było
+    potraktowanie modelu językowego jako generatora krótkiej odpowiedzi tekstowej
+    i uczenie go zwracania etykiety \texttt{spam} lub \texttt{ham}. Trzecim było
+    generowanie ustrukturyzowane, w którym odpowiedź miała z góry ustalony
+    format. Każde z tych podejść oceniano osobno: klasyfikacja sekwencji
+    pozwalała bezpośrednio obliczać metryki, natomiast warianty generacyjne
+    wymagały dodatkowego sprawdzenia, czy odpowiedź modelu dała się jednoznacznie
+    sparsować.
+
+    \subsubsection{Parametry i hiperparametry uczenia}
+
+    Dobór hiperparametrów prowadzono na zbiorze walidacyjnym. W kolejnych
+    konfiguracjach zmieniano przede wszystkim liczbę epok, współczynnik uczenia,
+    rozmiar partii, maksymalną długość wejścia oraz parametry adapterów LoRA.
+    Równolegle kontrolowano wpływ limitu kontekstu na wiadomości, ponieważ zbyt
+    krótka sekwencja wejściowa mogła usuwać końcowe fragmenty treści. Było to
+    istotne szczególnie w przypadku wiadomości e-mail, w których linki, podpisy,
+    ostrzeżenia albo elementy charakterystyczne dla kampanii spamowych często
+    znajdują się dopiero pod koniec wiadomości.
+
+    \subsubsection{Wykorzystane narzędzia i biblioteki}
+
+    Przygotowanie danych oparto na bibliotekach \texttt{pandas} i
+    \texttt{pyarrow}, które wykorzystano do przetwarzania plików CSV oraz zapisu
+    znormalizowanych danych w formacie Parquet. Analizę eksploracyjną
+    przygotowano w notatniku Jupyter, aby możliwe było szybkie odtwarzanie tabel
+    i rysunków po zmianie reguł filtrowania, kolorystyki albo podpisów. Takie
+    podejście zwiększyło powtarzalność pracy: liczby użyte w rozdziale można
+    odtworzyć bez ręcznego przepisywania wyników z osobnych skryptów.
+
+\subsection{Metryki oceny skuteczności}
+    \subsubsection{Dokładność}
+
+    Dokładność informuje, jaki odsetek wiadomości został zaklasyfikowany
+    poprawnie. W zbiorze zbalansowanym jest to metryka czytelna, ale nadal nie
+    wystarcza do pełnej oceny filtra spamu. Dwa modele o tej samej dokładności
+    mogą mieć bardzo różne profile błędów: jeden może częściej przepuszczać
+    spam, a drugi częściej blokować legalne wiadomości.
+
+    \subsubsection{Precyzja}
+
+    Precyzja dla klasy pozytywnej informuje, jaka część wiadomości oznaczonych
+    przez model jako spam rzeczywiście była spamem. Jest to szczególnie ważne z
+    perspektywy użytkownika, ponieważ niska precyzja oznacza wiele fałszywych
+    alarmów. W praktyce fałszywie pozytywna klasyfikacja może ukryć ważną
+    wiadomość biznesową, administracyjną albo prywatną.
+
+    \subsubsection{Pełność}
+
+    Pełność dla klasy pozytywnej informuje, jaki odsetek rzeczywistych
+    wiadomości spamowych został wykryty. Wysoka pełność oznacza skuteczne
+    blokowanie wiadomości niepożądanych. Zbyt silne skupienie na pełności może
+    jednak prowadzić do wzrostu liczby fałszywie pozytywnych alarmów, dlatego
+    pełność powinna być interpretowana razem z precyzją.
+
+    \subsubsection{Miara F1}
+
+    Miara F1 jest średnią harmoniczną precyzji i pełności. Jest użyteczna, gdy
+    chcemy porównać modele jedną liczbą, ale nie chcemy ignorować jednej z tych
+    dwóch składowych. W analizie filtra poczty warto raportować F1 zarówno dla
+    klasy pozytywnej, jak i negatywnej albo stosować wariant makro, który nie
+    premiuje klasy dominującej.
+
+    \subsubsection{Inne istotne metryki}
+
+    Oprócz podstawowych metryk warto raportować macierz pomyłek oraz osobno
+    liczbę fałszywie pozytywnych i fałszywie negatywnych klasyfikacji. Jeżeli
+    model zwraca prawdopodobieństwo klasy, można analizować również AUC oraz
+    wpływ progu decyzyjnego. W praktycznym filtrze spamu próg może być dobrany
+    inaczej w zależności od tego, czy ważniejsze jest ograniczenie liczby
+    fałszywych alarmów, czy maksymalne zatrzymanie spamu.
+
+\section{Implementacja i przeprowadzenie eksperymentów}
+    \subsection{Środowisko eksperymentalne}
+    \subsection{Przebieg procesu fine-tuning'u}
+
+\section{Analiza skuteczności dostrojonego modelu}
+    \subsection{Wyniki na zbiorze testowym}
+    \subsection{Porównanie z wynikami istniejących metod}
+    \subsection{Analiza błędów klasyfikacji}
+    \subsection{Ocena elastyczności modelu i odporności na nowe typy spamu}
+
+\section{Analiza możliwości wdrożenia produkcyjnego}
+    \subsection{Wymagania sprzętowe i czas wnioskowania}
+    \subsection{Koszty obliczeniowe}
+    \subsection{Skalowalność rozwiązania}
+    \subsection{Potencjalne wyzwania i ograniczenia wdrożeniowe}
+    \subsection{Praktyczność zastosowania w porównaniu do tradycyjnych filtrów}

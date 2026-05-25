@@ -1,0 +1,60 @@
+\begin{tikzpicture}
+\begin{axis}[
+    width=0.74\textwidth,
+    height=0.3\textwidth,
+    xbar stacked,
+    xmin=0,
+    xmax=53000,
+    xlabel={Liczba wiadomości},
+    symbolic y coords={trec,ceas,assassin,ling,nazario},
+    ytick=data,
+    yticklabels={
+        \texttt{trec\_2007},
+        \texttt{ceas\_2008},
+        \texttt{spam\_assassin},
+        \texttt{ling},
+        \texttt{nazario}
+    },
+    y dir=reverse,
+    enlarge y limits=0.35,
+    axis x line*=bottom,
+    axis y line*=left,
+    xmajorgrids,
+    grid style={plotGrid},
+    tick style={draw=none},
+    yticklabel style={font=\scriptsize},
+    xticklabel style={font=\footnotesize},
+    label style={font=\small},
+    legend style={
+        at={(0.5,-0.32)},
+        anchor=north,
+        legend columns=2,
+        draw=none,
+        font=\footnotesize
+    },
+]
+\addplot[
+    fill=plotHam,
+    draw=none,
+    bar width=7pt,
+] coordinates {
+    (22414,trec)
+    (15751,ceas)
+    (3237,assassin)
+    (2139,ling)
+    (1074,nazario)
+};
+\addplot[
+    fill=plotSpam,
+    draw=none,
+    bar width=7pt,
+] coordinates {
+    (26324,trec)
+    (14275,ceas)
+    (1484,assassin)
+    (445,ling)
+    (1495,nazario)
+};
+\legend{klasa negatywna, klasa pozytywna}
+\end{axis}
+\end{tikzpicture}

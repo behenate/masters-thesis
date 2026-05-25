@@ -1,0 +1,50 @@
+\begin{tikzpicture}
+\begin{axis}[
+    width=0.74\textwidth,
+    height=0.38\textwidth,
+    xbar,
+    xmode=log,
+    xmin=2500,
+    xmax=1000000,
+    xlabel={Liczba wiadomości (skala logarytmiczna)},
+    symbolic y coords={enron,trec,ceas,fraud,assassin,spamham,fraudulent,nazario,ling},
+    ytick=data,
+    yticklabels={
+        \texttt{enron},
+        \texttt{trec\_2007},
+        \texttt{ceas\_2008},
+        \texttt{fraud\_email},
+        \texttt{spam\_assassin},
+        \texttt{spam\_ham},
+        \texttt{fraudulent\_email\_corpus},
+        \texttt{nazario},
+        \texttt{ling}
+    },
+    y dir=reverse,
+    enlarge y limits=0.08,
+    axis x line*=bottom,
+    axis y line*=left,
+    xmajorgrids,
+    grid style={plotGrid},
+    tick style={draw=none},
+    yticklabel style={font=\footnotesize},
+    xticklabel style={font=\footnotesize},
+    label style={font=\small},
+]
+\addplot[
+    fill=plotBlue,
+    draw=none,
+    bar width=7pt,
+    ] coordinates {
+        (517401,enron)
+        (75419,trec)
+        (39154,ceas)
+        (11929,fraud)
+        (5796,assassin)
+        (5171,spamham)
+        (3978,fraudulent)
+        (3065,nazario)
+        (2893,ling)
+    };
+\end{axis}
+\end{tikzpicture}

@@ -1,0 +1,57 @@
+\begingroup
+\small
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.16}
+\begin{longtable}{
+>{\raggedright\arraybackslash}p{0.25\textwidth}
+>{\raggedright\arraybackslash}p{0.44\textwidth}
+>{\raggedright\arraybackslash}p{0.23\textwidth}}
+\caption{Dostępne kolumny w surowych zbiorach danych oraz sposób ich parsowania}
+\label{tab:raw-dataset-schema-inventory}\\
+\hline
+\textbf{Zbiór} & \textbf{Dostępne kolumny} & \textbf{Sposób parsowania} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Zbiór} & \textbf{Dostępne kolumny} & \textbf{Sposób parsowania} \\
+\hline
+\endhead
+\hline
+\endfoot
+\texttt{enron} &
+\texttt{file}, \texttt{message} &
+Wydzielenie tematu i treści z pola \texttt{message}. \\
+
+\texttt{trec\_2007} &
+\texttt{label}, \texttt{origin} &
+Wydzielenie tematu i treści z pola \texttt{origin}. \\
+
+\texttt{ceas\_2008} &
+\texttt{sender}, \texttt{receiver}, \texttt{date}, \texttt{subject}, \texttt{body}, \texttt{label}, \texttt{urls} &
+Bezpośrednie mapowanie pól \texttt{subject}, \texttt{body}, \texttt{label}. \\
+
+\texttt{fraud\_email} &
+\texttt{Text}, \texttt{Class} &
+Wydzielenie tematu i treści z pola \texttt{Text}. \\
+
+\begin{tabular}[t]{@{}l@{}}\texttt{spam}\texttt{\_assassin}\end{tabular} &
+\texttt{text}, \texttt{target} &
+Wydzielenie tematu i treści z pola \texttt{text}. \\
+
+\texttt{spam\_ham} &
+\texttt{label}, \texttt{text}, \texttt{label\_num} &
+Wydzielenie tematu z prefiksu \texttt{Subject:}. \\
+
+\begin{tabular}[t]{@{}l@{}}\texttt{fraudulent}\texttt{\_email}\\\texttt{\_corpus}\end{tabular} &
+wiadomości zapisane kolejno z nagłówkami &
+Wydzielenie tematu z nagłówków i treści z wiadomości. \\
+
+\texttt{nazario} &
+\texttt{sender}, \texttt{receiver}, \texttt{date}, \texttt{subject}, \texttt{body}, \texttt{label}, \texttt{urls} &
+Bezpośrednie mapowanie pól \texttt{subject}, \texttt{body}, \texttt{label}. \\
+
+\texttt{ling} &
+\texttt{subject}, \texttt{message}, \texttt{label} &
+Przeniesienie \texttt{message} do pola \texttt{body} \\
+\end{longtable}
+\endgroup

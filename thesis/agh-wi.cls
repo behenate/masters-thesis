@@ -53,8 +53,9 @@
         \else
             \hypersetup{
                 colorlinks=true,
-linktocpage=true,
+                linktocpage=true,
                 linkcolor=blue,
+                citecolor=black,
                 filecolor=magenta,
                 urlcolor=cyan
             }

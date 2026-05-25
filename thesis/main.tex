@@ -1,3 +1,4 @@
+\includeonly{tex/research}
 \documentclass{agh-wi}
 \usepackage{scrhack}                        % Formatowanie kodów źródłowych programów
 
@@ -22,20 +23,30 @@
 \usepackage[polish, intoc]{nomencl}           % Definiowanie symboli
 \usepackage{graphicx}                         % Wstawianie grafik zewnętrznych
 \usepackage{xcolor}                           % Kolorowy tekst
+\usepackage{pgfplots}                         % Wykresy w LaTeX
+\usepackage{xurl}                             % Lepsze łamanie długich adresów URL
 \usepackage{tabularx}                         % Rozszerzona wersja środowiska 'tabular'
 \usepackage{longtable}                        % Skład "długich" tabel
 \usepackage[ruled,linesnumbered]{algorithm2e} % Algorytmy w formie pseudokodu
 \usepackage{listings} 
 \usepackage[newfloat]{minted}
-
+% Sus jbc
+\usepackage{float}
 \makeatletter
 \AddToHook{begindocument/before}{\@ifpackageloaded{minted}{\removefromtoclist[float]{lol}}{}}
 \makeatother
 
 \usepackage{hyperref}                         % Obsługa adresów URL — zbędny jeżeli używasz 'biblatex'
-\usepackage{csquotes}                         % Polskie cudzysłowy — rekomendowany jeżeli używasz 'biblatex'
+\usepackage{csquotes}                         % Polskie cudzysłowy — rekomendowany jeżeli  używasz 'biblatex'
 \usepackage{framed}
-\usepackage{xcolor} % Required to define the background color
+\usepackage{xcolor}
+\pgfplotsset{compat=1.18}
+\usepgfplotslibrary{statistics}
+\definecolor{plotHam}{HTML}{1B9E77}
+\definecolor{plotSpam}{HTML}{D95F02}
+\definecolor{plotBlue}{HTML}{3B528B}
+\definecolor{plotAccent}{HTML}{7570B3}
+\definecolor{plotGrid}{HTML}{D9DEE7}
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  %  % Konfiguracja rysunków TikZ
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

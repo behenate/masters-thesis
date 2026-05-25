@@ -20,7 +20,6 @@ try:
         phishing_email,
         spam_assassin,
         spam_ham,
-        spam_mail,
         trec_2007,
     )
 except ImportError:  # pragma: no cover - allows package-style imports
@@ -33,7 +32,6 @@ except ImportError:  # pragma: no cover - allows package-style imports
         phishing_email,
         spam_assassin,
         spam_ham,
-        spam_mail,
         trec_2007,
     )
 
@@ -104,22 +102,6 @@ def build_spam_ham() -> pd.DataFrame:
 
 def build_spam_assassin() -> pd.DataFrame:
     return spam_detection.extract_spam_assassin()
-
-
-def build_spam_mail() -> pd.DataFrame:
-    path = os.path.join(RAW_DIR, "spam_mail", "spam_dataset.csv")
-    df = pd.read_csv(path)
-
-    records = []
-    for _, row in df.iterrows():
-        records.append({
-            "subject": str(row["title"]) if pd.notna(row["title"]) else "",
-            "body": str(row["text"]) if pd.notna(row["text"]) else "",
-            "label": 1 if str(row["type"]).strip().lower() == "spam" else 0,
-            "source": "spam_mail",
-        })
-
-    return pd.DataFrame(records)
 
 
 def build_trec_2007() -> pd.DataFrame:
@@ -204,7 +186,6 @@ ATOMIC_DATASET_BUILDERS = {
     "phishing_email": build_phishing_email,
     "spam_assassin": build_spam_assassin,
     "spam_ham": build_spam_ham,
-    "spam_mail": build_spam_mail,
     "trec_2007": build_trec_2007,
 }
 
@@ -216,7 +197,6 @@ ATOMIC_DATASET_DOWNLOADERS = {
     "phishing_email": phishing_email.download,
     "spam_assassin": spam_assassin.download,
     "spam_ham": spam_ham.download,
-    "spam_mail": spam_mail.download,
     "trec_2007": trec_2007.download,
 }
 

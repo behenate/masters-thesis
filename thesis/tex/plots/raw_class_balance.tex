@@ -1,0 +1,72 @@
+\begin{tikzpicture}
+\begin{axis}[
+    width=0.70\textwidth,
+    height=0.48\textwidth,
+    xbar stacked,
+    xmin=0,
+    xmax=100,
+    xlabel={Udział klasy w zbiorze [\%]},
+    symbolic y coords={enron,trec,ceas,fraud,assassin,spamham,fraudulent,nazario,ling},
+    ytick=data,
+    yticklabels={
+        \texttt{enron},
+        \texttt{trec\_2007},
+        \texttt{ceas\_2008},
+        \texttt{fraud\_email},
+        \texttt{spam\_assassin},
+        \texttt{spam\_ham},
+        \texttt{fraudulent\_email\_corpus},
+        \texttt{nazario},
+        \texttt{ling}
+    },
+    y dir=reverse,
+    enlarge y limits=0.08,
+    axis x line*=bottom,
+    axis y line*=left,
+    xmajorgrids,
+    grid style={plotGrid},
+    tick style={draw=none},
+    yticklabel style={font=\footnotesize},
+    xticklabel style={font=\footnotesize},
+    label style={font=\small},
+    legend style={
+        at={(0.5,-0.18)},
+        anchor=north,
+        legend columns=2,
+        draw=none,
+        font=\footnotesize
+    },
+]
+\addplot[
+    fill=plotHam,
+    draw=none,
+    bar width=7pt,
+    ] coordinates {
+        (100.0,enron)
+        (33.4,trec)
+        (44.2,ceas)
+        (56.5,fraud)
+        (67.3,assassin)
+        (71.0,spamham)
+        (0.0,fraudulent)
+        (48.9,nazario)
+        (83.4,ling)
+    };
+\addplot[
+    fill=plotSpam,
+    draw=none,
+    bar width=7pt,
+    ] coordinates {
+        (0.0,enron)
+        (66.6,trec)
+        (55.8,ceas)
+        (43.5,fraud)
+        (32.7,assassin)
+        (29.0,spamham)
+        (100.0,fraudulent)
+        (51.1,nazario)
+        (16.6,ling)
+    };
+\legend{klasa negatywna, klasa pozytywna}
+\end{axis}
+\end{tikzpicture}

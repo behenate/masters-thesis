@@ -1,0 +1,48 @@
+\begin{tikzpicture}
+\begin{axis}[
+    width=0.86\textwidth,
+    height=0.48\textwidth,
+    boxplot/draw direction=y,
+    ylabel={Liczba słów w treści wiadomości},
+    ymode=log,
+    ymin=8,
+    ymax=2200,
+    xtick={1,2},
+    xticklabels={klasa negatywna, klasa pozytywna},
+    axis x line*=bottom,
+    axis y line*=left,
+    ymajorgrids,
+    grid style={plotGrid},
+    tick style={draw=none},
+    xticklabel style={font=\footnotesize},
+    yticklabel style={font=\footnotesize},
+    label style={font=\small},
+]
+\addplot+[
+    boxplot prepared={
+        draw position=1,
+        lower whisker=45,
+        lower quartile=120,
+        median=212,
+        upper quartile=406,
+        upper whisker=1399
+    },
+    draw=plotHam,
+    fill=plotHam!25,
+    thick,
+] coordinates {};
+\addplot+[
+    boxplot prepared={
+        draw position=2,
+        lower whisker=13,
+        lower quartile=41,
+        median=101,
+        upper quartile=277,
+        upper whisker=699
+    },
+    draw=plotSpam,
+    fill=plotSpam!25,
+    thick,
+] coordinates {};
+\end{axis}
+\end{tikzpicture}
