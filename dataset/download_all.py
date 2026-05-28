@@ -1,6 +1,8 @@
 from downloaders import (
     spam_ham,
-    phishing_email,
+    ling,
+    nazario,
+    enron,
     fraud_email,
     fraudulent_email_corpus,
     spam_assassin,
@@ -10,7 +12,9 @@ from downloaders import (
 
 DOWNLOADERS = [
     ("spam_ham", spam_ham),
-    ("phishing_email", phishing_email),
+    ("ling", ling),
+    ("nazario", nazario),
+    ("enron", enron),
     ("fraud_email", fraud_email),
     ("fraudulent_email_corpus", fraudulent_email_corpus),
     ("spam_assassin", spam_assassin),

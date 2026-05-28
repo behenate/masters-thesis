@@ -17,7 +17,8 @@ try:
         enron,
         fraud_email,
         fraudulent_email_corpus,
-        phishing_email,
+        ling,
+        nazario,
         spam_assassin,
         spam_ham,
         trec_2007,
@@ -29,7 +30,8 @@ except ImportError:  # pragma: no cover - allows package-style imports
         enron,
         fraud_email,
         fraudulent_email_corpus,
-        phishing_email,
+        ling,
+        nazario,
         spam_assassin,
         spam_ham,
         trec_2007,
@@ -162,17 +164,34 @@ def build_fraudulent_email_corpus() -> pd.DataFrame:
     return pd.DataFrame(records)
 
 
-def build_phishing_email() -> pd.DataFrame:
-    path = os.path.join(RAW_DIR, "phishing_email", "phishing_email.csv")
+def build_ling() -> pd.DataFrame:
+    path = os.path.join(RAW_DIR, "ling", "Ling.csv")
+    df = pd.read_csv(path)
+    body_column = "body" if "body" in df.columns else "message"
+
+    records = []
+    for _, row in df.iterrows():
+        records.append({
+            "subject": str(row["subject"]) if pd.notna(row["subject"]) else "",
+            "body": str(row[body_column]) if pd.notna(row[body_column]) else "",
+            "label": int(row["label"]),
+            "source": "ling",
+        })
+
+    return pd.DataFrame(records)
+
+
+def build_nazario() -> pd.DataFrame:
+    path = os.path.join(RAW_DIR, "nazario", "Nazario.csv")
     df = pd.read_csv(path)
 
     records = []
     for _, row in df.iterrows():
         records.append({
-            "subject": "",
-            "body": str(row["text_combined"]) if pd.notna(row["text_combined"]) else "",
+            "subject": str(row["subject"]) if pd.notna(row["subject"]) else "",
+            "body": str(row["body"]) if pd.notna(row["body"]) else "",
             "label": int(row["label"]),
-            "source": "phishing_email",
+            "source": "nazario",
         })
 
     return pd.DataFrame(records)
@@ -183,7 +202,8 @@ ATOMIC_DATASET_BUILDERS = {
     "enron": build_enron,
     "fraud_email": build_fraud_email,
     "fraudulent_email_corpus": build_fraudulent_email_corpus,
-    "phishing_email": build_phishing_email,
+    "ling": build_ling,
+    "nazario": build_nazario,
     "spam_assassin": build_spam_assassin,
     "spam_ham": build_spam_ham,
     "trec_2007": build_trec_2007,
@@ -194,7 +214,8 @@ ATOMIC_DATASET_DOWNLOADERS = {
     "enron": enron.download,
     "fraud_email": fraud_email.download,
     "fraudulent_email_corpus": fraudulent_email_corpus.download,
-    "phishing_email": phishing_email.download,
+    "ling": ling.download,
+    "nazario": nazario.download,
     "spam_assassin": spam_assassin.download,
     "spam_ham": spam_ham.download,
     "trec_2007": trec_2007.download,
