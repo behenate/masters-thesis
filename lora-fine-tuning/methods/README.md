@@ -2,6 +2,20 @@
 
 This directory groups the spam-classification approaches in a thesis-friendly order. Duplicate legacy notebook copies were removed from the old locations, while shared scripts and existing result folders were left in place for compatibility.
 
+## 00 Unmodified Model
+
+Loads `Qwen/Qwen3-0.6B` with no fine-tuning adapters and evaluates it as a zero-shot spam classifier. This baseline shows how much classification behavior exists before task-specific training.
+
+- Evaluation script: `00_unmodified_model/qwen3_0.6b_unmodified_baseline.py`
+- Evaluation notebook: `00_unmodified_model/notebooks/qwen3_0.6b_unmodified_baseline_eval.ipynb`
+- New results: `00_unmodified_model/results/`
+
+Example run:
+
+```bash
+python lora-fine-tuning/methods/00_unmodified_model/qwen3_0.6b_unmodified_baseline.py --limit 100 --mode both
+```
+
 ## 01 Sequence Classification
 
 Uses a classification head (`AutoModelForSequenceClassification`) instead of prompting the model to produce label text.
@@ -60,6 +74,7 @@ This tests whether a generation-oriented training format reduces malformed outpu
 
 - Sweep script: `04_causal_lm_structured_generation/qwen3_0.6b_structured_generation_sweep.py`
 - Sweep notebook: `04_causal_lm_structured_generation/notebooks/qwen3_0.6b_structured_generation_sweep.ipynb`
+- Test eval notebook: `04_causal_lm_structured_generation/notebooks/qwen3_0.6b_structured_generation_100_test_eval.ipynb`
 - New results: `04_causal_lm_structured_generation/results/`
 
 Example A100 run:
