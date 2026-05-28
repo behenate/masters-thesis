@@ -1,3 +1,5 @@
 **/exports
 master_repo/**
 __pycache__
+historical_repos
+master_repo_manifest.json
