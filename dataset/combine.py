@@ -2,6 +2,7 @@ import email
 import html
 import hashlib
 import json
+import math
 import mailbox
 import os
 import re
@@ -15,7 +16,6 @@ try:
     from downloaders import (
         ceas_2008,
         enron,
-        fraud_email,
         fraudulent_email_corpus,
         ling,
         nazario,
@@ -28,7 +28,6 @@ except ImportError:  # pragma: no cover - allows package-style imports
     from .downloaders import (
         ceas_2008,
         enron,
-        fraud_email,
         fraudulent_email_corpus,
         ling,
         nazario,
@@ -51,6 +50,19 @@ URL_RE = re.compile(r"(https?://\S+|www\.\S+)", re.IGNORECASE)
 EMAIL_RE = re.compile(r"\b[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}\b", re.IGNORECASE)
 NON_ALNUM_RE = re.compile(r"[^a-z0-9]+")
 DUPLICATE_DETECTION_LEVELS = {"basic", "medium", "high"}
+EMPTY_EMAIL_FILTER = "subject_or_body"
+COMBINATION_MODES = {
+    "mixed",
+    "mixed_50_50",
+    "source_aware_50_50",
+    "balanced_source_50_50",
+}
+DEFAULT_SOURCE_AWARE_MAX_SMALLEST_MULTIPLIER = 8.0
+TRAINING_EXCLUDED_DATASETS = frozenset({
+    "enron",
+    "fraudulent_email_corpus",
+    "spam_ham",
+})
 
 
 def _extract_subject_and_body_from_message(msg: email.message.Message) -> tuple[str, str]:
@@ -131,23 +143,6 @@ def build_enron() -> pd.DataFrame:
     return pd.DataFrame(records)
 
 
-def build_fraud_email() -> pd.DataFrame:
-    path = os.path.join(RAW_DIR, "fraud_email", "fraud_email_.csv")
-    df = pd.read_csv(path)
-
-    records = []
-    for _, row in df.iterrows():
-        subject, body = _extract_subject_and_body_from_raw_email(str(row["Text"]))
-        records.append({
-            "subject": subject,
-            "body": body,
-            "label": int(row["Class"]),
-            "source": "fraud_email",
-        })
-
-    return pd.DataFrame(records)
-
-
 def build_fraudulent_email_corpus() -> pd.DataFrame:
     path = os.path.join(RAW_DIR, "fraudulent_email_corpus", "fradulent_emails.txt")
 
@@ -200,7 +195,6 @@ def build_nazario() -> pd.DataFrame:
 ATOMIC_DATASET_BUILDERS = {
     "ceas_2008": build_ceas_2008,
     "enron": build_enron,
-    "fraud_email": build_fraud_email,
     "fraudulent_email_corpus": build_fraudulent_email_corpus,
     "ling": build_ling,
     "nazario": build_nazario,
@@ -212,7 +206,6 @@ ATOMIC_DATASET_BUILDERS = {
 ATOMIC_DATASET_DOWNLOADERS = {
     "ceas_2008": ceas_2008.download,
     "enron": enron.download,
-    "fraud_email": fraud_email.download,
     "fraudulent_email_corpus": fraudulent_email_corpus.download,
     "ling": ling.download,
     "nazario": nazario.download,
@@ -223,6 +216,10 @@ ATOMIC_DATASET_DOWNLOADERS = {
 
 DATASET_ALIASES = {
     "all": tuple(sorted(ATOMIC_DATASET_BUILDERS)),
+    "training_all": tuple(
+        name for name in sorted(ATOMIC_DATASET_BUILDERS)
+        if name not in TRAINING_EXCLUDED_DATASETS
+    ),
     "spam_2007_2008": ("ceas_2008", "trec_2007"),
     "spam_detection": ("spam_assassin", "spam_ham"),
 }
@@ -245,11 +242,16 @@ def build_all() -> pd.DataFrame:
     return _concat_atomic_datasets(DATASET_ALIASES["all"])
 
 
+def build_training_all() -> pd.DataFrame:
+    return _concat_atomic_datasets(DATASET_ALIASES["training_all"])
+
+
 DATASET_FUNCTIONS = {
     **ATOMIC_DATASET_BUILDERS,
     "all": build_all,
     "spam_2007_2008": build_spam_2007_2008,
     "spam_detection": build_spam_detection,
+    "training_all": build_training_all,
 }
 
 
@@ -305,32 +307,64 @@ def _validate_duplicate_detection(duplicate_detection: str) -> str:
     return normalized
 
 
+def _validate_combination_mode(combination_mode: str) -> str:
+    normalized = str(combination_mode).strip().lower()
+    if normalized not in COMBINATION_MODES:
+        available = ", ".join(sorted(COMBINATION_MODES))
+        raise ValueError(f"combination_mode must be one of: {available}")
+    return normalized
+
+
 def _ratio_token(spam_ham_ratio: float) -> str:
     if spam_ham_ratio == -1:
         return "all_samples"
     return f"spam_{str(spam_ham_ratio).replace('.', '_')}"
 
 
+def _mode_token(combination_mode: str) -> str:
+    return f"mode_{combination_mode}"
+
+
+def _multiplier_token(value: float) -> str:
+    return f"max{float(value):g}x".replace(".", "_")
+
+
 def _combined_dataset_path(
     dataset_names: list[str],
     spam_ham_ratio: float,
     duplicate_detection: str,
+    combination_mode: str,
+    source_aware_max_multiplier: float,
 ) -> str:
     spec = {
+        "combination_mode": combination_mode,
         "dataset_names": dataset_names,
         "duplicate_detection": duplicate_detection,
+        "empty_email_filter": EMPTY_EMAIL_FILTER,
         "spam_ham_ratio": spam_ham_ratio,
     }
+    if combination_mode == "source_aware_50_50":
+        spec["source_aware_max_multiplier"] = source_aware_max_multiplier
+    if combination_mode == "mixed":
+        spec.pop("combination_mode")
     digest = hashlib.sha1(
         json.dumps(spec, sort_keys=True, separators=(",", ":")).encode("utf-8")
     ).hexdigest()[:10]
     stem = "__".join(dataset_names)
-    filename = f"{stem}__dedupe_{duplicate_detection}__{_ratio_token(spam_ham_ratio)}__{digest}.parquet"
+    mode_part = "" if combination_mode == "mixed" else f"__{_mode_token(combination_mode)}"
+    if combination_mode == "source_aware_50_50":
+        mode_part += f"__{_multiplier_token(source_aware_max_multiplier)}"
+    filename = f"{stem}__dedupe_{duplicate_detection}{mode_part}__{_ratio_token(spam_ham_ratio)}__{digest}.parquet"
     return os.path.join(OUTPUT_DIR, filename)
 
 
 def _shuffle_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     return df.sample(frac=1, random_state=SEED).reset_index(drop=True)
+
+
+def _stable_seed(*parts: object) -> int:
+    payload = json.dumps([SEED, *parts], sort_keys=True, separators=(",", ":"))
+    return int(hashlib.sha1(payload.encode("utf-8")).hexdigest()[:8], 16)
 
 
 def _normalized_body_fingerprint_medium(body: str) -> str:
@@ -364,13 +398,13 @@ def _duplicate_key_frame(df: pd.DataFrame, duplicate_detection: str) -> pd.DataF
     })
 
 
-def _drop_empty_subject_or_body(df: pd.DataFrame) -> pd.DataFrame:
+def _drop_empty_subject_and_body(df: pd.DataFrame) -> pd.DataFrame:
     cleaned = df.copy()
     cleaned["subject"] = cleaned["subject"].fillna("").astype(str).str.strip()
     cleaned["body"] = cleaned["body"].fillna("").astype(str).str.strip()
-    filtered = cleaned[(cleaned["subject"] != "") & (cleaned["body"] != "")].reset_index(drop=True)
+    filtered = cleaned[(cleaned["subject"] != "") | (cleaned["body"] != "")].reset_index(drop=True)
     removed = len(df) - len(filtered)
-    print(f"Removed rows with empty subject or body: {removed}")
+    print(f"Removed rows with empty subject and body: {removed}")
     return filtered
 
 
@@ -393,6 +427,7 @@ def _duplicate_report_path(
     spec = {
         "dataset_names": dataset_names,
         "duplicate_detection": duplicate_detection,
+        "empty_email_filter": EMPTY_EMAIL_FILTER,
         "spam_ham_ratio": spam_ham_ratio,
         "report": "duplicates",
     }
@@ -509,16 +544,229 @@ def _apply_spam_ham_ratio(df: pd.DataFrame, spam_ham_ratio: float) -> pd.DataFra
     return pd.concat([spam_df, ham_df], ignore_index=True)
 
 
+def _sample_rows(df: pd.DataFrame, n: int, *seed_parts: object) -> pd.DataFrame:
+    if n < 0:
+        raise ValueError("sample size must be non-negative.")
+    if n == 0:
+        return df.iloc[0:0].copy()
+    if n >= len(df):
+        return df.copy()
+    return df.sample(n=n, random_state=_stable_seed(*seed_parts))
+
+
+def _largest_remainder_capped_allocation(
+    capacities: dict[str, int],
+    target_total: int,
+    caps: dict[str, int] | None = None,
+) -> dict[str, int]:
+    capacities = {source: int(count) for source, count in capacities.items() if int(count) > 0}
+    if caps is not None:
+        capacities = {
+            source: min(count, int(caps.get(source, count)))
+            for source, count in capacities.items()
+            if int(caps.get(source, count)) > 0
+        }
+    if not capacities:
+        raise ValueError("Cannot allocate samples without any positive source capacity.")
+
+    available_total = sum(capacities.values())
+    if target_total > available_total:
+        raise ValueError(f"Requested {target_total} samples, but only {available_total} are available.")
+    if target_total == available_total:
+        return capacities.copy()
+
+    allocations = {source: 0 for source in capacities}
+    remaining_capacity = capacities.copy()
+    remaining_total = int(target_total)
+
+    if remaining_total >= len(remaining_capacity):
+        for source in remaining_capacity:
+            allocations[source] = 1
+            remaining_capacity[source] -= 1
+        remaining_total -= len(remaining_capacity)
+
+    while remaining_total > 0:
+        eligible = {
+            source: capacity
+            for source, capacity in remaining_capacity.items()
+            if capacity > 0
+        }
+        if not eligible:
+            break
+
+        total_weight = sum(math.sqrt(capacities[source]) for source in eligible)
+        raw_increments = {
+            source: remaining_total * math.sqrt(capacities[source]) / total_weight
+            for source in eligible
+        }
+        increments = {
+            source: min(eligible[source], int(math.floor(raw_increments[source])))
+            for source in eligible
+        }
+        assigned = sum(increments.values())
+        leftover = remaining_total - assigned
+
+        for source in sorted(
+            eligible,
+            key=lambda item: (
+                raw_increments[item] - math.floor(raw_increments[item]),
+                eligible[item],
+                item,
+            ),
+            reverse=True,
+        ):
+            if leftover <= 0:
+                break
+            if increments[source] < eligible[source]:
+                increments[source] += 1
+                leftover -= 1
+
+        increment_total = sum(increments.values())
+        if increment_total <= 0:
+            raise ValueError("Could not allocate source-aware samples.")
+
+        for source, increment in increments.items():
+            allocations[source] += increment
+            remaining_capacity[source] -= increment
+        remaining_total -= increment_total
+
+    return allocations
+
+
+def _source_aware_caps(
+    capacities: dict[str, int],
+    source_aware_max_multiplier: float,
+) -> dict[str, int]:
+    if source_aware_max_multiplier < 1:
+        raise ValueError("source_aware_max_multiplier must be >= 1.")
+    positive_counts = [count for count in capacities.values() if count > 0]
+    if not positive_counts:
+        return {}
+    cap = max(1, int(math.ceil(min(positive_counts) * source_aware_max_multiplier)))
+    return {source: min(count, cap) for source, count in capacities.items() if count > 0}
+
+
+def _apply_source_aware_50_50(
+    df: pd.DataFrame,
+    source_aware_max_multiplier: float,
+) -> pd.DataFrame:
+    spam = df[df["label"] == 1]
+    ham = df[df["label"] == 0]
+    if spam.empty or ham.empty:
+        raise ValueError("source_aware_50_50 requires both spam and ham samples.")
+
+    capped_capacities_by_label = {}
+    for label in [0, 1]:
+        label_df = df[df["label"] == label]
+        capacities = label_df.groupby("source", sort=True).size().astype(int).to_dict()
+        capped_capacities_by_label[label] = _source_aware_caps(capacities, source_aware_max_multiplier)
+
+    target_per_class = min(sum(caps.values()) for caps in capped_capacities_by_label.values())
+    selected_frames = []
+
+    for label, label_name in [(0, "ham"), (1, "spam")]:
+        label_df = df[df["label"] == label]
+        capacities = label_df.groupby("source", sort=True).size().astype(int).to_dict()
+        caps = capped_capacities_by_label[label]
+        allocations = _largest_remainder_capped_allocation(capacities, target_per_class, caps)
+        print(f"Source-aware {label_name} allocation: {allocations}")
+        for source, count in allocations.items():
+            source_df = label_df[label_df["source"] == source]
+            selected_frames.append(_sample_rows(source_df, count, "source_aware_50_50", label_name, source))
+
+    return pd.concat(selected_frames, ignore_index=True)
+
+
+def _apply_balanced_source_50_50(df: pd.DataFrame) -> pd.DataFrame:
+    source_label_counts = (
+        df.groupby(["source", "label"], sort=True)
+        .size()
+        .unstack(fill_value=0)
+    )
+    for label in [0, 1]:
+        if label not in source_label_counts.columns:
+            source_label_counts[label] = 0
+
+    missing_sources = source_label_counts[
+        (source_label_counts[0] <= 0) | (source_label_counts[1] <= 0)
+    ]
+    if not missing_sources.empty:
+        missing = ", ".join(str(source) for source in missing_sources.index)
+        raise ValueError(
+            "balanced_source_50_50 requires every source to contain both labels. "
+            f"Missing one class in: {missing}"
+        )
+
+    samples_per_source_per_class = int(source_label_counts[[0, 1]].min(axis=1).min())
+    if samples_per_source_per_class <= 0:
+        raise ValueError("balanced_source_50_50 leaves no samples per source/class.")
+
+    selected_frames = []
+    for source in sorted(source_label_counts.index):
+        for label, label_name in [(0, "ham"), (1, "spam")]:
+            source_label_df = df[(df["source"] == source) & (df["label"] == label)]
+            selected_frames.append(
+                _sample_rows(
+                    source_label_df,
+                    samples_per_source_per_class,
+                    "balanced_source_50_50",
+                    source,
+                    label_name,
+                )
+            )
+
+    print(
+        "Balanced source/class allocation: "
+        f"{samples_per_source_per_class} ham and {samples_per_source_per_class} spam per source"
+    )
+    return pd.concat(selected_frames, ignore_index=True)
+
+
+def _apply_combination_mode(
+    df: pd.DataFrame,
+    combination_mode: str,
+    spam_ham_ratio: float,
+    source_aware_max_multiplier: float,
+) -> pd.DataFrame:
+    if combination_mode == "mixed":
+        return _apply_spam_ham_ratio(df, spam_ham_ratio)
+    if combination_mode == "mixed_50_50":
+        return _apply_spam_ham_ratio(df, 0.5)
+    if combination_mode == "source_aware_50_50":
+        return _apply_source_aware_50_50(df, source_aware_max_multiplier)
+    if combination_mode == "balanced_source_50_50":
+        return _apply_balanced_source_50_50(df)
+    raise ValueError(f"Unsupported combination_mode: {combination_mode}")
+
+
 def combine_datasets(
     dataset_names: str | Sequence[str],
     spam_ham_ratio: float = -1,
     duplicate_detection: str = "high",
     generate_duplicate_report: bool = False,
+    combination_mode: str = "mixed",
+    source_aware_max_multiplier: float = DEFAULT_SOURCE_AWARE_MAX_SMALLEST_MULTIPLIER,
 ) -> str:
     _validate_spam_ham_ratio(spam_ham_ratio)
     duplicate_detection = _validate_duplicate_detection(duplicate_detection)
+    combination_mode = _validate_combination_mode(combination_mode)
+    source_aware_max_multiplier = float(source_aware_max_multiplier)
+    if source_aware_max_multiplier < 1:
+        raise ValueError("source_aware_max_multiplier must be >= 1.")
+    if combination_mode != "mixed" and spam_ham_ratio not in {-1, 0.5}:
+        raise ValueError(
+            "Fixed 50/50 combination modes ignore spam_ham_ratio; "
+            "use spam_ham_ratio=-1 or 0.5, or combination_mode='mixed'."
+        )
+    effective_spam_ham_ratio = 0.5 if combination_mode != "mixed" else spam_ham_ratio
     atomic_dataset_names = _resolve_atomic_dataset_names(dataset_names)
-    output_path = _combined_dataset_path(atomic_dataset_names, spam_ham_ratio, duplicate_detection)
+    output_path = _combined_dataset_path(
+        atomic_dataset_names,
+        effective_spam_ham_ratio,
+        duplicate_detection,
+        combination_mode,
+        source_aware_max_multiplier,
+    )
     report_path = _duplicate_report_path(atomic_dataset_names, spam_ham_ratio, duplicate_detection)
 
     if os.path.exists(output_path):
@@ -556,7 +804,7 @@ def combine_datasets(
     combined = pd.concat(frames, ignore_index=True)
     print(f"\nCombined rows before balancing: {len(combined)}")
 
-    combined = _drop_empty_subject_or_body(combined)
+    combined = _drop_empty_subject_and_body(combined)
     if generate_duplicate_report:
         _generate_duplicate_report(
             combined,
@@ -565,7 +813,13 @@ def combine_datasets(
             duplicate_detection=duplicate_detection,
         )
     combined = _drop_duplicate_messages(combined, duplicate_detection)
-    combined = _apply_spam_ham_ratio(combined, spam_ham_ratio)
+    print(f"Combination mode: {combination_mode}")
+    combined = _apply_combination_mode(
+        combined,
+        combination_mode,
+        spam_ham_ratio,
+        source_aware_max_multiplier,
+    )
     combined = _shuffle_dataframe(combined)
     combined.to_parquet(output_path, index=False)
 

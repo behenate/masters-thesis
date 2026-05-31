@@ -8,8 +8,8 @@ Use [combine.py](/Users/wojciechdrozdz/uni/Magisterka/Semestr%20III/Praca%20Magi
 from dataset.combine import combine_datasets
 
 dataset_path = combine_datasets(
-    ["trec_2007", "ceas_2008"],
-    spam_ham_ratio=0.5,
+    "training_all",
+    combination_mode="mixed_50_50",
     duplicate_detection="high",
     generate_duplicate_report=False,
 )
@@ -20,8 +20,26 @@ The output path is deterministic for the same:
 - dataset set
 - `spam_ham_ratio`
 - `duplicate_detection`
+- `combination_mode`
+- `source_aware_max_multiplier` for `source_aware_50_50`
 
 So repeated calls reuse the same cached parquet file.
+
+`training_all` expands to all registered datasets except `enron`, `fraudulent_email_corpus`, and `spam_ham`.
+
+## Combination modes
+
+- `mixed`
+  Default backwards-compatible behavior. Mixes all requested datasets and applies `spam_ham_ratio`; pass `0.5` for a global 50/50 spam/ham split.
+
+- `mixed_50_50`
+  Mixes all requested datasets, then trims only by class to produce the largest possible 50/50 spam/ham split.
+
+- `source_aware_50_50`
+  Produces a 50/50 spam/ham split with capped square-root source allocation. Each source/class bucket is capped at `source_aware_max_multiplier` times the smallest bucket for that class, defaulting to `8.0`, so smaller datasets keep more relative weight and very large datasets are trimmed harder.
+
+- `balanced_source_50_50`
+  Takes the same number of ham and spam samples from every source. The per-source, per-class count is limited by the smallest source/class bucket.
 
 ## Duplicate detection modes
 
