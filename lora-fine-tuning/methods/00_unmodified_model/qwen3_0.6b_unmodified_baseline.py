@@ -78,7 +78,7 @@ def load_raw_dataset(args: argparse.Namespace) -> tuple[Any, str]:
     from datasets import ClassLabel, load_dataset
     from dataset.combine import combine_datasets
 
-    data_path = combine_datasets(["trec_2007", "ceas_2008"], spam_ham_ratio=0.5)
+    data_path = combine_datasets("training_all", combination_mode="mixed_50_50")
     raw_dataset = load_dataset("parquet", data_files=str(data_path), split="train")
     raw_dataset = raw_dataset.cast_column("label", ClassLabel(names=["valid", "spam"]))
     return raw_dataset, str(data_path)

@@ -2,6 +2,8 @@
 
 This directory groups the spam-classification approaches in a thesis-friendly order. Duplicate legacy notebook copies were removed from the old locations, while shared scripts and existing result folders were left in place for compatibility.
 
+Methods 02, 03, and 04 share the canonical causal-LM sweep dataset preparation in `../qwen3_0.6b_casual_lm_sweep.py`. That path now uses `training_all` from `dataset/combine.py`, which expands to all registered datasets except `enron`, `fraudulent_email_corpus`, and `spam_ham`, with a mixed 50/50 spam/ham combination.
+
 ## 00 Unmodified Model
 
 Loads `Qwen/Qwen3-0.6B` with no fine-tuning adapters and evaluates it as a zero-shot spam classifier. This baseline shows how much classification behavior exists before task-specific training.

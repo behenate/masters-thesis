@@ -34,6 +34,7 @@ WARMUP_RATIO = 0.06
 WEIGHT_DECAY = 0.01
 MAX_GRAD_NORM = 0.5
 LOGGING_STEPS = 25
+CHECKPOINT_SAVE_STEPS = 150
 POSITIVE_LABEL_TEXT = "spam"
 NEGATIVE_LABEL_TEXT = "ham"
 IM_END_TOKEN = "<|im_end|>"
@@ -454,6 +455,7 @@ def write_manifest(sweep_dir: Path, sweep_id: str, selected_configs: list[SweepC
         "weight_decay": WEIGHT_DECAY,
         "max_grad_norm": MAX_GRAD_NORM,
         "logging_steps": LOGGING_STEPS,
+        "checkpoint_save_steps": CHECKPOINT_SAVE_STEPS,
         "script": str(Path(__file__).resolve()),
         "project_root": str(project_root()),
         "sweep_dir": str(sweep_dir),
@@ -869,7 +871,7 @@ def prepare_datasets(
     from dataset.combine import combine_datasets
     from aim_tracking import summarize_text_classification_dataset
 
-    data_path = combine_datasets(["trec_2007", "ceas_2008"], spam_ham_ratio=0.5)
+    data_path = combine_datasets("training_all", combination_mode="mixed_50_50")
     dataset_sha = sha256_file(data_path)
     raw_dataset = load_dataset("parquet", data_files=data_path, split="train")
     raw_dataset = raw_dataset.cast_column("label", ClassLabel(names=["valid", "spam"]))
@@ -1129,7 +1131,6 @@ def run_training_config(args: argparse.Namespace, config: SweepConfig, sweep_id:
     if str(root) not in sys.path:
         sys.path.insert(0, str(root))
 
-    import numpy as np
     import torch
     from aim_tracking import create_aim_callbacks
     from peft import LoraConfig, get_peft_model
@@ -1239,11 +1240,10 @@ def run_training_config(args: argparse.Namespace, config: SweepConfig, sweep_id:
         model.enable_input_require_grads()
     model.print_trainable_parameters()
 
-    train_batches_per_epoch = int(np.ceil(len(dataset["train"]) / train_batch_size))
-    optimizer_steps_per_epoch = int(np.ceil(train_batches_per_epoch / gradient_accumulation_steps))
-    eval_steps = max(1, optimizer_steps_per_epoch // 4)
+    checkpoint_save_steps = CHECKPOINT_SAVE_STEPS
     if args.max_steps is not None:
-        eval_steps = max(1, min(eval_steps, int(args.max_steps)))
+        checkpoint_save_steps = max(1, min(checkpoint_save_steps, int(args.max_steps)))
+    eval_steps = checkpoint_save_steps
 
     output_dir = run_dir / "trainer_output"
     adapter_path = run_dir / "adapter"
@@ -1258,7 +1258,6 @@ def run_training_config(args: argparse.Namespace, config: SweepConfig, sweep_id:
         "logging_strategy": "steps",
         "logging_steps": LOGGING_STEPS,
         "logging_first_step": True,
-        "save_total_limit": 2,
         "seed": SEED,
         "data_seed": SEED,
         "per_device_train_batch_size": train_batch_size,
@@ -1278,7 +1277,7 @@ def run_training_config(args: argparse.Namespace, config: SweepConfig, sweep_id:
         "eval_strategy": "steps",
         "eval_steps": eval_steps,
         "save_strategy": "steps",
-        "save_steps": eval_steps,
+        "save_steps": checkpoint_save_steps,
         "load_best_model_at_end": True,
         "metric_for_best_model": "eval_f1",
         "greater_is_better": True,
@@ -1323,6 +1322,7 @@ def run_training_config(args: argparse.Namespace, config: SweepConfig, sweep_id:
         "non_cuda_fallback": not cuda,
         "eval_steps": training_args.eval_steps,
         "save_steps": training_args.save_steps,
+        "checkpoint_save_steps": checkpoint_save_steps,
         "logging_steps": training_args.logging_steps,
         "tensorboard_log_dir": training_args.logging_dir,
         "output_dir": training_args.output_dir,
