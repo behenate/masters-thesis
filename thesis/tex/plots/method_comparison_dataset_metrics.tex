@@ -1,0 +1,49 @@
+\begin{tikzpicture}
+\begin{axis}[
+    width=0.88\textwidth,
+    height=0.46\textwidth,
+    ybar,
+    ymin=93,
+    ymax=100,
+    ytick={93,94,95,96,97,98,99,100},
+    ylabel={Wartość metryki [\%]},
+    symbolic x coords={01,02,03,04},
+    xtick=data,
+    xticklabel style={font=\footnotesize, rotate=35, anchor=east},
+    yticklabel style={font=\footnotesize},
+    label style={font=\small},
+    xmajorgrids=false,
+    ymajorgrids,
+    grid style={plotGrid},
+    tick style={draw=none},
+    bar width=5pt,
+    enlarge x limits=0.08,
+    legend style={at={(0.5,-0.25)}, anchor=north, legend columns=2, draw=none, font=\footnotesize},
+]
+\addplot[fill=plotBlue, draw=none] coordinates {
+        (01,99.9)
+        (02,100.0)
+        (03,99.9)
+        (04,99.7)
+    };
+\addplot[fill=plotHam, draw=none] coordinates {
+        (01,95.3)
+        (02,97.5)
+        (03,96.9)
+        (04,97.7)
+    };
+\addplot[fill=plotSpam, draw=none] coordinates {
+        (01,100.0)
+        (02,98.2)
+        (03,99.9)
+        (04,99.6)
+    };
+\addplot[fill=plotAccent, draw=none] coordinates {
+        (01,94.1)
+        (02,97.9)
+        (03,97.2)
+        (04,96.7)
+    };
+\legend{train\_subset F1,enron specificity,fraud recall,spam\_ham F1}
+\end{axis}
+\end{tikzpicture}

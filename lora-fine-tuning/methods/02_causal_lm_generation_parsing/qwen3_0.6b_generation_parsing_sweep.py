@@ -23,6 +23,7 @@ AIM_EXPERIMENT_NAME = "qwen3-0.6b-spam-causal-lm-generation-parsing-sweep"
 EVALUATION_METHOD = "causal_lm_generation_parsing"
 DEFAULT_MAX_NEW_TOKENS = 4
 DEFAULT_PARSE_FAILURE_LABEL = "ham"
+TOP_NEXT_TOKEN_CONFIG_INDEXES = (8, 11, 6, 9)
 
 _TOKENIZER: Any | None = None
 _GENERATION_MAX_NEW_TOKENS = DEFAULT_MAX_NEW_TOKENS
@@ -41,7 +42,20 @@ def method_dir() -> Path:
 
 
 def load_next_token_sweep_module() -> Any:
-    script_path = project_root() / "lora-fine-tuning" / "qwen3_0.6b_casual_lm_sweep.py"
+    root = project_root()
+    candidates = [
+        root
+        / "lora-fine-tuning"
+        / "methods"
+        / "03_causal_lm_next_token"
+        / "notebooks"
+        / "qwen3_0.6b_casual_lm_sweep.py",
+        root / "lora-fine-tuning" / "qwen3_0.6b_casual_lm_sweep.py",
+    ]
+    script_path = next((candidate for candidate in candidates if candidate.exists()), None)
+    if script_path is None:
+        attempted = "\n".join(str(candidate) for candidate in candidates)
+        raise FileNotFoundError(f"Could not find qwen3_0.6b_casual_lm_sweep.py. Tried:\n{attempted}")
     spec = importlib.util.spec_from_file_location("qwen3_next_token_sweep_helpers", script_path)
     if spec is None or spec.loader is None:
         raise RuntimeError(f"Could not load sweep helper module from {script_path}")
@@ -52,6 +66,7 @@ def load_next_token_sweep_module() -> Any:
 
 
 base = load_next_token_sweep_module()
+_BASE_SWEEP_CONFIGS = {config.index: config for config in base.build_sweep_configs()}
 base.AIM_EXPERIMENT_NAME = AIM_EXPERIMENT_NAME
 
 MODEL_ID = base.MODEL_ID
@@ -77,6 +92,25 @@ def resolve_results_root(value: str | None) -> Path:
 
 def make_sweep_id() -> str:
     return "qwen3_clm_generation_parsing_" + dt.datetime.now().strftime("%Y%m%d_%H%M%S")
+
+
+def build_sweep_configs() -> list[Any]:
+    return [_BASE_SWEEP_CONFIGS[index] for index in TOP_NEXT_TOKEN_CONFIG_INDEXES]
+
+
+def checkpoint_settings_for_config(config: Any, max_steps: int | None = None) -> dict[str, Any]:
+    checkpoint_save_steps = base.CHECKPOINT_SAVE_STEPS if config.max_seq_length < 600 else base.CHECKPOINT_SAVE_STEPS * 2
+    if max_steps is not None:
+        checkpoint_save_steps = max(1, min(checkpoint_save_steps, int(max_steps)))
+    return {
+        "checkpoint_save_steps": checkpoint_save_steps,
+        "eval_steps": checkpoint_save_steps,
+        "save_strategy": "steps",
+        "eval_strategy": "steps",
+        "load_best_model_at_end": True,
+        "metric_for_best_model": "eval_f1",
+        "greater_is_better": True,
+    }
 
 
 def get_tokenizer() -> Any:
@@ -283,6 +317,7 @@ def build_generation_metrics_callback(
 
 def patch_base_evaluator() -> None:
     base.AIM_EXPERIMENT_NAME = AIM_EXPERIMENT_NAME
+    base.build_sweep_configs = build_sweep_configs
     base.evaluate_next_token_classifier = evaluate_generation_parser_classifier
     base.build_next_token_metrics_callback = build_generation_metrics_callback
 
@@ -430,6 +465,14 @@ def write_manifest(sweep_dir: Path, sweep_id: str, selected_configs: list[Any], 
         "weight_decay": base.WEIGHT_DECAY,
         "max_grad_norm": base.MAX_GRAD_NORM,
         "logging_steps": base.LOGGING_STEPS,
+        "checkpoint_save_steps": base.CHECKPOINT_SAVE_STEPS,
+        "checkpointing": {
+            "base_checkpoint_save_steps": base.CHECKPOINT_SAVE_STEPS,
+            "per_config": {
+                str(config.index): checkpoint_settings_for_config(config, args.max_steps)
+                for config in selected_configs
+            },
+        },
         "script": str(Path(__file__).resolve()),
         "project_root": str(project_root()),
         "sweep_dir": str(sweep_dir),
@@ -442,6 +485,7 @@ def write_manifest(sweep_dir: Path, sweep_id: str, selected_configs: list[Any], 
 
 
 def run_sweep(args: argparse.Namespace) -> int:
+    patch_base_evaluator()
     sweep_id = args.sweep_id or make_sweep_id()
     results_root = resolve_results_root(args.results_root)
     sweep_dir = results_root / "sweeps" / sweep_id
@@ -566,6 +610,7 @@ def run_one(args: argparse.Namespace) -> int:
             "max_new_tokens": args.max_new_tokens,
             "parse_failure_default_label": args.parse_failure_label,
             "config": config.to_dict(),
+            "checkpointing": checkpoint_settings_for_config(config, args.max_steps),
             "args": vars(args),
         },
     )
@@ -587,6 +632,7 @@ def run_one(args: argparse.Namespace) -> int:
             "evaluation_method": EVALUATION_METHOD,
             "max_new_tokens": args.max_new_tokens,
             "parse_failure_default_label": args.parse_failure_label,
+            "checkpointing": checkpoint_settings_for_config(config, args.max_steps),
             "error_type": type(exc).__name__,
             "error_message": str(exc),
             "traceback": traceback.format_exc(),
@@ -600,6 +646,7 @@ def run_one(args: argparse.Namespace) -> int:
 
 
 def summarize_command(args: argparse.Namespace) -> int:
+    patch_base_evaluator()
     results_root = resolve_results_root(args.results_root)
     if args.sweep_dir:
         sweep_dir = Path(args.sweep_dir).resolve()
@@ -618,7 +665,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run Qwen3 causal LM generation+parsing hyperparameter sweeps.")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    list_parser = subparsers.add_parser("list-configs", help="Print the 16 sweep configurations.")
+    list_parser = subparsers.add_parser("list-configs", help="Print the selected top next-token configurations.")
     list_parser.add_argument("--json", action="store_true", help="Emit machine-readable JSON.")
 
     sweep_parser = subparsers.add_parser("run-sweep", help="Launch one subprocess per selected config.")
@@ -667,6 +714,7 @@ def validate_args(args: argparse.Namespace) -> None:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    patch_base_evaluator()
     validate_args(args)
     if args.command == "list-configs":
         base.list_configs(args.json)

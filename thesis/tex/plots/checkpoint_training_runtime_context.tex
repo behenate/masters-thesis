@@ -1,0 +1,33 @@
+\begingroup
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    width=0.92\textwidth,
+    height=0.36\textwidth,
+    ybar,
+    bar width=8pt,
+    xmin=0.4,
+    xmax=15.6,
+    xtick={1,2,3,4,5,6,7,8,9,10,11,12,13,14,15},
+    xticklabels={K01,K02,K03,K04,K05,K06,K07,K08,K09,K10,K11,K12,K13,K14,K15},
+    ymin=0,
+    ymax=5.02,
+    ylabel={Czas [h]},
+    xlabel={Konfiguracja},
+    nodes near coords,
+    nodes near coords style={font=\tiny},
+    grid style={plotGrid},
+    ymajorgrids,
+    tick style={draw=none},
+    xticklabel style={font=\scriptsize, rotate=45, anchor=east},
+    yticklabel style={font=\footnotesize},
+    label style={font=\small},
+    legend style={font=\scriptsize, draw=none, fill=none, at={(0.02,0.98)}, anchor=north west},
+    legend cell align={left},
+]
+\addplot+[fill=plotBlue!72, draw=none, bar shift=0pt] coordinates {(1,1.35) (2,1.37) (3,1.84) (7,1.39) (8,1.81) (9,1.83) (13,1.02) (14,1.26)};
+\addplot+[fill=plotAccent!72, draw=none, bar shift=0pt] coordinates {(4,3.35) (5,4.25) (6,3.79) (10,3.66) (11,3.33) (12,3.8) (15,2.46)};
+\legend{512 tokenów, 1024 tokeny}
+\end{axis}
+\end{tikzpicture}
+\endgroup

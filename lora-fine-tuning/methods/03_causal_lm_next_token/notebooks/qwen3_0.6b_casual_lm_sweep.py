@@ -25,16 +25,26 @@ os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
 
 MODEL_ID = "Qwen/Qwen3-0.6B"
 SEED = 67
-TRAIN_SPLIT = 0.95
-VALIDATION_SPLIT = 0.006
-TEST_SPLIT = 0.04
+TRAIN_SPLIT = 0.92
+VALIDATION_SPLIT = 0.02
+TEST_SPLIT = 0.06
 HOLDOUT_SPLIT = VALIDATION_SPLIT + TEST_SPLIT
-NUM_TRAIN_EPOCHS = 0.5
+MAX_SEQ_LENGTH = 512
+TRAIN_BATCH_SIZE = 2
+EVAL_BATCH_SIZE = 1
+GRADIENT_ACCUMULATION_STEPS = 8
+NUM_TRAIN_EPOCHS = 1
+LEARNING_RATE = 1e-4
 WARMUP_RATIO = 0.06
 WEIGHT_DECAY = 0.01
 MAX_GRAD_NORM = 0.5
 LOGGING_STEPS = 25
-CHECKPOINT_SAVE_STEPS = 150
+CHECKPOINT_SAVE_STEPS = 300
+CONSOLE_PROGRESS_STEPS = CHECKPOINT_SAVE_STEPS
+LORA_R = 16
+LORA_ALPHA = 32
+LORA_DROPOUT = 0.05
+MPS_MEMORY_FRACTION = 0.92
 POSITIVE_LABEL_TEXT = "spam"
 NEGATIVE_LABEL_TEXT = "ham"
 IM_END_TOKEN = "<|im_end|>"
@@ -55,15 +65,15 @@ class SweepConfig:
 
     @property
     def train_batch_size(self) -> int:
-        return 24 if self.max_seq_length == 512 else 12
+        return 20 if self.max_seq_length == 512 else 10
 
     @property
     def eval_batch_size(self) -> int:
-        return 24 if self.max_seq_length == 512 else 12
+        return 20 if self.max_seq_length == 512 else 10
 
     @property
     def gradient_accumulation_steps(self) -> int:
-        return 1 if self.max_seq_length == 512 else 2
+        return 1 if self.max_seq_length == 512 else 1
 
     @property
     def effective_batch_size(self) -> int:
@@ -99,6 +109,7 @@ def float_token(value: float) -> str:
         5e-5: "5e-5",
         1e-4: "1e-4",
         0.0: "0p0",
+        0.05: "0p05",
         0.1: "0p1",
         0.4: "0p4",
     }
@@ -110,22 +121,22 @@ def float_token(value: float) -> str:
 
 def build_sweep_configs() -> list[SweepConfig]:
     return [
-        SweepConfig(1, "LR/context", 512, 1e-6, 16, 32, 0.1),
-        SweepConfig(2, "LR/context", 512, 5e-5, 16, 32, 0.1),
-        SweepConfig(3, "LR/context", 512, 1e-4, 16, 32, 0.1),
-        SweepConfig(4, "LR/context", 1024, 1e-6, 16, 32, 0.1),
-        SweepConfig(5, "LR/context", 1024, 5e-5, 16, 32, 0.1),
-        SweepConfig(6, "LR/context", 1024, 1e-4, 16, 32, 0.1),
-        SweepConfig(7, "LoRA capacity", 512, 5e-5, 8, 16, 0.1),
-        SweepConfig(8, "LoRA capacity", 512, 5e-5, 32, 64, 0.1),
-        SweepConfig(9, "LoRA capacity", 512, 5e-5, 64, 128, 0.1),
-        SweepConfig(10, "LoRA capacity", 1024, 5e-5, 8, 16, 0.1),
-        SweepConfig(11, "LoRA capacity", 1024, 5e-5, 32, 64, 0.1),
-        SweepConfig(12, "LoRA capacity", 1024, 5e-5, 64, 128, 0.1),
-        SweepConfig(13, "Dropout", 512, 5e-5, 16, 32, 0.0),
-        SweepConfig(14, "Dropout", 512, 5e-5, 16, 32, 0.4),
-        SweepConfig(15, "Dropout", 1024, 5e-5, 16, 32, 0.0),
-        SweepConfig(16, "Dropout", 1024, 5e-5, 16, 32, 0.4),
+        SweepConfig(1, "LR/context", MAX_SEQ_LENGTH, 1e-6, LORA_R, LORA_ALPHA, LORA_DROPOUT),
+        SweepConfig(2, "LR/context", MAX_SEQ_LENGTH, 5e-5, LORA_R, LORA_ALPHA, LORA_DROPOUT),
+        SweepConfig(3, "LR/context", MAX_SEQ_LENGTH, LEARNING_RATE, LORA_R, LORA_ALPHA, LORA_DROPOUT),
+        SweepConfig(4, "LR/context", 1024, 1e-6, LORA_R, LORA_ALPHA, LORA_DROPOUT),
+        SweepConfig(5, "LR/context", 1024, 5e-5, LORA_R, LORA_ALPHA, LORA_DROPOUT),
+        SweepConfig(6, "LR/context", 1024, LEARNING_RATE, LORA_R, LORA_ALPHA, LORA_DROPOUT),
+        SweepConfig(7, "LoRA capacity", MAX_SEQ_LENGTH, LEARNING_RATE, 8, 16, LORA_DROPOUT),
+        SweepConfig(8, "LoRA capacity", MAX_SEQ_LENGTH, LEARNING_RATE, 32, 64, LORA_DROPOUT),
+        SweepConfig(9, "LoRA capacity", MAX_SEQ_LENGTH, LEARNING_RATE, 64, 128, LORA_DROPOUT),
+        SweepConfig(10, "LoRA capacity", 1024, LEARNING_RATE, 8, 16, LORA_DROPOUT),
+        SweepConfig(11, "LoRA capacity", 1024, LEARNING_RATE, 32, 64, LORA_DROPOUT),
+        SweepConfig(12, "LoRA capacity", 1024, LEARNING_RATE, 64, 128, LORA_DROPOUT),
+        SweepConfig(13, "Dropout", MAX_SEQ_LENGTH, LEARNING_RATE, LORA_R, LORA_ALPHA, 0.0),
+        SweepConfig(14, "Dropout", MAX_SEQ_LENGTH, LEARNING_RATE, LORA_R, LORA_ALPHA, 0.4),
+        SweepConfig(15, "Dropout", 1024, LEARNING_RATE, LORA_R, LORA_ALPHA, 0.0),
+        SweepConfig(16, "Dropout", 1024, LEARNING_RATE, LORA_R, LORA_ALPHA, 0.4),
     ]
 
 
@@ -450,12 +461,22 @@ def write_manifest(sweep_dir: Path, sweep_id: str, selected_configs: list[SweepC
         "train_split": TRAIN_SPLIT,
         "validation_split": VALIDATION_SPLIT,
         "test_split": TEST_SPLIT,
+        "default_max_seq_length": MAX_SEQ_LENGTH,
+        "default_train_batch_size": TRAIN_BATCH_SIZE,
+        "default_eval_batch_size": EVAL_BATCH_SIZE,
+        "default_gradient_accumulation_steps": GRADIENT_ACCUMULATION_STEPS,
         "num_train_epochs": NUM_TRAIN_EPOCHS,
+        "default_learning_rate": LEARNING_RATE,
         "warmup_ratio": WARMUP_RATIO,
         "weight_decay": WEIGHT_DECAY,
         "max_grad_norm": MAX_GRAD_NORM,
         "logging_steps": LOGGING_STEPS,
         "checkpoint_save_steps": CHECKPOINT_SAVE_STEPS,
+        "console_progress_steps": CONSOLE_PROGRESS_STEPS,
+        "default_lora_r": LORA_R,
+        "default_lora_alpha": LORA_ALPHA,
+        "default_lora_dropout": LORA_DROPOUT,
+        "mps_memory_fraction": MPS_MEMORY_FRACTION,
         "script": str(Path(__file__).resolve()),
         "project_root": str(project_root()),
         "sweep_dir": str(sweep_dir),
@@ -677,11 +698,20 @@ def run_sweep(args: argparse.Namespace) -> int:
 
 
 def find_device(torch_module: Any) -> str:
-    if torch_module.cuda.is_available():
-        return "cuda"
     if torch_module.backends.mps.is_available():
         return "mps"
+    if torch_module.cuda.is_available():
+        return "cuda"
     return "cpu"
+
+
+def configure_mps(torch_module: Any) -> None:
+    if not torch_module.backends.mps.is_available():
+        return
+    if hasattr(torch_module.mps, "empty_cache"):
+        torch_module.mps.empty_cache()
+    if hasattr(torch_module.mps, "set_per_process_memory_fraction"):
+        torch_module.mps.set_per_process_memory_fraction(MPS_MEMORY_FRACTION)
 
 
 def build_email_text(subject: str | None, body: str | None) -> str:
@@ -867,9 +897,11 @@ def prepare_datasets(
     validation_limit: int | None,
     test_limit: int | None,
 ) -> tuple[Any, dict[str, Any], str, str]:
-    from datasets import ClassLabel, DatasetDict, load_dataset
+    from datasets import ClassLabel, DatasetDict, disable_progress_bars, load_dataset
     from dataset.combine import combine_datasets
     from aim_tracking import summarize_text_classification_dataset
+
+    disable_progress_bars()
 
     data_path = combine_datasets("training_all", combination_mode="mixed_50_50")
     dataset_sha = sha256_file(data_path)
@@ -1117,12 +1149,40 @@ def build_next_token_metrics_callback(
     return NextTokenClassificationMetricsCallback()
 
 
+def build_console_progress_callback(*, trainer_callback_cls: Any, every_steps: int) -> Any:
+    class ConsoleProgressCallback(trainer_callback_cls):
+        def on_train_begin(self, args, state, control, **kwargs):
+            total = state.max_steps if state.max_steps and state.max_steps > 0 else "unknown"
+            print(f"Training started: total_steps={total}, console_progress_every={every_steps}")
+
+        def on_step_end(self, args, state, control, **kwargs):
+            step = int(state.global_step or 0)
+            if step <= 0:
+                return
+            max_steps = int(state.max_steps or 0)
+            is_last_step = max_steps > 0 and step >= max_steps
+            if step == 1 or step % every_steps == 0 or is_last_step:
+                total = max_steps if max_steps > 0 else "?"
+                epoch = f"{state.epoch:.4f}" if state.epoch is not None else "?"
+                print(f"step {step}/{total} | epoch {epoch}")
+
+        def on_evaluate(self, args, state, control, metrics=None, **kwargs):
+            print(f"validation complete at step {state.global_step}")
+
+        def on_save(self, args, state, control, **kwargs):
+            print(f"checkpoint saved at step {state.global_step}")
+
+        def on_train_end(self, args, state, control, **kwargs):
+            print(f"training finished at step {state.global_step}")
+
+    return ConsoleProgressCallback()
+
+
 def non_cuda_batch_settings(config: SweepConfig) -> dict[str, int]:
-    train_batch_size = min(2, config.train_batch_size)
     return {
-        "train_batch_size": train_batch_size,
-        "eval_batch_size": 1,
-        "gradient_accumulation_steps": max(1, math.ceil(config.effective_batch_size / train_batch_size)),
+        "train_batch_size": TRAIN_BATCH_SIZE,
+        "eval_batch_size": EVAL_BATCH_SIZE,
+        "gradient_accumulation_steps": GRADIENT_ACCUMULATION_STEPS,
     }
 
 
@@ -1134,12 +1194,14 @@ def run_training_config(args: argparse.Namespace, config: SweepConfig, sweep_id:
     import torch
     from aim_tracking import create_aim_callbacks
     from peft import LoraConfig, get_peft_model
-    from transformers import AutoModelForCausalLM, AutoTokenizer, TrainerCallback, set_seed
+    from transformers import AutoModelForCausalLM, AutoTokenizer, PrinterCallback, ProgressCallback, TrainerCallback, set_seed
     from trl import SFTConfig, SFTTrainer
 
     set_seed(SEED)
     device = find_device(torch)
     cuda = device == "cuda"
+    if device == "mps":
+        configure_mps(torch)
     if not cuda and not args.allow_non_cuda and not args.dry_run:
         raise RuntimeError(
             f"CUDA is required for the sweep. Detected {device.upper()}. "
@@ -1159,6 +1221,7 @@ def run_training_config(args: argparse.Namespace, config: SweepConfig, sweep_id:
         gradient_checkpointing_kwargs = None
         dataloader_pin_memory = True
         dataloader_num_workers = 4
+        logging_steps = LOGGING_STEPS
     else:
         fallback = non_cuda_batch_settings(config)
         train_batch_size = fallback["train_batch_size"]
@@ -1171,6 +1234,7 @@ def run_training_config(args: argparse.Namespace, config: SweepConfig, sweep_id:
         gradient_checkpointing_kwargs = {"use_reentrant": False}
         dataloader_pin_memory = False
         dataloader_num_workers = 0
+        logging_steps = 1
 
     effective_batch_size = train_batch_size * gradient_accumulation_steps
     print(f"Using device: {device.upper()}")
@@ -1240,7 +1304,7 @@ def run_training_config(args: argparse.Namespace, config: SweepConfig, sweep_id:
         model.enable_input_require_grads()
     model.print_trainable_parameters()
 
-    checkpoint_save_steps = CHECKPOINT_SAVE_STEPS
+    checkpoint_save_steps = CHECKPOINT_SAVE_STEPS if config.max_seq_length < 600 else CHECKPOINT_SAVE_STEPS * 2
     if args.max_steps is not None:
         checkpoint_save_steps = max(1, min(checkpoint_save_steps, int(args.max_steps)))
     eval_steps = checkpoint_save_steps
@@ -1256,8 +1320,9 @@ def run_training_config(args: argparse.Namespace, config: SweepConfig, sweep_id:
         "output_dir": str(output_dir),
         "logging_dir": str(tensorboard_dir),
         "logging_strategy": "steps",
-        "logging_steps": LOGGING_STEPS,
+        "logging_steps": logging_steps,
         "logging_first_step": True,
+        "disable_tqdm": True,
         "seed": SEED,
         "data_seed": SEED,
         "per_device_train_batch_size": train_batch_size,
@@ -1323,6 +1388,7 @@ def run_training_config(args: argparse.Namespace, config: SweepConfig, sweep_id:
         "eval_steps": training_args.eval_steps,
         "save_steps": training_args.save_steps,
         "checkpoint_save_steps": checkpoint_save_steps,
+        "console_progress_steps": CONSOLE_PROGRESS_STEPS,
         "logging_steps": training_args.logging_steps,
         "tensorboard_log_dir": training_args.logging_dir,
         "output_dir": training_args.output_dir,
@@ -1371,6 +1437,10 @@ def run_training_config(args: argparse.Namespace, config: SweepConfig, sweep_id:
             eval_dataset=dataset["validation"],
             processing_class=tokenizer,
             callbacks=[
+                build_console_progress_callback(
+                    trainer_callback_cls=TrainerCallback,
+                    every_steps=CONSOLE_PROGRESS_STEPS,
+                ),
                 build_next_token_metrics_callback(
                     torch_module=torch,
                     trainer_callback_cls=TrainerCallback,
@@ -1383,6 +1453,8 @@ def run_training_config(args: argparse.Namespace, config: SweepConfig, sweep_id:
                 notebook_aim_callback,
             ],
         )
+        trainer.remove_callback(PrinterCallback)
+        trainer.remove_callback(ProgressCallback)
 
         resume_checkpoint = latest_checkpoint_path(output_dir) if args.resume_checkpoint else None
         if resume_checkpoint is not None:

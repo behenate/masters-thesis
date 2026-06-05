@@ -67,7 +67,7 @@ aim-master-export
 What it does:
 
 - reads runs from `aim_master/master_repo`
-- shows a keyboard-driven run picker
+- shows a keyboard-driven multi-run picker
 - always includes a default metric set when available
 - then shows the remaining metrics so you can select extras with the keyboard
 - exports the result to a CSV in `aim_master/exports`
@@ -112,6 +112,18 @@ You can also target one run directly:
 
 ```bash
 ./.venv/bin/aim-master-export --run-hash YOUR_RUN_HASH
+```
+
+Or export several runs into one CSV:
+
+```bash
+./.venv/bin/aim-master-export --run-hash RUN_HASH_1 --run-hash RUN_HASH_2
+```
+
+Comma-separated hashes are accepted as well:
+
+```bash
+./.venv/bin/aim-master-export --run-hash RUN_HASH_1,RUN_HASH_2
 ```
 
 And you can override the output path:

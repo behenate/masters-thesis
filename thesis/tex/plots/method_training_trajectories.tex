@@ -1,0 +1,114 @@
+\begingroup
+\centering
+\setlength{\tabcolsep}{2pt}
+\renewcommand{\arraystretch}{0.84}
+{\scriptsize \tikz[baseline=-0.5ex]\draw[plotBlue, line width=0.8pt] (0,0) -- (0.45,0);~F1 na \texttt{train\_subset}\quad \tikz[baseline=-0.5ex]\draw[plotAccent, line width=0.8pt] (0,0) -- (0.45,0);~\(S_{\mathrm{ext}}\)\quad \tikz[baseline=-0.5ex]\draw[black!45, densely dashed, line width=0.8pt] (0,0) -- (0.45,0);~najlepszy punkt}\\[0.3em]
+\begin{tabular}{cc}
+\begin{tikzpicture}
+\begin{axis}[
+    width=0.455\textwidth,
+    height=0.285\textwidth,
+    title={\texttt{01}: \texttt{K06}},
+    title style={font=\scriptsize, yshift=-1.2ex},
+    xmin=1,
+    xmax=10,
+    ymin=75,
+    ymax=101,
+    xtick={1,2,3,4,5,6,7,8,9,10},
+    ytick={75,80,85,90,95,100},
+    xlabel={Nr punktu kontrolnego},
+    ylabel={Wynik [\%]},
+    xmajorgrids,
+    ymajorgrids,
+    grid style={plotGrid},
+    tick style={draw=none},
+    xticklabel style={font=\tiny},
+    yticklabel style={font=\tiny},
+    label style={font=\scriptsize},
+]
+\addplot+[mark=*, mark size=1.1pt, line width=0.75pt, color=plotBlue] coordinates {(1,98.9) (2,99.6) (3,99.5) (4,100.0) (5,99.7) (6,100.0) (7,99.9) (8,99.9) (9,99.9) (10,99.9)};
+\addplot+[mark=square*, mark size=1.1pt, line width=0.75pt, color=plotAccent] coordinates {(1,78.8) (2,87.5) (3,86.7) (4,86.4) (5,96.0) (6,89.8) (7,94.2) (8,96.5) (9,96.3) (10,96.5)};
+\addplot[densely dashed, color=black!45] coordinates {(10,75) (10,101)};
+\end{axis}
+\end{tikzpicture} & \begin{tikzpicture}
+\begin{axis}[
+    width=0.455\textwidth,
+    height=0.285\textwidth,
+    title={\texttt{02}: \texttt{K08}},
+    title style={font=\scriptsize, yshift=-1.2ex},
+    xmin=1,
+    xmax=10,
+    ymin=75,
+    ymax=101,
+    xtick={1,2,3,4,5,6,7,8,9,10},
+    ytick={75,80,85,90,95,100},
+    xlabel={Nr punktu kontrolnego},
+    ylabel={Wynik [\%]},
+    xmajorgrids,
+    ymajorgrids,
+    grid style={plotGrid},
+    tick style={draw=none},
+    xticklabel style={font=\tiny},
+    yticklabel style={font=\tiny},
+    label style={font=\scriptsize},
+]
+\addplot+[mark=*, mark size=1.1pt, line width=0.75pt, color=plotBlue] coordinates {(1,98.6) (2,99.6) (3,99.7) (4,99.7) (5,99.8) (6,99.8) (7,100.0) (8,100.0) (9,100.0) (10,100.0)};
+\addplot+[mark=square*, mark size=1.1pt, line width=0.75pt, color=plotAccent] coordinates {(1,94.1) (2,90.0) (3,78.7) (4,85.0) (5,96.5) (6,88.6) (7,97.9) (8,96.7) (9,96.5) (10,96.7)};
+\addplot[densely dashed, color=black!45] coordinates {(7,75) (7,101)};
+\end{axis}
+\end{tikzpicture} \\
+\begin{tikzpicture}
+\begin{axis}[
+    width=0.455\textwidth,
+    height=0.285\textwidth,
+    title={\texttt{03}: \texttt{K08}},
+    title style={font=\scriptsize, yshift=-1.2ex},
+    xmin=1,
+    xmax=10,
+    ymin=75,
+    ymax=101,
+    xtick={1,2,3,4,5,6,7,8,9,10},
+    ytick={75,80,85,90,95,100},
+    xlabel={Nr punktu kontrolnego},
+    ylabel={Wynik [\%]},
+    xmajorgrids,
+    ymajorgrids,
+    grid style={plotGrid},
+    tick style={draw=none},
+    xticklabel style={font=\tiny},
+    yticklabel style={font=\tiny},
+    label style={font=\scriptsize},
+]
+\addplot+[mark=*, mark size=1.1pt, line width=0.75pt, color=plotBlue] coordinates {(1,98.9) (2,99.7) (3,99.5) (4,99.8) (5,99.9) (6,99.8) (7,99.9) (8,100.0) (9,100.0) (10,99.8)};
+\addplot+[mark=square*, mark size=1.1pt, line width=0.75pt, color=plotAccent] coordinates {(1,80.5) (2,89.8) (3,76.6) (4,84.6) (5,94.2) (6,89.9) (7,98.0) (8,97.1) (9,97.0) (10,94.9)};
+\addplot[densely dashed, color=black!45] coordinates {(7,75) (7,101)};
+\end{axis}
+\end{tikzpicture} & \begin{tikzpicture}
+\begin{axis}[
+    width=0.455\textwidth,
+    height=0.285\textwidth,
+    title={\texttt{04}: \texttt{K08}},
+    title style={font=\scriptsize, yshift=-1.2ex},
+    xmin=1,
+    xmax=10,
+    ymin=75,
+    ymax=101,
+    xtick={1,2,3,4,5,6,7,8,9,10},
+    ytick={75,80,85,90,95,100},
+    xlabel={Nr punktu kontrolnego},
+    ylabel={Wynik [\%]},
+    xmajorgrids,
+    ymajorgrids,
+    grid style={plotGrid},
+    tick style={draw=none},
+    xticklabel style={font=\tiny},
+    yticklabel style={font=\tiny},
+    label style={font=\scriptsize},
+]
+\addplot+[mark=*, mark size=1.1pt, line width=0.75pt, color=plotBlue] coordinates {(1,99.5) (2,99.7) (3,99.6) (4,99.8) (5,99.8) (6,99.9) (7,99.7) (8,100.0) (9,100.0) (10,99.9)};
+\addplot+[mark=square*, mark size=1.1pt, line width=0.75pt, color=plotAccent] coordinates {(1,85.7) (2,85.8) (3,83.9) (4,86.2) (5,93.3) (6,91.6) (7,98.0) (8,95.6) (9,95.7) (10,95.6)};
+\addplot[densely dashed, color=black!45] coordinates {(7,75) (7,101)};
+\end{axis}
+\end{tikzpicture} \\
+\end{tabular}
+\endgroup

@@ -1,0 +1,44 @@
+\begin{tikzpicture}
+\begin{axis}[
+    width=0.78\textwidth,
+    height=0.52\textwidth,
+    xbar,
+    xmin=84,
+    xmax=100,
+    xtick={84,88,92,96,100},
+    xlabel={Najlepszy wynik zewnętrzny [\%]},
+    symbolic y coords={K01,K04,K02,K10,K05,K03,K13,K14,K12,K07,K16,K15,K09,K06,K11,K08},
+    ytick=data,
+    y dir=reverse,
+    enlarge y limits=0.08,
+    axis x line*=bottom,
+    axis y line*=left,
+    xmajorgrids,
+    grid style={plotGrid},
+    tick style={draw=none},
+    yticklabel style={font=\footnotesize},
+    xticklabel style={font=\footnotesize},
+    label style={font=\small},
+    nodes near coords={\pgfmathprintnumber[fixed, precision=1]{\pgfplotspointmeta}},
+    every node near coord/.append style={font=\scriptsize},
+]
+\addplot[fill=plotBlue, draw=none, bar width=6pt, point meta=x] coordinates {
+        (85.0,K01)
+        (86.2,K04)
+        (95.9,K02)
+        (96.6,K10)
+        (96.8,K05)
+        (96.9,K03)
+        (97.0,K13)
+        (97.1,K14)
+        (97.1,K12)
+        (97.4,K07)
+        (97.5,K16)
+        (97.5,K15)
+        (97.6,K09)
+        (97.7,K06)
+        (97.7,K11)
+        (98.0,K08)
+    };
+\end{axis}
+\end{tikzpicture}

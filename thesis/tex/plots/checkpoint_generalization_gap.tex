@@ -1,0 +1,43 @@
+\begin{tikzpicture}
+\begin{axis}[
+    width=0.78\textwidth,
+    height=0.52\textwidth,
+    xbar,
+    xmin=0,
+    xmax=35,
+    xlabel={Różnica: F1 na train\_subset minus wynik zewnętrzny [p.p.]},
+    symbolic y coords={K08,K11,K06,K15,K09,K07,K16,K12,K13,K14,K03,K05,K10,K02,K01,K04},
+    ytick=data,
+    y dir=reverse,
+    enlarge y limits=0.08,
+    axis x line*=bottom,
+    axis y line*=left,
+    xmajorgrids,
+    grid style={plotGrid},
+    tick style={draw=none},
+    yticklabel style={font=\footnotesize},
+    xticklabel style={font=\footnotesize},
+    label style={font=\small},
+    nodes near coords={\pgfmathprintnumber[fixed, precision=1]{\pgfplotspointmeta}},
+    every node near coord/.append style={font=\scriptsize},
+]
+\addplot[fill=plotAccent, draw=none, bar width=6pt, point meta=x] coordinates {
+        (1.9,K08)
+        (2.2,K11)
+        (2.2,K06)
+        (2.3,K15)
+        (2.3,K09)
+        (2.4,K07)
+        (2.4,K16)
+        (2.6,K12)
+        (2.8,K13)
+        (2.9,K14)
+        (2.9,K03)
+        (3.0,K05)
+        (3.4,K10)
+        (3.9,K02)
+        (11.3,K01)
+        (11.4,K04)
+    };
+\end{axis}
+\end{tikzpicture}

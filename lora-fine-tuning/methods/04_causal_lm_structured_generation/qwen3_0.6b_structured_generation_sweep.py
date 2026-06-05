@@ -22,6 +22,7 @@ EVALUATION_METHOD = "causal_lm_structured_json_generation_parsing"
 COMPLETION_FORMAT = "{\"label\":\"<ham_or_spam>\"}<|im_end|>"
 DEFAULT_MAX_NEW_TOKENS = 12
 DEFAULT_PARSE_FAILURE_LABEL = "ham"
+TOP_NEXT_TOKEN_CONFIG_INDEXES = (8, 11, 6, 9)
 
 
 def project_root() -> Path:
@@ -74,17 +75,7 @@ def make_sweep_id() -> str:
 
 
 def build_sweep_configs() -> list[Any]:
-    cfg = base.SweepConfig
-    return [
-        cfg(1, "Structured LR", 1024, 7e-5, 16, 32, 0.1),
-        cfg(2, "Structured LR", 1024, 1e-4, 16, 32, 0.1),
-        cfg(3, "Structured LR", 1024, 1.5e-4, 16, 32, 0.1),
-        cfg(4, "Structured context", 512, 1e-4, 16, 32, 0.1),
-        cfg(5, "Structured context", 512, 7e-5, 16, 32, 0.1),
-        cfg(6, "Structured LoRA", 1024, 1e-4, 8, 16, 0.1),
-        cfg(7, "Structured LoRA", 1024, 1e-4, 32, 64, 0.1),
-        cfg(8, "Structured dropout", 1024, 1e-4, 16, 32, 0.0),
-    ]
+    return [gen._BASE_SWEEP_CONFIGS[index] for index in TOP_NEXT_TOKEN_CONFIG_INDEXES]
 
 
 def structured_completion(label_text: str) -> str:
@@ -192,6 +183,7 @@ apply_structured_patches()
 def write_manifest(sweep_dir: Path, sweep_id: str, selected_configs: list[Any], args: argparse.Namespace) -> Path:
     manifest_path = gen.write_manifest(sweep_dir, sweep_id, selected_configs, args)
     manifest = base.read_json(manifest_path)
+    manifest["script"] = str(Path(__file__).resolve())
     manifest["completion_format"] = COMPLETION_FORMAT
     manifest["structured_prompt"] = True
     base.write_json(manifest_path, manifest)
@@ -306,6 +298,12 @@ def run_one(args: argparse.Namespace) -> int:
     if result == 0 and args.sweep_id:
         config = base.get_config(args.config_index)
         run_dir = base.config_run_dir(resolve_results_root(args.results_root) / "sweeps" / args.sweep_id, config)
+        config_path = run_dir / "config.json"
+        if config_path.exists():
+            run_config = base.read_json(config_path)
+            run_config["completion_format"] = COMPLETION_FORMAT
+            run_config["structured_prompt"] = True
+            base.write_json(config_path, run_config)
         metrics_path = run_dir / "metrics.json"
         if metrics_path.exists():
             metrics = base.read_json(metrics_path)

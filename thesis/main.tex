@@ -1,4 +1,5 @@
-\includeonly{tex/research}
+% Temporary faster compile: only build the research chapter while editing it.
+% To restore the full thesis compile, uncomment the disabled \include lines below.
 \documentclass{agh-wi}
 \usepackage{scrhack}                        % Formatowanie kodów źródłowych programów
 
@@ -27,6 +28,7 @@
 \usepackage{xurl}                             % Lepsze łamanie długich adresów URL
 \usepackage{tabularx}                         % Rozszerzona wersja środowiska 'tabular'
 \usepackage{longtable}                        % Skład "długich" tabel
+\usepackage{placeins}                         % Kontrola położenia elementów pływających
 \usepackage[ruled,linesnumbered]{algorithm2e} % Algorytmy w formie pseudokodu
 \usepackage{listings} 
 \usepackage[newfloat]{minted}
@@ -121,22 +123,25 @@
 \mainmatter % Część główna
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  % Rozdziały części głównej
-\include{tex/introduction}
-\include{tex/sota}
+% Temporary research-only compile: uncomment these lines to restore the full thesis.
+% \include{tex/introduction}
+% \include{tex/sota}
 \include{tex/research}
-\include{tex/conclusions}
+% \include{tex/conclusions}
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \appendix % Dodatek
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  % Rozdziały dodatku
-\include{tex/example}
+% Temporary research-only compile: uncomment this line to restore the full thesis.
+% \include{tex/example}
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \backmatter % Część końcowa
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  % Rozdziały części końcowej
-\include{tex/notes}
+% Temporary research-only compile: uncomment this line to restore the full thesis.
+% \include{tex/notes}
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  % UWAGA: Jeżeli będziesz tworzyć spis literatury ręcznie, tj. za pomocą otoczenia 
