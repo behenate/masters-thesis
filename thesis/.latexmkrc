@@ -1,4 +1,8 @@
 # .latexmkrc
+# Prefer project builds to use local user binaries, including the fixed
+# thin-arm64 biber wrapper.
+$ENV{'PATH'} = "$ENV{'HOME'}/.local/bin:$ENV{'PATH'}";
+
 $pdf_mode = 1; 
 $out_dir = '.';
 $aux_dir = '.aux';

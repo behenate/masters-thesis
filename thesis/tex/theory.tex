@@ -1,0 +1,781 @@
+\chapter{Podstawy teoretyczne}
+
+% Cel rozdziału: wyjaśnić pojęcia potrzebne do zrozumienia części badawczej,
+% bez opisywania decyzji eksperymentalnych i wyników z rozdziału badawczego.
+% Konkretne wybory modelu, zbiorów danych, parametrów treningu i wyników
+% powinny pozostać w rozdziale badawczym.
+
+\section{Niechciana poczta elektroniczna}
+
+\subsection{Pojęcie spamu}
+
+W odniesieniu do poczty elektronicznej spam oznacza niechcianą wiadomość
+wysyłaną masowo przez nadużycie systemów komunikacji elektronicznej\autocite{nist-csrc-spam-glossary}. 
+Pod tą nazwą mieszczą się jednak wiadomości
+o różnym celu i poziomie ryzyka. W korpusach spamowych pojawiają się
+między innymi reklamy, próby oszustwa, phishing oraz fałszywe
+informacje\autocite{janez-martino-spam-topic-2024}. W zadaniu klasyfikacji
+binarnej takie wiadomości są zwykle sprowadzane do jednej klasy niepożądanej.
+
+\subsection{Typy niepożądanych wiadomości}
+
+\subsubsection{Spam reklamowy}
+
+Spam reklamowy służy przede wszystkim promowaniu produktu, usługi albo strony
+internetowej. Wiadomości zazwyczaj są uciążliwe i prowadzą do zaśmiecania skrzynki
+pocztowej. Reklamowany produkt bywa niskiej jakości,
+niezgodny z opisem, fałszywy albo szkodliwy dla odbiorcy. Dotyczy to zwłaszcza
+ofert leków, suplementów, usług finansowych, inwestycji lub produktów
+obiecujących szybki efekt.
+
+\subsubsection{Phishing}
+
+Phishing polega na pozyskaniu wrażliwych danych, na przykład danych logowania
+lub numerów kart płatniczych, przez podszycie się pod zaufaną firmę albo
+instytucję\autocite{nist-csrc-phishing-glossary}. W poczcie elektronicznej
+atakujący najczęściej próbuje skłonić odbiorcę do kliknięcia linku, otwarcia
+załącznika albo wpisania danych na fałszywej stronie. Adres takiej strony może
+różnić się od prawdziwej witryny tylko pojedynczym znakiem, a jej wygląd może
+naśladować oryginalny serwis. Po przejęciu danych atakujący może przekierować
+użytkownika na prawdziwą stronę, aby zasymulować pwne logowanie i nie
+wzbudzić podejrzeń. Dla zwiększenia skuteczności wiadomości phishingowe często wykorzystują elementy
+psychologiczne takie jak na przykład presja czasu. Przykładem jest
+wiadomość podszywająca się pod InPost, opisana przez Bitdefender w 2024
+roku\autocite{bitdefender-inpost-phishing-2024}:
+
+\begin{framed}
+\begin{displayquote}
+\small\ttfamily\raggedright
+INPOST: Masz paczkę 
+INPOST, która dotarła do
+stacji wysyłkowej, ale nie
+może zostać dostarczona
+ze względu na
+nieprawidłowe dane
+adresowe. Aby ułatwić
+dostawę, zaktualizuj
+informacje o dostawie tak
+szybko, jak to możliwe. Aby
+wprowadzić zmiany, otwórz
+link do pakietu: \textit{[złośliwy link]}
+\end{displayquote}
+\end{framed}
+
+
+\subsubsection{Wiadomości oszukańcze}
+
+Wiadomości oszukańcze (ang. \emph{scam}) opierają się przede wszystkim na
+inżynierii społecznej. Atakujący przyjmuje fałszywą tożsamość i próbuje
+doprowadzić do sytuacji, w której odbiorca sam poda wrażliwe dane albo przekaże
+pieniądze. Początkowo atak przypomina phishing, ale potem przechodzi w bezpośrednią rozmowę z oszustem.
+Manipulacja nie musi nastąpić od razu. W niektórych wariantach kontakt trwa wiele dni lub tygodni,
+a kolejne wiadomości stopniowo budują zaufanie\autocite{advance-fee-fraud}.
+
+W niniejszej pracy analizowane są wiadomości tekstowe, choć sam tekst może być
+tylko jednym elementem oszustwa. Upowszechnienie narzędzi AI umożliwia atakującym
+generowanie fałszywych zdjęć, nagrań głosu, a nawet przeprowadzanie wideorozmów ze zmianą
+wyglądu w czasie rzeczywistym. Takie techniki wzmacniają wiarygodność atakującego i przyspieszają
+zdobywanie zaufania ofiary\autocite{pedersen-deepfake-social-engineering-2025}.
+
+\subsection{Klasyfikacja wiadomości jako problem binarny}
+
+W tej pracy filtrowanie poczty traktowane jest jako klasyfikacja binarna:
+wiadomość może należeć do korespondencji pożądanej, albo
+do klasy \emph{spam}, obejmującej spam reklamowy, phishing i wiadomości
+oszukańcze. Taki zapis odpowiada decyzji filtra poczty: przepuścić wiadomość albo 
+oznaczyć ją jako niepożądaną. Przy ocenie modelu ważny jest więc nie tylko odsetek poprawnych decyzji, lecz także
+typ błędu. \emph{False positive} oznacza przeniesienie poprawnej wiadomości do
+spamu, natomiast \emph{false negative} oznacza przepuszczenie wiadomości
+niepożądanej do skrzynki odbiorczej.
+
+\section{Klasyfikacja tekstu}
+
+\subsection{Reprezentacja dokumentu tekstowego}
+
+W klasyfikacji tekstu dokument otrzymuje etykietę określającą jego klasę. Dla
+wiadomości e-mail takim dokumentem może być sam temat, sama treść albo połączenie
+obu pól. Metadane, nagłówki i informacje techniczne są szczególnie użyteczne, ale w
+publicznych korpusach rzadko mają jednolity format. Celem pracy jest również
+przeanalizowanie skuteczności wykrywania spamu na podstawie samego tekstu.
+
+Model nie przetwarza jednak tekstu w takiej postaci, w jakiej widzi go
+użytkownik. W klasycznych metodach uczenia maszynowego wiadomość zamieniano
+zwykle na wektor cech, na przykład zliczenia słów albo wagi TF-IDF
+\autocite{janez-martino-spam-topic-2024}. W modelach językowych wejściem jest
+sekwencja identyfikatorów tokenów.
+
+Poczta elektroniczna jest pod tym względem mniej regularna niż typowy akapit
+tekstu. Wiadomość może zawierać cytowaną korespondencję, podpis, linki, fragmenty
+HTML, automatyczne stopki albo artefakty kodowania. Część tych elementów pomaga
+w klasyfikacji, a część wprowadza szum. Przygotowanie danych wymaga więc decyzji,
+które fragmenty wiadomości tworzą wejście modelu i jak traktować elementy
+występujące tylko w niektórych zbiorach.
+
+\subsection{Tokenizacja i długość kontekstu}
+
+\subsubsection{Tokeny}
+
+Token jest podstawową jednostką tekstu przetwarzaną przez model językowy. W
+zależności od użytego tokenizatora może odpowiadać całemu słowu, fragmentowi
+słowa, znakowi interpunkcyjnemu, części adresu URL albo tokenowi specjalnemu.
+Dlatego długość wiadomości mierzona w tokenach różni się od długości mierzonej w
+słowach. Link, nazwa domeny, nietypowy zapis kwoty albo celowo zniekształcone
+słowo mogą zostać podzielone na wiele elementów.
+
+Ma to znaczenie szczególnie dla spamu i phishingu. Takie wiadomości często
+zawierają adresy URL, losowe ciągi znaków, nazwy domen, kwoty, daty i nietypowe
+formatowanie. Dwie wiadomości o podobnej liczbie słów mogą więc po tokenizacji
+mieć różną długość. Różnica ta wpływa później na koszt przetwarzania i na to,
+czy cała treść mieści się w wejściu modelu.
+
+\subsubsection{Tokenizacja BPE}
+
+Byte Pair Encoding (BPE) jest algorytmem tworzenia tokenów przez łączenie
+często występujących obok siebie fragmentów tekstu. Na początku tekst jest
+reprezentowany jako krótkie jednostki, na przykład znaki albo bajty. Następnie
+algorytm znajduje najczęstsze pary sąsiednich jednostek i dodaje ich połączenia
+do słownika. Po wielu takich krokach częste fragmenty tekstu stają się
+pojedynczymi tokenami, a rzadsze pozostają zapisane jako kilka krótszych
+jednostek\autocite{sennrich-subword-2016}.
+
+\paragraph{Tokenizacja tekstu na podstawie GPT-2}
+
+W dalszym opisie wykorzystano tokenizer GPT-2, ponieważ jego implementacja jest
+stosunkowo prosta i publicznie dostępna. Nowsze modele często stosują bardziej
+rozbudowane wyrażenia regularne, dodatkowe tokeny specjalne oraz implementacje,
+których pełny przebieg trudniej odtworzyć wyłącznie z opisu modelu.
+
+GPT-2 wykorzystywał wariant bajtowy BPE\autocite{radford-gpt2-2019}. Tokenizer
+działa w trzech głównych krokach:
+
+\begin{enumerate}
+    \item \textbf{Podział tekstu na fragmenty.} Wejściowy tekst jest dzielony za
+    pomocą wyrażenia regularnego. W implementacji GPT-2 użyto następującego
+    wzorca\autocite{openai-gpt2-encoder}:
+
+    \begin{lstlisting}[basicstyle=\small\ttfamily,breaklines=true]
+'s|'t|'re|'ve|'m|'ll|'d| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+
+    \end{lstlisting}
+
+    Dla tekstu \texttt{I've made a calculation! 3+3=6!!} taki podział daje
+    fragmenty:
+
+    \begin{lstlisting}[basicstyle=\small\ttfamily,breaklines=true]
+['I', "'ve", ' made', ' a', ' calculation', '!', ' 3', '+', '3', '=', '6', '!!']
+    \end{lstlisting}
+
+    Zastosowanie takiego wyrażenia nie jest optymalne pod względem kompresji
+    tekstu, ale ogranicza tworzenie tokenów łączących przypadkowe kombinacje
+    liter, cyfr i interpunkcji. W opisie GPT-2 wskazano, że bez takiego
+    ograniczenia BPE tworzyło wiele wariantów tych samych częstych słów, przez
+    co gorzej wykorzystywało ograniczony słownik i pojemność modelu
+    \autocite{radford-gpt2-2019}.
+
+    \item \textbf{Konwersja na bajty.} Każdy fragment jest zapisywany jako
+    sekwencja bajtów UTF-8. Zbiór 256 wartości bajtowych tworzy bazowy słownik
+    tokenizatora, dzięki czemu każdy tekst zapisany w UTF-8 można przedstawić bez
+    osobnego tokenu \emph{unknown}. Daje to przewagę nad bezpośrednim wykorzystaniem
+    innych standardów, na przykład Unicode. Przykładowo znak Unicode \texttt{U+1F40E} 
+    jest reprezentowany w UTF-8 przez cztery bajty: \texttt{[240, 159, 144, 142]}. Tokenizer 
+    nie musi więc mieć osobnego wpisu dla tego znaku w słowniku, ponieważ potrafi
+    zapisać go jako sekwencję istniejących wartości bajtowych.
+
+    \item \textbf{Zastosowanie reguł BPE.} Na reprezentacji bajtowej stosowane są
+    reguły BPE wyuczone wcześniej na korpusie tekstowym. Częste sąsiednie ciągi
+    bajtów są łączone w dłuższe tokeny, a rzadsze fragmenty pozostają rozbite na
+    krótsze jednostki. Podczas inferencji i treningu tokenizer stosuje gotowy słownik i
+    listę połączeń.
+\end{enumerate}
+
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{\input{tex/plots/bpe_tokenization_gpt2}}
+\caption[Uproszczony przebieg tokenizacji bajtowego BPE]{Uproszczony przebieg tokenizacji tekstu \texttt{Lorem ipsum dolor sit amet}
+w wariancie bajtowego BPE stosowanym w GPT-2. Opracowanie własne.}
+\label{fig:bpe-tokenization-gpt2}
+\end{figure}
+
+\subsubsection{Długość kontekstu}
+
+Maksymalna długość wejścia modelu nazywana jest oknem kontekstu. Gdy wiadomość
+po tokenizacji przekracza ten limit, konieczne jest jej obcięcie. Skracanie
+może usunąć ważny fragment, na przykład link umieszczony pod koniec treści.
+Dłuższe okno kontekstu zachowuje więcej informacji, ale zwiększa koszt treningu
+i inferencji. W praktyce długość wejścia jest więc kompromisem między ilością
+zachowanego tekstu a kosztem obliczeniowym.
+
+\subsection{Metryki oceny klasyfikatora}
+
+W problemach binarnych, takich jak klasyfikacja korespondencji, podstawowym elementem ewaluacji modelu jest macierz pomyłek.
+Przedstawia ona 4 możliwe kombinacje klasyfikacji.
+W tej pracy klasą pozytywną jest spam, phishing lub inna wiadomość niepożądana, a klasą negatywną pożądana korespondencja.
+
+\begin{table}[H]
+    \centering
+    \caption{Macierz pomyłek dla binarnej klasyfikacji wiadomości}
+    \label{tab:confusion-matrix}
+    \renewcommand{\arraystretch}{1.25}
+    \input{tex/tables/confusion_matrix}
+\end{table}
+
+\emph{Accuracy} podaje udział poprawnych decyzji w całym zbiorze:
+
+\[
+\mathrm{accuracy} =
+\frac{TP + TN}{TP + TN + FP + FN}.
+\]
+
+Przy nierównych klasach samo \emph{accuracy} może ukrywać problemy z
+rozpoznawaniem klasy rzadszej. Model wybierający głównie klasę większościową
+nadal może osiągnąć wysoki wynik, mimo że przepuszcza wiele przykładów drugiej
+klasy. Dlatego obok tej metryki stosuje się miary opisujące osobno decyzje dla
+spamu i wiadomości pożądanych.
+
+\emph{Precision} określa, jaki odsetek wiadomości oznaczonych przez model jako
+spam rzeczywiście należał do tej klasy:
+
+\[
+\mathrm{precision} =
+\frac{TP}{TP + FP}.
+\]
+
+\emph{Recall} pokazuje, jaki odsetek rzeczywistych wiadomości spamowych został
+wykryty:
+
+\[
+\mathrm{recall} =
+\frac{TP}{TP + FN}.
+\]
+
+\emph{Specificity} pełni podobną rolę dla klasy negatywnej. Mierzy odsetek
+wiadomości pożądanych, których model nie oznaczył jako spam:
+
+\[
+\mathrm{specificity} =
+\frac{TN}{TN + FP}.
+\]
+
+F1 jest średnią harmoniczną \emph{precision} i \emph{recall}:
+
+\[
+F1 =
+2 \cdot \frac{\mathrm{precision} \cdot \mathrm{recall}}
+{\mathrm{precision} + \mathrm{recall}}.
+\]
+
+Metryka oddaje ilość błędnych alarmów i przepuszczonych wiadomości spamowych. Niska wartość jednej z
+dwóch składowych mocno obniża F1, dlatego wynik nie premiuje modeli dobrych tylko
+w jednym z tych aspektów.
+
+\emph{Balanced accuracy} uśrednia \emph{recall} i \emph{specificity}, więc w
+równym stopniu uwzględnia klasę pozytywną i negatywną:
+
+\[
+\mathrm{balanced\ accuracy} =
+\frac{\mathrm{recall} + \mathrm{specificity}}{2}.
+\]
+
+
+\section{Modele językowe}
+
+\subsection{Zadanie modelowania języka}
+
+Model językowy opisuje prawdopodobieństwo sekwencji tokenów. Dla tekstu
+zapisanego jako \(x_1, x_2, \ldots, x_n\) oznacza to ocenę, jak prawdopodobna
+jest dana kolejność elementów języka. Taka definicja jest użyteczna także wtedy,
+gdy interesuje nas nie prawdopodobieństwo całego tekstu, lecz brakujący albo
+kolejny fragment. Model uczy się bowiem zależności między tokenami
+występującymi w korpusie
+\autocite{bengio-neural-probabilistic-language-model}.
+
+Współczesny model językowy przechodzi najpierw trening na dużym
+zbiorze tekstu, bez etykiet przygotowanych dla jednego zadania. Uczy się wtedy
+składni, typowych związków między słowami, sposobów zapisu informacji oraz
+części regularności obecnych w danych treningowych. Dopiero później taki model
+można dostosować do konkretnego problemu, na przykład do rozróżniania wiadomości
+\texttt{spam} i \texttt{ham}. Nie oznacza to trenowania modelu od początku.
+Zwykle wystarcza dalsze uczenie na mniejszym korpusie zadaniowym.
+
+W tej pracy model językowy zastępuje ręcznie zaprojektowany wektor cech opisany
+we wcześniejszej części rozdziału. Wiadomość jest zamieniana na sekwencję
+tokenów, a model wykorzystuje reprezentacje wyuczone podczas pretrainingu.
+Część badawcza sprawdza, jak skutecznie takie reprezentacje da się dostroić do wykrywania
+niepożądanej korespondencji.
+
+\subsection{Modele przyczynowe i przewidywanie następnego tokenu}
+
+W modelowaniu przyczynowym (ang. \emph{causal language modeling}) model otrzymuje
+wcześniejsze tokeny i na ich podstawie przewiduje następny. Nie korzysta z
+informacji po prawej stronie przewidywanej pozycji, więc zależność odpowiada
+generowaniu tekstu od lewej do prawej. Dla sekwencji \(x_1, \ldots, x_n\)
+prawdopodobieństwo tekstu zapisuje się jako iloczyn prawdopodobieństw kolejnych
+tokenów:
+
+\[
+P(x_1, \ldots, x_n) =
+\prod_{i=1}^{n} P(x_i \mid x_1, \ldots, x_{i-1}).
+\]
+
+Taki sposób uczenia wykorzystano między innymi w rodzinie modeli GPT
+\autocite{radford-gpt2-2019,brown-language-models-few-shot}. Podczas generowania
+model zwraca rozkład prawdopodobieństwa nad słownikiem tokenizatora. Z tego
+rozkładu można wybrać najbardziej prawdopodobny token albo próbkować tokeny z
+uwzględnieniem parametrów dekodowania. Ten sam rozkład może posłużyć do
+klasyfikacji.
+
+W zadaniu binarnym prompt można ułożyć tak, aby następnym oczekiwanym elementem
+była etykieta klasy. Model nie generuje wtedy pełnej odpowiedzi. Wystarczy
+porównać prawdopodobieństwa tokenów odpowiadających etykietom \texttt{spam} i
+\texttt{ham}. Decyzja klasyfikatora wynika z rozkładu prawdopodobieństwa w
+jednej pozycji, a nie z późniejszego parsowania tekstu zwróconego przez model.
+Takie podejście zależy jednak od tokenizacji etykiet oraz od sformułowania
+promptu. Jeżeli etykieta składa się z wielu tokenów albo prompt kieruje model w
+stronę innej odpowiedzi, porównanie staje się mniej jednoznaczne.
+
+\subsection{Modele instrukcyjne i format czatu}
+
+Sam pretraining uczy model przewidywania tekstu, ale nie gwarantuje, że model
+będzie wykonywał polecenia użytkownika w przewidywalnym formacie. Modele, z
+którymi zazwyczaj mamy kontakt, przechodzą więc dodatkowe dostrajanie
+instrukcyjne (ang. \emph{instruction tuning}). Dane treningowe mają wtedy postać instrukcji i
+oczekiwanej odpowiedzi, a celem jest dopasowanie zachowania modelu do poleceń
+podawanych wprost przez użytkownika. W praktyce etap ten może być łączony z
+uczeniem z informacji zwrotnej od ludzi\autocite{ouyang-instruction-following}.
+
+Modele instrukcyjne często pracują w formacie czatu. Zamiast pojedynczego ciągu
+tekstu wejście składa się z komunikatów o rolach. Podstawowy format dla dużych
+modeli językowych to \texttt{system}, \texttt{user} i \texttt{assistant}. Komunikat
+systemowy określa ogólne zachowanie modelu, komunikat użytkownika zawiera właściwe polecenie, a odpowiedź
+asystenta jest tekstem generowanym przez model. Natomiast nowoczesne, zaawansowane
+modele poszerzają liczbę ról o pola takie jak \texttt{think}, w którym model 
+generuje tekst służący do analizy problemu przed podaniem odpowiedzi, czy też bloków 
+\texttt{tool\_call}, za pomocą których model może użyć zewnętrznych narzędzi w celu 
+pozyskania informacji lub przeprowadzenia obliczeń.  Przed przekazaniem danych do
+modelu rozmowa zostaje zamieniona na sekwencję tokenów według szablonu czatu,
+który dodaje tokeny specjalne i znaczniki ról.
+
+Uproszczony przykład takiego zapisu w formacie ChatML pokazuje
+listing~\ref{lst:chatml-weather-template}\autocite{kim-chatml-harmony-2025}.
+
+\begin{lstlisting}[
+    basicstyle=\ttfamily\footnotesize,
+    breaklines=true,
+    caption={Przykład szablonu czatu w stylu ChatML z blokiem analizy i wywołaniem narzędzia.},
+    label={lst:chatml-weather-template}
+]
+<|im_start|>system
+Jesteś pomocnym asystentem, odpowiadaj na pytania użytkownika.
+# Tools
+<tools>
+{"type": "function", "function": {"name": "get_weather", "description": "Get weather for a city", "parameters": {"type": "object", "properties": {"city": {"type": "string"}, "unit": {"type": "string"}}, "required": ["city"]}}}
+</tools>
+Dla każdego wywołania funkcji zwróć JSON w <tool_call></tool_call>.
+<|im_end|>
+<|im_start|>user
+Jaka jest pogoda w Tokio?<|im_end|>
+<|im_start|>assistant
+<think>
+Trzeba sprawdzic pogode dla Tokio. Użyję funkcji `get_weather`.
+</think>
+Sprawdze pogode w Tokio.
+<tool_call>
+{"name": "get_weather", "arguments": {"city": "Tokyo", "unit": "celsius"}}
+</tool_call><|im_end|>
+<|im_start|>user
+<tool_response>
+{"temperature": 22, "condition": "partly cloudy"}
+</tool_response><|im_end|>
+<|im_start|>assistant
+W Tokio jest 22 stopnie Celsjusza i czesciowe zachmurzenie.<|im_end|>
+\end{lstlisting}
+
+W klasyfikacji wiadomości taki format sprowadza zadanie do instrukcji:
+oceń treść wiadomości i zwrócić jedną z dwóch etykiet.
+Pozostaje jednak problem kontroli odpowiedzi. Zamiast samego słowa
+\texttt{spam} model może wygenerować pełne zdanie, uzasadnienie albo odpowiedź w
+niepełnym formacie. Metody oparte na generowaniu wymagają więc parsera, który
+zamienia tekst odpowiedzi na etykietę. Metoda przewidywania następnego tokenu
+ogranicza ten problem, ponieważ porównuje prawdopodobieństwa etykiet przed
+wygenerowaniem dłuższej odpowiedzi.
+
+Model instrukcyjny nadal trzeba dopasować do zadania, ale daje praktyczny punkt
+startowy. Rozpoznaje strukturę polecenia, pracuje w formacie czatu i
+może zostać dalej dostrojony na przykładach zawierających wiadomości e-mail oraz
+oczekiwane etykiety. Ta własność jest później wykorzystywana przy porównaniu
+wariantów testowanych klasyfikacji: klasyfikacji sekwencji, generowania etykiety,
+przewidywania następnego tokenu oraz generowania odpowiedzi strukturyzowanej.
+
+\pagebreak
+
+\section{Architektura Transformer}
+
+Architektura Transformer\autocite{vaswani-attention-is-all-you-need} składa się
+z powtarzanych bloków, które przetwarzają reprezentacje kolejnych pozycji
+sekwencji. Po tokenizacji identyfikatory tokenów są zamieniane na wektory. Do
+wektorów dodaje się informację o położeniu tokenu w tekście, a następnie cała
+sekwencja przechodzi przez kolejne bloki Transformera. Każdy blok aktualizuje
+opis danej pozycji na podstawie jej dotychczasowej postaci oraz kontekstu
+pozostałych tokenów.
+
+Wariant decoder-only, używany w wielu generatywnych modelach językowych, działa
+przyczynowo: na podstawie wcześniejszych tokenów oblicza rozkład
+prawdopodobieństwa następnego tokenu. Pojedynczy blok łączy mechanizm
+self-attention z siecią feed-forward. Pierwszy element wiąże informacje z różnych
+pozycji sekwencji, a drugi przekształca reprezentację każdej pozycji osobno. W
+praktycznych implementacjach stosuje się także normalizację warstw i połączenia
+rezydualne, które stabilizują przepływ informacji przez wiele warstw
+modelu\autocite{vaswani-attention-is-all-you-need}.
+
+\begin{landscape}
+\begin{figure}[p]
+\hspace*{-0.3cm}\begin{minipage}{\linewidth}
+\centering
+\makebox[\linewidth][c]{\resizebox{0.98\linewidth}{!}{\input{tex/plots/transformer_overview}}}
+\caption{Uproszczony przepływ informacji w modelu językowym opartym na
+architekturze Transformer dla sekwencji \texttt{Lorem ipsum dolor sit amet}.
+Opracowanie własne.}
+\label{fig:transformer-overview}
+\end{minipage}
+\end{figure}
+\end{landscape}
+
+\subsection{Mechanizm self-attention}
+
+Mechanizm self-attention jest jednym z podstawowych elementów architektury
+Transformer. Wyznacza wagi relacji między tokenami w tej samej sekwencji, a
+następnie wykorzystuje je do obliczenia nowej reprezentacji każdego tokenu. W
+klasycznych modelach sekwencyjnych
+informacja przechodziła zwykle krok po kroku przez kolejne pozycje. Transformer
+pozwala natomiast każdej pozycji porównać własną reprezentację z reprezentacjami
+innych pozycji w oknie kontekstu. Dzięki temu w jednej warstwie można powiązać
+fragmenty wiadomości oddalone od siebie, na przykład nazwę nadawcy, link w
+treści i późniejszą prośbę o wykonanie płatności.
+
+Dla macierzy reprezentacji wejściowych \(X\) warstwa self-attention tworzy trzy
+rzutowania liniowe: zapytania \(Q\), klucze \(K\) oraz wartości \(V\):
+
+\[
+Q = XW_Q,\qquad K = XW_K,\qquad V = XW_V.
+\]
+
+Zapytania określają, czego dana pozycja szuka w sekwencji. Klucze służą do
+obliczenia dopasowania z innymi pozycjami, a wartości są wektorami, z których
+powstaje nowa reprezentacja. Wagi uwagi wyznacza się przez porównanie zapytań z
+kluczami. W wersji scaled dot-product attention ma to postać:
+
+\[
+\mathrm{Attention}(Q,K,V) =
+\mathrm{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V,
+\]
+
+gdzie \(d_k\) oznacza wymiar wektorów kluczy. Iloczyn \(QK^T\) tworzy macierz
+podobieństw między pozycjami, a funkcja \(\mathrm{softmax}\) zamienia te wartości
+na wagi sumujące się do jedności. Warstwa zwraca ważoną sumę wektorów \(V\),
+osobną dla każdej pozycji w sekwencji.
+
+W modelach językowych generujących tekst self-attention jest uzupełniany maską
+przyczynową. Maska blokuje dostęp do tokenów znajdujących się po prawej stronie
+aktualnej pozycji. Model korzysta więc z wcześniejszego kontekstu, ale podczas
+przewidywania następnego tokenu nie widzi przyszłych elementów sekwencji. Jest
+to ten sam warunek, który wcześniej opisano przy modelowaniu przyczynowym.
+
+Warstwa uwagi zwykle działa w wersji wielogłowej (ang. \emph{multi-head
+attention}). Każda głowa ma własne rzutowania \(Q\), \(K\) i \(V\), a uzyskane
+wyniki są później łączone. Umożliwia to równoległe modelowanie kilku relacji
+między tokenami. W wiadomości e-mail część głów może silniej wiązać słowa
+charakterystyczne dla prośby o działanie, fragmenty adresów URL albo relacje
+między tematem i treścią wiadomości. W rzeczywistości poszczególnym głowom
+rzadko da się przypisać jednoznaczne działanie. W większości przypadków
+działanie jest trudne lub niemożliwe do rozszyfrowania. Model otrzymuje
+jednak wiele osobnych sposobów ważenia informacji w tej samej sekwencji.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{img/transformer_multi_headed_self_attention_recap}
+\caption{Schemat działania mechanizmu multi-head self-attention. Autor:
+Jay Alammar, źródło: \emph{The Illustrated Transformer}
+\autocite{alammar-illustrated-transformer}.}
+\label{fig:multi-head-self-attention-recap}
+\end{figure}
+
+\subsection{Okno kontekstu i koszt przetwarzania sekwencji}
+
+Okno kontekstu określa maksymalną liczbę tokenów, które model przetwarza w
+jednym przebiegu.
+
+Do reprezentacji tokenów dodaje się informację o pozycji w sekwencji. W
+oryginalnym Transformerze zastosowano sinusoidalne reprezentacje
+pozycyjne\autocite{vaswani-attention-is-all-you-need}. Nowsze modele mogą używać
+innych sposobów kodowania pozycji. Informacja o pozycji pozwala modelowi
+rozróżnić te same tokeny występujące w różnych miejscach tekstu.
+
+Koszt pamięciowy i obliczeniowy przetwarzania kontekstu w tradycyjnym modelu
+self-attention skaluje się kwadratowo względem jego długości. Dla sekwencji o długości
+\(n\) iloczyn \(QK^T\) tworzy macierz \(n \times n\), ponieważ warstwa attention
+porównuje każdą pozycję z każdą inną pozycją w sekwencji. Przejście z 512 do
+1024 tokenów zwiększa rozmiar tej macierzy czterokrotnie. 
+
+Koszt obsługi długiego kontekstu jest jedną z głównych barier w rozwoju modeli
+językowych. Aby ograniczyć koszt pamięciowy mechanizmu attention, stosuje się
+różne techniki, między innymi: \emph{linear attention}, \emph{sparse attention},
+attention o stałym wzorcu połączeń, warianty blokowe lub blokowo-rzadkie oraz
+metody oparte na grupowaniu tokenów\autocite{sun-efficient-attention-survey}.
+
+
+\subsection{Sieć feed-forward w bloku Transformer}
+
+Po warstwie attention w każdym bloku Transformera znajduje się sieć
+feed-forward (ang. \emph{feed-forward neural network}, FFN). Jej wejściem jest
+reprezentacja tokenu po uwzględnieniu kontekstu przez attention. Ta sama para
+przekształceń liniowych jest stosowana osobno dla każdej pozycji sekwencji:
+
+\[
+\mathrm{FFN}(x)=\sigma(xW_1+b_1)W_2+b_2.
+\]
+
+W oryginalnej architekturze Transformer funkcją \(\sigma\) była
+ReLU\autocite{vaswani-attention-is-all-you-need}; w nowszych modelach spotyka
+się także inne aktywacje i warianty bramkowane. Układ pozostaje podobny:
+pierwsze rzutowanie rozszerza wymiar wewnętrzny, aktywacja wprowadza
+nieliniowość, a drugie rzutowanie sprowadza wynik z powrotem do wymiaru
+używanego przez resztę modelu.
+
+FFN przetwarza każdą pozycję osobno, ale korzysta z reprezentacji wzbogaconej
+wcześniej przez attention. W bloku Transformer attention zbiera więc informacje
+z sekwencji, a FFN wykonuje nieliniowe przekształcenie tej reprezentacji.
+
+\begin{figure}[H]
+\centering
+\input{tex/plots/feed_forward_network}
+\caption{Uproszczony schemat sieci feed-forward typu MLP w bloku Transformera.}
+\label{fig:feed-forward-network}
+\end{figure}
+
+\section{Dostrajanie modeli językowych}
+
+\subsection{Fine-tuning}
+
+Dostrajanie modelu (ang. \emph{fine-tuning}) polega na dalszym trenowaniu
+modelu wstępnie trenowanego na danych związanych z konkretnym zadaniem. Model nie
+jest wtedy uczony od początku. Punkt wyjścia stanowią parametry uzyskane podczas
+pretrenowania, a trening zadaniowy przesuwa zachowanie modelu w stronę danych,
+formatu odpowiedzi i kryterium oceny potrzebnych w danym zastosowaniu. W
+przypadku modeli instrukcyjnych takim treningiem mogą być pary złożone z
+polecenia oraz oczekiwanej odpowiedzi\autocite{ouyang-instruction-following}.
+
+Fine-tuning różni się zarówno od pretrenowania, jak i od samej inferencji.
+Pretrenowanie buduje ogólną reprezentację języka na dużym, zróżnicowanym
+korpusie. Dostrajanie wykorzystuje mniejszy zbiór przykładów, zwykle
+przygotowany pod określoną funkcję modelu. Inferencja jest natomiast etapem
+użycia gotowego modelu: parametry pozostają stałe, a model oblicza odpowiedź dla
+nowego wejścia.
+
+Dostrajanie stosuje się wtedy, gdy samo sformułowanie zapytania dla modelu nie daje
+wystarczająco stabilnego zachowania albo gdy model musi konsekwentnie używać
+określonego sposobu odpowiedzi. W zadaniach klasyfikacyjnych oznacza to
+powtarzalne przypisywanie tekstu do etykiet, a nie jedynie jednorazowe
+poproszenie modelu o ocenę przykładu. Taki trening ma też słabszą stronę:
+jeżeli zbiór danych jest mały albo wąski tematycznie, model może dopasować się
+do cech danych treningowych zamiast do ogólnej reguły zadania
+\autocite[rozdz.~5.2]{goodfellow-deep-learning}. Gdy problem wynika z artefaktów
+konkretnego korpusu, taki mechanizm można opisać jako uczenie skrótów, czyli
+wykorzystanie łatwych, przypadkowych cech danych zamiast właściwej zależności
+między tekstem i etykietą\autocite{shortcut-learning}.
+
+\subsection{Instruction tuning}
+
+Dostrajanie instrukcyjne (ang. \emph{instruction tuning}) jest formą
+nadzorowanego dostrajania na parach: polecenie zapisane w języku naturalnym i
+oczekiwana odpowiedź. Przykład ma strukturę zadania, dlatego trening uczy model
+rozpoznawania intencji polecenia oraz generowania odpowiedzi w przyjętej
+konwencji. W pracach nad rodziną FLAN pokazano ten schemat jako dostrajanie na
+zbiorze wielu zadań opisanych instrukcjami\autocite{wei-finetuned-language-models}.
+
+Celem dostrajania instrukcyjnego jest zamiana modelu kontynuującego tekst
+w model reagujący na polecenie użytkownika. Po samym pretrenowaniu model zna 
+wiele wzorców językowych, ale odpowiedź na instrukcję może traktować jak zwykłą kontynuację
+dokumentu. Instruction tuning przesuwa zachowanie modelu w stronę odpowiedzi
+powiązanych z instrukcją, utrzymanych w określonej roli i bardziej
+przewidywalnych dla użytkownika. Gotowe modele udostępniane jako warianty
+\emph{instruct}, \emph{chat} albo \emph{assistant} zwykle są już po takim
+etapie. Dalsze dostrajanie nie uczy ich więc prowadzenia rozmowy od początku,
+lecz dopasowuje istniejące zachowanie instrukcyjne do konkretnego zadania.
+
+W modelach czatowych ten etap zwykle realizuje się jako \emph{supervised
+fine-tuning} (SFT) na rozmowach z rolami, takimi jak \texttt{system},
+\texttt{user} i \texttt{assistant}. Komunikaty użytkownika oraz komunikat
+systemowy tworzą kontekst, a trenowana odpowiedź znajduje się po stronie
+asystenta. W podejściu takim jak InstructGPT punktem uczenia są przykłady
+oczekiwanego zachowania dla podanych promptów
+\autocite{ouyang-instruction-following}. W praktycznych implementacjach SFT
+przekłada się to zwykle na trenowanie odpowiedzi asystenta w kontekście
+wcześniejszych komunikatów, a nie na bezwarunkowe kontynuowanie całego zapisu
+rozmowy.
+
+Kontrola formatu pozostaje osobnym problemem. Model instrukcyjny może rozumieć
+polecenie, a mimo to odpowiedzieć pełnym zdaniem, dodać uzasadnienie albo użyć
+formatu innego niż oczekiwany. Dlatego w zadaniach wymagających krótkiej
+etykiety, obiektu JSON albo innej struktury odpowiedzi potrzebne bywa dalsze
+dostrajanie zadaniowe oraz osobna ewaluacja sposobu odczytywania wyniku.
+
+\subsection{Parameter-efficient fine-tuning}
+
+Pełne dostrajanie aktualizuje wszystkie parametry modelu. Przy małych modelach
+może być to akceptowalne, ale wraz ze wzrostem liczby parametrów rosną wymagania
+pamięciowe, czas treningu oraz koszt przechowywania kolejnych wersji modelu. W
+praktyce problemem jest nie tylko sam trening. Każdy wariant dostrojenia może
+wymagać osobnej kopii wag, co szybko utrudnia porównywanie konfiguracji.
+
+Parameter-efficient fine-tuning (PEFT) ogranicza ten koszt przez trenowanie tylko
+niewielkiej części parametrów albo przez dodanie małych modułów adaptacyjnych do
+zamrożonego modelu bazowego. Taki kierunek rozwijano między innymi w metodach
+adapterowych\autocite{houlsby-parameter-efficient-transfer}. Przeglądy PEFT
+opisują wiele wariantów tego podejścia. Różnią się konstrukcją, ale sprowadzają
+adaptację modelu do trenowania małego fragmentu architektury
+\autocite{lialin-peft-guide}.
+
+Przy porównywaniu wielu wariantów PEFT ma prostą zaletę organizacyjną. Model
+bazowy pozostaje jeden, a kolejne wersje można zapisywać jako małe zestawy
+parametrów. Ułatwia to powtarzanie treningów i przechowywanie punktów
+kontrolnych.
+
+\subsection{LoRA}
+
+LoRA (ang. \emph{Low-Rank Adaptation}) należy do metod PEFT. Wagi modelu
+bazowego pozostają zamrożone, a trening obejmuje dodatkową, niskorzędową
+poprawkę dla wybranych warstw liniowych\autocite{hu-lora}. Zamiast aktualizować
+macierz wag \(W\), metoda uczy zmianę
+\(\Delta W\), którą można zapisać jako iloczyn dwóch mniejszych macierzy:
+
+\[
+W' = W + \Delta W,\qquad
+\Delta W = \frac{\alpha}{r}BA.
+\]
+
+\begin{figure}[H]
+\centering
+\resizebox{0.96\textwidth}{!}{\input{tex/plots/lora_adapter}}
+\caption[Uproszczony schemat adaptera LoRA]{Uproszczony schemat adaptera LoRA. Macierz bazowa pozostaje zamrożona,
+a podczas dostrajania aktualizowane są tylko dwie małe macierze niskiego
+rzędu. Opracowanie własne.}
+\label{fig:lora-adapter}
+\end{figure}
+
+Parametr \(r\) określa rząd adaptacji, czyli rozmiar wewnętrznego wymiaru
+dodatkowych macierzy. Większa wartość daje adapterowi więcej swobody, ale
+zwiększa liczbę trenowanych parametrów. Parametr \(\alpha\) skaluje wpływ
+adaptera na wynik warstwy. W praktycznych konfiguracjach pojawia się także
+dropout LoRA, który losowo wygasza część aktywacji adaptera podczas treningu i
+działa jako forma regularyzacji.
+
+Po zakończeniu treningu adapter LoRA można przechowywać oddzielnie od modelu
+bazowego. Dzięki temu wiele wariantów treningu nie wymaga zapisywania pełnych
+kopii modelu. W razie potrzeby adapter może zostać załadowany razem z modelem
+bazowym albo scalony z jego wagami.
+
+\subsection{Punkty kontrolne i przeuczenie}
+
+Punkt kontrolny (ang. \emph{checkpoint}) jest zapisanym stanem treningu z
+określonego momentu. W zależności od konfiguracji może obejmować wagi modelu lub
+adaptera, stan optymalizatora i dodatkowe metadane potrzebne do wznowienia pracy.
+W przypadku metod adapterowych najważniejszy jest zwykle stan adaptera, ponieważ
+model bazowy pozostaje niezmieniony.
+
+Analiza punktów kontrolnych pomaga odróżnić samo dopasowanie do zbioru
+treningowego od generalizacji. Model może poprawiać wynik na przykładach
+treningowych, a jednocześnie tracić jakość na danych walidacyjnych lub na
+zbiorach o innej charakterystyce. W takim przypadku końcowy stan treningu nie
+musi być najlepszym wyborem. Lepszy może okazać się wcześniejszy punkt
+kontrolny, zapisany przed nasileniem przeuczenia.
+
+Dlatego przy dostrajaniu modeli językowych porównuje się wyniki w czasie, a nie
+tylko ostatnią zapisaną wersję. Dotyczy to zwłaszcza małych zbiorów danych i
+zadań, w których źródła przykładów różnią się stylem, formatem lub rozkładem
+klas.
+
+\section{Modele językowe jako klasyfikatory}
+
+Ten sam model językowy można wykorzystać do klasyfikacji na kilka sposobów. W
+schemacie najbliższym klasycznej klasyfikacji tekstu do reprezentacji sekwencji
+dodaje się głowicę, która zwraca etykietę. Wynik ma wtedy postać decyzji jednej
+z klas. Model nie generuje odpowiedzi tekstowej, ale nadal korzysta z
+reprezentacji wyuczonych podczas wcześniejszego treningu językowego.
+
+W modelach generatywnych klasyfikację można zapisać jako krótką instrukcję.
+Model otrzymuje treść wiadomości i dopisuje etykietę, na przykład \texttt{spam}
+albo \texttt{ham}. Taki zapis pasuje do modeli instrukcyjnych, jednak
+wynik trzeba później odczytać z wygenerowanego tekstu. Jeżeli model dopisze
+komentarz, wybierze inny format albo zwróci dłuższą odpowiedź, o wyniku zaczyna
+decydować również parser.
+
+Można też zrezygnować z generowania odpowiedzi i porównać prawdopodobieństwa
+tokenów odpowiadających etykietom. Decyzja wynika wtedy z rozkładu następnego
+tokenu dla możliwych klas. Ten wariant ogranicza problem parsowania, ale jest
+wrażliwy na zapis etykiet i sposób tokenizacji. Bardziej kontrolowaną odmianą
+generowania jest odpowiedź ustrukturyzowana, na przykład obiekt z polem
+przechowującym etykietę. Ułatwia to późniejsze przetwarzanie, choć nadal wymaga
+sprawdzenia, czy model zachował oczekiwany format.
+
+Te podejścia różnią się sposobem treningu, kosztem inferencji i miejscem, w
+którym może pojawić się błąd: w głowicy klasyfikacyjnej, w generowaniu tekstu
+albo w parserze. Dlatego w części badawczej potraktowano je jako osobne metody
+użycia modelu językowego do klasyfikacji.
+
+\section{Modele z otwartymi wagami}
+
+\subsection{Otwarte wagi i możliwość uruchomienia lokalnego}
+
+Sposób udostępnienia modelu wpływa na to, czy eksperyment da się później
+odtworzyć. W przypadku modeli zamkniętych użytkownik korzysta zwykle z gotowej
+usługi, na przykład przez API. Taki tryb jest wygodny w integracjach, ale
+ogranicza kontrolę nad wersją modelu i środowiskiem uruchomieniowym. W badaniu
+wynik może wtedy zależeć od limitów usługi, zmian po stronie dostawcy albo
+wersji modelu, której nie da się samodzielnie zamrozić w repozytorium.
+
+W modelach z otwartymi wagami publicznie dostępne są pliki parametrów. Model
+można uruchomić lokalnie albo na własnym serwerze, jeśli pozwala na to licencja.
+To ona określa zakres swobody, dlatego samo opublikowanie plików nie oznacza
+jeszcze dowolnego użycia modelu. W tej pracy otwarte wagi są potrzebne głównie
+po to, aby kontrolować wersję modelu, środowisko, sposób dostrajania i zapis
+adapterów. Zmniejsza to zależność od zewnętrznej usługi.
+
+\subsection{Rozmiar modelu, koszt treningu i inferencji}
+
+Liczba parametrów przekłada się na wymagania pamięciowe. Większy model potrzebuje
+więcej pamięci na wagi, a podczas treningu dochodzą aktywacje, gradienty i stan
+optymalizatora. Dostrajanie adapterowe ogranicza część aktualizowanych
+parametrów, lecz model bazowy nadal musi być załadowany w pamięci urządzenia.
+Znaczenie ma także długość kontekstu i rozmiar partii danych (ang. \emph{batch size}),
+czyli liczba przykładów przetwarzanych w jednym kroku.
+
+Różnica jest widoczna już w prostym rachunku pamięci. Same wagi zapisane w
+FP16 albo BF16 zajmują około 2 bajty na parametr, więc model o 0,6 mld
+parametrów potrzebuje około 1,2 GB pamięci na same parametry. Przy pełnym
+treningu z optymalizatorem Adam lub AdamW dochodzą gradienty, kopia wag w FP32
+oraz dwa stany optymalizatora. W typowym treningu mieszanej precyzji daje to
+około 16 bajtów na parametr, czyli w przybliżeniu osiem razy więcej niż same
+wagi w FP16/BF16\autocite{micikevicius-mixed-precision-training,rajbhandari-zero}.
+Dla modelu 0,6B jest to rząd wielkości od 9 do 10 GB jeszcze przed doliczeniem
+aktywacji, narzutu biblioteki i pamięci zależnej od długości sekwencji oraz
+rozmiaru partii danych. LoRA zmniejsza ten koszt, ponieważ gradienty i stan
+optymalizatora dotyczą głównie adapterów, ale model bazowy nadal musi być
+obecny w pamięci\autocite{hu-lora}.
+
+Rysunek~\ref{fig:inference-finetuning-cost} zestawia te elementy dla inferencji
+i dostrajania.
+
+\begin{figure}[H]
+\centering
+\resizebox{0.98\textwidth}{!}{\input{tex/plots/inference_finetuning_cost}}
+\caption[Porównanie kosztu inferencji i dostrajania]{Porównanie składników kosztu inferencji i dostrajania modelu.
+Schemat jakościowy, opracowanie własne.}
+\label{fig:inference-finetuning-cost}
+\end{figure}
+
+Podczas inferencji nie przechowuje się gradientów ani stanu optymalizatora.
+Pozostaje jednak pamięć na wagi i obliczenia wykonywane dla każdego wejścia. Z
+tego powodu mały model może lepiej pasować do praktycznego klasyfikatora nawet
+wtedy, gdy w ogólnych benchmarkach wypada słabiej: łatwiej uruchomić go na
+tańszym serwerze, szybciej powtarzać eksperymenty i przechowywać kolejne
+adaptery. W tej pracy rozmiar modelu jest traktowany głównie jako ograniczenie
+praktyczne.

@@ -1,0 +1,13 @@
+\begin{tabular}{lrrrrrr}
+\hline
+\textbf{Metoda} & \textbf{Partia} & \textbf{Ładowanie [s]} & \textbf{Inferencja [s]} & \textbf{Wiad./s} & \textbf{RAM [MiB]} & \textbf{Model [MiB]} \\
+\hline
+TF-IDF + NB & 1000 & 1.063 & 0.095 & 10558.3 & 337.1 & 13.0 \\
+TF-IDF + LR & 1000 & 1.167 & 0.096 & 10461.7 & 350.3 & 9.2 \\
+TF-IDF + SVM & 1000 & 1.164 & 0.450 & 2221.3 & 370.8 & 8.1 \\
+\texttt{fastText} & 1000 & 0.702 & 0.114 & 8759.1 & 1391.5 & 980.3 \\
+MiniLM + LR & 64 & 0.172 & 2.970 & 336.7 & 809.1 & 87.3 \\
+\texttt{DistilBERT} & 32 & 0.302 & 17.280 & 57.9 & 563.2 & 256.1 \\
+Qwen3 + LoRA, \texttt{03} & 16 & 2.139 & 136.720 & 7.3 & 3465.9 & 1525.9 \\
+\hline
+\end{tabular}

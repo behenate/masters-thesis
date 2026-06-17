@@ -1,11 +1,11 @@
 \begin{tikzpicture}
 \begin{axis}[
-    width=0.74\textwidth,
-    height=0.6\textwidth,
+    width=0.78\textwidth,
+    height=0.58\textwidth,
     xbar,
     xmode=log,
     xmin=2500,
-    xmax=1700000,
+    xmax=700000,
     xlabel={Liczba wiadomości (skala logarytmiczna)},
     symbolic y coords={all,enron,trec,ceas,assassin,spamham,fraudulent,nazario,ling},
     ytick=data,
@@ -21,13 +21,13 @@
         \texttt{ling}
     },
     y dir=reverse,
-    enlarge y limits=0.06,
+    enlarge y limits=0.08,
     axis x line*=bottom,
     axis y line*=left,
     xmajorgrids,
     grid style={plotGrid},
     tick style={draw=none},
-    yticklabel style={font=\footnotesize},
+    yticklabel style={font=\scriptsize},
     xticklabel style={font=\footnotesize},
     label style={font=\small},
     point meta=explicit symbolic,
@@ -38,7 +38,7 @@
         xshift=1.5pt,
     },
     legend style={
-        at={(0.5,-0.14)},
+        at={(0.5,-0.16)},
         anchor=north,
         legend columns=2,
         draw=none,
@@ -49,7 +49,7 @@
     fill=plotBlue!72,
     draw=none,
     bar width=4.8pt,
-    bar shift=3pt,
+    bar shift=4pt,
 ] coordinates {
     (135476,all) [135\,476]
     (517401,enron) [517\,401]
@@ -65,7 +65,7 @@
     fill=plotAccent,
     draw=none,
     bar width=4.8pt,
-    bar shift=-3pt,
+    bar shift=-5pt,
 ] coordinates {
     (100414,all) [100\,414]
     (239266,enron) [239\,266]

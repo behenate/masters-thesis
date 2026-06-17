@@ -1,12 +1,90 @@
-\chapter{Spam i co dalej?}
-    \section{Problem niechcianej poczty elektronicznej (spamu)}
-        \subsection{Definicja i rodzaje spamu}
-        \subsection{Skutki spamu i znaczenie jego filtrowania}
-    \section{Duże modele językowe (LLM) w przetwarzaniu języka naturalnego}
-        \subsection{Podstawowe koncepcje LLM}
-        \subsection{Fine-tuning jako metoda adaptacji modeli}
-    \section{Cel i zakres pracy}
-        \subsection{Główny cel badawczy}
-        \subsection{Pytania badawcze}
-        \subsection{Zakres i ograniczenia pracy}
-    \section{Struktura pracy}
+\chapter{Wstęp}
+
+\section{Motywacja}
+
+Poczta elektroniczna pozostaje jednym z podstawowych kanałów komunikacji
+prywatnej i zawodowej. Jej powszechność pozwala niewielkim kosztem rozsyłać
+wiadomości reklamowe, phishingowe i oszukańcze do dużej liczby odbiorców.
+Filtr musi rozpoznawać zmieniające się sposoby formułowania wiadomości i nie
+blokować poprawnej korespondencji. Fałszywy alarm może oznaczać przeoczenie
+ważnej wiadomości, natomiast przepuszczenie ataku naraża odbiorcę na utratę
+danych lub pieniędzy.
+
+Jednym z etapów wielowarstwowego filtrowania poczty jest klasyfikacja tekstu.
+W klasycznych metodach treść reprezentuje się między innymi za pomocą TF-IDF,
+a następnie przekazuje do klasyfikatora. W przeciwieństwie do klasycznych metod klasyfikacji,
+modele językowe uwzględniają zależności między słowami i zdaniami oraz korzystają z wiedzy zdobytej podczas treningu
+wstępnego. Ich zastosowanie wiąże się jednak z wyższym kosztem treningu i
+inferencji niż w przypadku prostszych klasyfikatorów. Filtr pocztowy może
+przetwarzać duży strumień wiadomości, dlatego oprócz skuteczności znaczenie mają
+również czas odpowiedzi, przepustowość i zużycie zasobów. Powstaje zatem
+pytanie, czy modele językowe uzyskują lepsze wyniki w klasyfikacji oraz jaki 
+jest ich koszt w porównaniu do klasycznych klasyfikatorów.
+
+\section{Cel pracy}
+
+Celem pracy jest sprawdzenie, czy mały model językowy dostrojony za pomocą
+adapterów LoRA może skutecznie klasyfikować wiadomości elektroniczne jako
+\texttt{ham} albo \texttt{spam}. Badanie ma określić wpływ parametrów treningu
+i sposobu sformułowania zadania na wyniki uzyskiwane na kilku korpusach
+wiadomości.
+
+Drugim celem jest porównanie dostrojonego modelu z modelem bez dostrajania oraz
+prostszymi klasyfikatorami tekstu. Porównanie obejmuje skuteczność, profil
+błędów i koszt inferencji.
+
+\section{Zakres i metoda badawcza}
+
+Badania dotyczą klasyfikacji wiadomości na podstawie tematu i treści. Nie
+analizowano załączników, reputacji adresów i domen, pełnych nagłówków
+transportowych ani wyników SPF, DKIM i DMARC. Przyjęta klasa \texttt{spam}
+obejmuje niechciane reklamy, phishing oraz wiadomości oszukańcze. Model
+rozstrzyga, czy wiadomość jest pożądana, ale nie określa rodzaju wykrytego
+nadużycia.
+
+Jako model bazowy wybrano \texttt{Qwen3-0.6B}, który dostrajano metodą LoRA.
+Dla klasyfikacji przez ocenę następnego tokenu porównano 16
+konfiguracji różniących się długością kontekstu, współczynnikiem uczenia i
+parametrami adaptera. Oceniono również pośrednie punkty kontrolne. Wybrane
+ustawienia wykorzystano później w porównaniu klasyfikacji sekwencji,
+generowania etykiety, oceny następnego tokenu oraz generowania odpowiedzi
+ustrukturyzowanej.
+
+Wyniki odniesiono do modelu bez dostrajania. Porównanie objęło Naive Bayes,
+regresję logistyczną i SVM korzystające z reprezentacji TF-IDF, a także
+\texttt{fastText}, MiniLM z regresją logistyczną oraz DistilBERT. Dla metod
+bazowych dobrano parametry i progi klasyfikacji na wydzielonym zbiorze
+walidacyjnym. Koszt inferencji zmierzono na wspólnej próbce 1000 wiadomości.
+
+\section{Pytania badawcze}
+
+Zakres pracy opisują następujące pytania badawcze:
+
+\begin{enumerate}
+    \item Czy dostrojenie małego modelu językowego za pomocą LoRA pozwala
+    poprawnie klasyfikować wiadomości ze zbioru treningowego i ze źródeł
+    niewykorzystanych do aktualizacji wag?
+    \item Który z badanych sposobów użycia modelu językowego daje
+    najkorzystniejsze połączenie skuteczności, niezależności decyzji od formatu
+    generowanej odpowiedzi i prostoty inferencji?
+    \item Jak parametry treningu oraz jego czas trwania wpływają na wynik
+    modelu na korpusach niewykorzystanych w treningu?
+    \item Jaki kompromis między skutecznością a kosztem inferencji wynika z
+    porównania dostrojonego modelu językowego z prostszymi klasyfikatorami?
+\end{enumerate}
+
+\section{Struktura pracy}
+
+Po wstępie przedstawiono podstawy teoretyczne klasyfikacji wiadomości oraz
+działania modeli językowych. Rozdział obejmuje tokenizację, architekturę
+Transformer, dostrajanie adapterowe i sposoby wykorzystania modelu językowego
+do klasyfikacji. Następnie omówiono mechanizmy stosowane w filtrowaniu poczty,
+od reguł i reputacji po klasyczne algorytmy uczenia maszynowego oraz
+klasyfikatory transformerowe.
+
+Część badawcza opisuje wybór modelu, przygotowanie zbiorów danych i
+przebieg eksperymentów. Kolejne sekcje dotyczą doboru parametrów LoRA, analizy
+punktów kontrolnych, porównania sposobów dostrajania oraz zestawienia
+najlepszego wariantu z metodami bazowymi. Rozdział końcowy odpowiada na pytania
+badawcze, omawia ograniczenia, możliwość wdrożenia klasyfikatora i dalsze
+kierunki badań.

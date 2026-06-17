@@ -1,21 +1,32 @@
 \chapter{Część badawcza}
 
-\section{Wybór modelu językowego z otwartymi wagami}
-Model bazowy dobierano z myślą o eksperymentach, które trzeba było wielokrotnie
-powtarzać. Zbyt duży model podnosiłby koszt każdego treningu, wydłużał ewaluację
-i zwiększał rozmiar zapisywanych punktów kontrolnych. Z tego powodu przegląd
-ograniczono do małych rodzin modeli dostępnych jako otwarte wagi, zgodnych z
-narzędziami używanymi później w pracy, takimi jak \texttt{transformers},
-\texttt{peft}, \texttt{vLLM} albo \texttt{llama.cpp}. Przyjęto też praktyczne
-założenie, że klasyfikator powinien działać na serwerze z jedną kartą GPU, a po
-kwantyzacji również w słabszym środowisku.
+Badania obejmowały wybór modelu bazowego, przygotowanie danych, strojenie
+parametrów i porównanie metod dostrajania. Najlepszy wariant porównano następnie
+z innymi klasyfikatorami trenowanymi i testowanymi na tych samych danych. Oprócz
+skuteczności sprawdzono też czas i zasoby potrzebne podczas inferencji.
 
-Do porównania wybrano pięć rodzin: \texttt{Qwen3}, \texttt{Gemma 3},
-\texttt{Llama 3.2}, \texttt{SmolLM2} oraz \texttt{Phi-3}. Benchmarki nie były
-traktowane jako bezpośredni pomiar skuteczności wykrywania spamu. Standardowe
-testy mierzą raczej wiedzę ogólną, rozumowanie, matematykę, kodowanie lub
-wykonywanie instrukcji. W tym miejscu służyły więc tylko jako orientacyjny
-sygnał jakości modelu przed dostrojeniem.
+\section{Wybór modelu językowego z otwartymi wagami}
+Model bazowy dobrano z myślą o eksperymentach, które trzeba było wielokrotnie
+powtarzać. Zbyt duży model podnosiłby koszt każdego treningu,
+wydłużał ewaluację i zwiększał rozmiar zapisywanych punktów kontrolnych. Z tego
+powodu przegląd ograniczono do małych rodzin modeli dostępnych jako otwarte
+wagi, zgodnych z narzędziami używanymi później w pracy, takimi jak
+\texttt{transformers}, \texttt{peft}, \texttt{vLLM} albo \texttt{llama.cpp}.
+Przyjęto też praktyczne założenie, że klasyfikator powinien działać na serwerze
+z jedną kartą GPU, a po kwantyzacji również w słabszym środowisku.
+
+Porównanie obejmuje pięć rodzin: \texttt{Qwen3}, \texttt{Gemma 3},
+\texttt{Llama 3.2}, \texttt{SmolLM2} oraz \texttt{Phi-3}. Tabela~\ref{tab:small-open-model-families}
+zestawia rozważane warianty, warunki licencyjne i cechy istotne dla tej pracy.
+Oznaczenia M i B odnoszą się odpowiednio do milionów oraz miliardów parametrów
+modelu. Benchmarki nie były traktowane jako bezpośredni pomiar skuteczności
+wykrywania spamu. Standardowe testy mierzą raczej wiedzę ogólną, rozumowanie,
+matematykę, kodowanie lub wykonywanie instrukcji. W tym miejscu służyły więc
+tylko jako orientacyjny sygnał jakości modelu przed dostrojeniem.
+
+W tabeli~\ref{tab:small-open-model-benchmarks} podano wyniki dwóch benchmarków,
+dla których udało się znaleźć dane dla wszystkich rozważanych rodzin. Wartości
+są wynikami procentowymi.
 
 \begin{table}[!htbp]
 \centering
@@ -23,7 +34,7 @@ sygnał jakości modelu przed dostrojeniem.
 \resizebox{\textwidth}{!}{
 \begin{tabular}{p{0.18\textwidth}p{0.13\textwidth}p{0.17\textwidth}p{0.25\textwidth}p{0.21\textwidth}}
 \hline
-\textbf{Rodzina} & \textbf{Rozważany wariant} & \textbf{Licencja / dostęp} & \textbf{Cechy techniczne} & \textbf{Znaczenie dla tej pracy} \\
+\textbf{Rodzina} & \textbf{Parametry wariantów} & \textbf{Licencja / dostęp} & \textbf{Cechy techniczne} & \textbf{Znaczenie dla tej pracy} \\
 \hline
 \texttt{Qwen3} & 0,6B & Apache 2.0 & 32k tokenów kontekstu, wsparcie ponad 100 języków, tryb odpowiedzi szybkiej i tryb rozumowania\autocite{qwen3-technical-report,qwen3-06b-model-card}. & Mały wariant o przyjętej w pracy pojemności, z wygodnym wsparciem standardowych narzędzi. \\
 \texttt{Gemma 3} & 270M / 1B & otwarte wagi, licencja Gemma & Bardzo małe warianty, kontekst 32k tokenów dla modeli 270M i 1B, integracja z ekosystemem Google\autocite{gemma3-model-card}. & Niski koszt inferencji, ale mniej neutralne warunki licencyjne niż w przypadku Apache 2.0. \\
@@ -44,19 +55,25 @@ sygnał jakości modelu przed dostrojeniem.
 \hline
 \textbf{Rodzina} & \textbf{Porównywany wariant} & \textbf{GSM8K} & \textbf{MMLU-Pro} \\
 \hline
-\texttt{Qwen3} & 0,6B Base & 59,59\autocite{qwen3-technical-report} & 24,74\autocite{qwen3-technical-report} \\
-\texttt{Gemma 3} & 1B IT & 62,8\autocite{gemma3-model-card} & 14,7\autocite{gemma3-model-card} \\
-\texttt{Llama 3.2} & 1B Instruct & 44,4\autocite{llama32-model-card} & 8,2\autocite{benchgecko-llama32-1b-mmlu-pro} \\
-\texttt{SmolLM2} & 1,7B Instruct & 48,2\autocite{smollm2-model-card} & 19,3\autocite{smollm2-model-card} \\
-\texttt{Phi-3} & mini 4k instruct & 85,7\autocite{phi3-mini-model-card} & 45,66\autocite{phi3-mini-model-card} \\
+\texttt{Qwen3} & 0,6B Base & 59,59\% & 24,74\% \\
+\texttt{Gemma 3} & 1B IT & 62,8\% & 14,7\% \\
+\texttt{Llama 3.2} & 1B Instruct & 44,4\% & 8,2\% \\
+\texttt{SmolLM2} & 1,7B Instruct & 48,2\% & 19,3\% \\
+\texttt{Phi-3} & mini 4k instruct & 85,7\% & 45,66\% \\
 \hline
 \end{tabular}
-\caption{Porównanie wybranych modeli w benchmarkach dostępnych dla wszystkich rozważanych rodzin.}
+\caption[Porównanie wybranych modeli w benchmarkach dostępnych dla wszystkich rozważanych rodzin.]{
+Porównanie wybranych modeli w benchmarkach dostępnych dla wszystkich rozważanych rodzin.
+Źródła wyników: \texttt{Qwen3}\autocite{qwen3-technical-report},
+\texttt{Gemma 3}\autocite{gemma3-model-card},
+\texttt{Llama 3.2}\autocite{llama32-model-card,benchgecko-llama32-1b-mmlu-pro},
+\texttt{SmolLM2}\autocite{smollm2-model-card} oraz
+\texttt{Phi-3}\autocite{phi3-mini-model-card}.}
 \label{tab:small-open-model-benchmarks}
 \end{table}
 \FloatBarrier
 
-Tabela~\ref{tab:small-open-model-benchmarks} nie daje prostego rozstrzygnięcia.
+Porównanie z tabeli~\ref{tab:small-open-model-benchmarks} nie daje prostego rozstrzygnięcia.
 \texttt{Phi-3-mini} ma najlepsze wyniki w obu benchmarkach, ale jest wyraźnie
 większy, więc podnosi koszt treningu, inferencji i przechowywania kolejnych
 punktów kontrolnych. Najmniejsze warianty \texttt{Gemma 3 270M} oraz
@@ -71,7 +88,7 @@ ograniczeń praktycznych: kosztu, powtarzalności badań i możliwości późnie
 uruchomienia klasyfikatora poza dużą infrastrukturą.
 
 
-\section{Metodologia badawcza}
+\section{Dane i metodologia badawcza}
 
 \subsection{Analiza wykorzystanych zbiorów danych}
 
@@ -83,21 +100,24 @@ przeznaczonego do zadania binarnej klasyfikacji. Wiadomości oznaczano jako
 pożądane (\emph{ham}, klasa negatywna) albo niepożądane (\emph{spam}, klasa
 pozytywna). Do klasy pozytywnej włączono spam, wiadomości oszukańcze, phishing
 oraz podejrzane wiadomości marketingowe. Przyjęto taki podział, ponieważ trudno
-znaleźć duże korpusy, które dokonowałyby rozróżnień na poszczególne podklasy .
+znaleźć duże zbiory, które konsekwentnie rozróżniałyby poszczególne podklasy.
 
-Korpusy publiczne różnią liczbą rekordów sposobem zapisu wiadomości, 
-semantyką etykiet, obecnością metadanych oraz formatem treści. Z tego powodu analiza obejmuje 
-ocenę pochodzenia danych, rozkładu klas, długości wiadomości, obecności duplikatów oraz 
-potencjalnego ryzyka przecieku informacji między częścią treningową i testową.
+Publiczne zbiory danych różnią się liczbą rekordów, sposobem zapisu wiadomości,
+semantyką etykiet, obecnością metadanych oraz formatem treści. Analiza obejmuje
+więc pochodzenie danych, rozkład klas, długość wiadomości, obecność duplikatów oraz
+potencjalne ryzyko przecieku informacji między częścią treningową i testową.
 
 W pracy przyjęto, że wszystkie zbiory są sprowadzane do wspólnego schematu
 rekordu: \texttt{subject}, \texttt{body}, \texttt{label} oraz \texttt{source}.
 Pole \texttt{subject} przechowuje temat wiadomości, \texttt{body} jej treść,
-\texttt{label} wartość liczbową klasy, a \texttt{source} nazwę korpusu
-źródłowego. Dzięki temu korpusy o różnej strukturze można porównywać bez
+\texttt{label} wartość liczbową klasy, a \texttt{source} nazwę zbioru
+źródłowego. Taki zapis pozwala porównywać zbiory o różnej strukturze bez
 opierania się na metadanych, które nie występują we wszystkich źródłach.
 
-Do eksperymentów wykorzystano korpusy wymienione w tabeli~\ref{tab:raw-dataset-inventory}. 
+Do eksperymentów wykorzystano zbiory wymienione w tabeli~\ref{tab:raw-dataset-inventory}.
+W tabeli podano liczność każdego źródła, rozkład klas oraz krótką informację o
+charakterze danych. Ten podział jest istotny, ponieważ część zbiorów służyła do
+treningu, a część pozostała osobnym materiałem testowym.
 
 {\small
 \begin{longtable}{p{0.25\textwidth}rrrrp{0.22\textwidth}}
@@ -114,59 +134,59 @@ Do eksperymentów wykorzystano korpusy wymienione w tabeli~\ref{tab:raw-dataset-
 \hline
 \endfoot
 \texttt{enron}\autocite{kaggle-enron-email-dataset} & 517 401 & 517 401 & 0 & 0,0 & zbiór wiadomości pożądanych, traktowany jako klasa negatywna \\
-\texttt{trec\_2007}\autocite{kaggle-trec-2007} & 75 419 & 25 220 & 50 199 & 66,6 & korpus TREC 2007 \\
+\texttt{trec\_2007}\autocite{kaggle-trec-2007} & 75 419 & 25 220 & 50 199 & 66,6 & zbiór TREC 2007 \\
 \texttt{ceas\_2008}\autocite{kaggle-ceas-2008} & 39 154 & 17 312 & 21 842 & 55,8 & dane CEAS 2008 \\
 \texttt{spam\_assassin}\autocite{kaggle-spam-assassin-email-classification} & 5 796 & 3 900 & 1 896 & 32,7 & \\
 \texttt{spam\_ham}\autocite{kaggle-spam-mails-dataset} & 5 171 & 3 672 & 1 499 & 29,0 & \\
-\begin{tabular}[t]{@{}l@{}}\texttt{fraudulent\_email}\\\texttt{\_corpus}\end{tabular}\autocite{kaggle-fraudulent-email-corpus} & 3 978 & 0 & 3 978 & 100,0 & korpus oszukańczych wiadomości phishingowych zwanych potocznie \textit{nigeryjskimi}\autocite{nigerian-mail-characteristics} \\
+\begin{tabular}[t]{@{}l@{}}\texttt{fraudulent\_email}\\\texttt{\_corpus}\end{tabular}\autocite{kaggle-fraudulent-email-corpus} & 3 978 & 0 & 3 978 & 100,0 & zbiór oszukańczych wiadomości phishingowych zwanych potocznie \textit{nigeryjskimi}\autocite{longe-fraudulent-cyber-activities} \\
 \texttt{nazario}\autocite{kaggle-nazario-5-datatest} & 3 065 & 1 500 & 1 565 & 51,1 & zbiór wiadomości phishingowych \\
 \texttt{ling}\autocite{kaggle-lingspam-dataset} & 2 893 & 2 412 & 481 & 16,6 & \\
 \end{longtable}
 }
 
 Łącznie analizowane zbiory surowe obejmują 652 877 wiadomości. Nie wszystkie źródła zostały jednak
-bezpośrednio połączone w jeden korpus treningowy. Największy zbiór, \texttt{enron}, zawiera
+bezpośrednio połączone w jeden zbiór treningowy. Największy zbiór, \texttt{enron}, zawiera
 wyłącznie wiadomości klasy negatywnej. Z kolei \texttt{fraudulent\_email\_corpus}
 zawiera wyłącznie przykłady klasy pozytywnej. Bezpośrednie wykorzystanie wszystkich danych
 mogłoby oznaczać, że model zamiast uczyć się różnic między treścią
 spamu i poczty legalnej nauczyłby się rozpoznawać pochodzenie przykładu.
 Przykładowo, jeśli większość wiadomości legalnych pochodziłaby z jednego
 archiwum firmowego, a większość wiadomości niepożądanych z innego publicznego
-korpusu, klasyfikator mógłby wykorzystywać artefakty konkretnego zbioru danych,
+zbioru, klasyfikator mógłby wykorzystywać artefakty konkretnego źródła danych,
 a nie ogólne cechy spamu. Taki problem jest szczególnie niebezpieczny w
 eksperymentach z dużymi modelami językowymi, ponieważ modele te potrafią
 wychwytywać subtelne i nieintencjonalne wzorce formatowania\autocite{shortcut-learning}.
 
-Rysunek~\ref{fig:raw-dataset-sizes} pokazuje skalę różnic między korpusami.
+Rysunek~\ref{fig:raw-dataset-sizes} pokazuje skalę różnic między zbiorami.
 Połączenie wszystkich danych bez próbkowania prowadziłoby do dominacji zbioru
 \texttt{enron}. Taka dominacja byłaby niepożądana nie tylko ze względu na
 nierównowagę klas, lecz także ze względu na pochodzenie większości danych \textit{ham}
-z jednego korpusu.
+z jednego źródła.
 
 \begin{figure}[htbp]
 \centering
 \input{tex/plots/raw_dataset_sizes}
-\caption{Porównanie liczności dostępnych surowych zbiorów danych. Skala pozioma jest logarytmiczna.}
+\caption{Porównanie liczności dostępnych surowych zbiorów danych. Skala pozioma jest logarytmiczna. Źródło: opracowanie własne.}
 \label{fig:raw-dataset-sizes}
 \end{figure}
 
 Rysunek~\ref{fig:raw-class-balance} przedstawia rozkład klas w źródłowych
-korpusach. Widoczne są trzy typy zbiorów. Pierwszą grupę tworzą zbiory względnie
+zbiorach. Widoczne są trzy typy zbiorów. Pierwszą grupę tworzą zbiory względnie
 zbalansowane, takie jak \texttt{nazario} oraz \texttt{ceas\_2008}. Drugą grupę
 tworzą zbiory o wyraźnej przewadze jednej z klas, na przykład
 \texttt{trec\_2007}, \texttt{ling}, \texttt{spam\_assassin} i \texttt{spam\_ham}.
-Trzecią grupę stanowią korpusy jednoklasowe:
+Trzecią grupę stanowią zbiory jednoklasowe:
 \texttt{enron} oraz \texttt{fraudulent\_email\_corpus}. Dla modelowania
 klasyfikacyjnego najbezpieczniejsze są zbiory, które zawierają obie klasy i w
 których rozkład klas nie jest skrajnie zaburzony. Zbiory jednoklasowe mogą być
 użyteczne jako materiał pomocniczy, ale wymagają ostrożnego łączenia z innymi
-źródłami, aby nie stworzyć sztucznego zadania rozpoznawania korpusu zamiast
+źródłami, aby nie stworzyć sztucznego zadania rozpoznawania źródła zamiast
 rozpoznawania spamu.
 
 \begin{figure}[htbp]
 \centering
 \input{tex/plots/raw_class_balance}
-\caption{Rozkład klas w surowych korpusach. Klasa pozytywna oznacza spam, phishing lub wiadomość oszukańczą.}
+\caption{Rozkład klas w surowych zbiorach. Klasa pozytywna oznacza spam, phishing lub wiadomość oszukańczą. Źródło: opracowanie własne.}
 \label{fig:raw-class-balance}
 \end{figure}
 
@@ -181,13 +201,13 @@ organizacyjnego, dlatego może zawierać wiele powtarzalnych struktur, tematów,
 podpisów, cytowań oraz wątków wewnętrznych. Włączenie go w całości do zbioru
 treningowego nieproporcjonalnie zwiększałoby liczbę przykładów prawdziwej korespondencji, ale
 niekoniecznie poprawiłoby zdolność modelu do ogólnego rozpoznawania wiadomości
-pożądanych. Z tego powodu zbiór został wykorzystany tylko do testów skuteczności
-modeli zamiast do samego treningu.
+pożądanych. Dlatego zbiór wykorzystano tylko do testów skuteczności modeli,
+a nie do samego treningu.
 
 \textsc{ling}
 
 Zbiór \texttt{ling} obejmuje 2 893 rekordy: 2 412 wiadomości pożądanych oraz
-481 przykładów klasy pozytywnej. Jest jednym z mniejszych korpusów, posiada 
+481 przykładów klasy pozytywnej. Jest jednym z mniejszych zbiorów, posiada
 format z osobnym tematem, treścią i etykietą.
 
 \textsc{nazario}
@@ -207,7 +227,7 @@ przesunięty w kierunku spamu, który stanowi około 66,6\% rekordów.
 
 Zbiór \texttt{ceas\_2008} zawiera 39 154 wiadomości i również ma przewagę klasy
 pozytywnej, ale jest ona mniejsza niż w \texttt{trec\_2007}. W zbiorze znajduje
-się 21 842 wiadomości spamowych oraz 17 312 prawdziwych. Pola dostępne dla tego korpusu to
+się 21 842 wiadomości spamowych oraz 17 312 prawdziwych. Pola dostępne dla tego zbioru to
 temat, treść, nadawca, odbiorca, data i adresy URL.
 
 \textsc{fraudulent\_email\_corpus}
@@ -224,19 +244,19 @@ Zbiory \texttt{spam\_assassin} i \texttt{spam\_ham} są mniejsze, ale dobrze
 pasują do klasycznego zadania klasyfikacji spam/ham. \texttt{spam\_assassin}
 zawiera 5 796 rekordów, a \texttt{spam\_ham} 5 171. W obu przypadkach klasa
 pozytywna jest mniejszością. Reprezentują inny format i historię przygotowania danych niż
-korpusy CEAS i TREC użyte w treningu.
+zbiory CEAS i TREC użyte w treningu.
 
 \subsubsection{Wybór głównego zbioru do eksperymentów}
 
-W eksperymentach zbiorem treningowym był korpus zbudowany z połączenia
+W eksperymentach zbiorem treningowym był wariant zbudowany z połączenia
 wszystkich źródeł poza \texttt{enron}, \texttt{fraudulent\_email\_corpus} oraz
 \texttt{spam\_ham}. Zbiory celowo zostały wykluczone z treningów. \texttt{enron} pomijano ze
 względu na bardzo dużą liczność i jednoklasowy charakter. Jego włączenie mogłoby
 zdominować klasę negatywną oraz sprawić, że model uczyłby się specyfiki
 wewnętrznej korespondencji jednej organizacji zamiast ogólnych cech wiadomości
-legalnych. Z kolei \texttt{fraudulent\_email\_corpus} pozostawiono poza
-treningiem ze względu na jednoklasowość oraz potrzebę posiadania całkowicie
-niezależnego zbioru do sprawdzenia generalizacji na wiadomościach oszukańczych.
+legalnych. Ponieważ \texttt{fraudulent\_email\_corpus} jest jednoklasowy, nie
+włączono go do treningu i wykorzystano do osobnej oceny wykrywania wiadomości
+oszukańczych.
 \texttt{spam\_ham} był traktowany podobnie: jako prosty, zewnętrzny punkt
 odniesienia dla klasycznego zadania spam/ham.
 
@@ -250,7 +270,7 @@ agresywnej deduplikacji treści oraz próbkowaniu do proporcji 50/50. W składzi
 \begin{figure}[htbp]
 \centering
 \input{tex/plots/primary_source_composition}
-\caption{Udział źródeł w najczęściej używanym zbiorze treningowym.}
+\caption{Udział źródeł w najczęściej używanym zbiorze treningowym. Źródło: opracowanie własne.}
 \label{fig:primary-source-composition}
 \end{figure}
 
@@ -258,7 +278,7 @@ Rysunek~\ref{fig:primary-source-composition} przedstawia skład źródłowy
 najczęściej używanego zbioru treningowego. Balans klas nie oznacza tu balansu
 źródeł: najwięcej rekordów pochodzi z \texttt{trec\_2007}. Pole
 \texttt{source} zachowano w danych analitycznych, aby po treningu sprawdzać
-wyniki oddzielnie dla poszczególnych korpusów. Duża różnica skuteczności między
+wyniki oddzielnie dla poszczególnych zbiorów. Duża różnica skuteczności między
 źródłami oznaczałaby ograniczoną odporność na zmianę dystrybucji danych.
 
 \subsubsection{Zbiór treningowy}
@@ -267,8 +287,8 @@ Zbiór treningowy służył do aktualizacji parametrów modelu w procesie
 fine-tuningu i stanowił 80\% całego przygotowanego wariantu danych.
 
 Podobnie jak pozostałe podzbiory, był wydzielany dopiero po normalizacji, oczyszczeniu, deduplikacji i
-balansowaniu wybranego wariantu danych. Dzięki temu każda konfiguracja
-eksperymentalna korzystała ze spójnego podziału, a ta sama lub bardzo podobna
+balansowaniu wybranego wariantu danych. Każda konfiguracja eksperymentalna
+korzystała więc ze spójnego podziału, a ta sama lub bardzo podobna
 wiadomość nie mogła trafić jednocześnie do zbioru treningowego oraz testowego.
 Zbiór treningowy zawierał przykłady obu klas w równych proporcjach, ponieważ
 wcześniej zastosowano balansowanie do relacji 50/50.
@@ -278,8 +298,8 @@ wcześniej zastosowano balansowanie do relacji 50/50.
 Zbiór walidacyjny stanowiący 10\% całego zbioru był używany do podejmowania decyzji w
 trakcie eksperymentów: wyboru liczby epok, konfiguracji hiperparametrów,
 momentu zatrzymania treningu oraz porównania wariantów promptu lub formatu
-odpowiedzi. Ponieważ w pracy analizowane są modele językowe, zbiór walidacyjny pełni także
-rolę praktycznej kontroli formatu generowanej odpowiedzi. Gdy model miał
+odpowiedzi. Przy metodach generatywnych sprawdzano na nim również format
+odpowiedzi. Gdy model miał
 zwracać etykietę w określonej strukturze, na przykład jako tekst
 \texttt{spam}/\texttt{ham} albo obiekt JSON, na zbiorze walidacyjnym sprawdzano,
 czy odpowiedzi były poprawnie parsowalne.
@@ -308,9 +328,13 @@ sparsować struktury, całą dostępną treść traktowano jako ciało wiadomoś
 
 Drugim elementem normalizacji było ujednolicenie etykiet. W różnych zbiorach
 klasa pozytywna bywa oznaczana jako \texttt{spam}, \texttt{1}, \texttt{Class=1}
-albo przez sam fakt pochodzenia z korpusu oszukańczego. W pracy przyjęto
+albo przez sam fakt pochodzenia ze zbioru wiadomości oszukańczych. W pracy przyjęto
 konwencję, że \texttt{label=1} oznacza wiadomość niepożądaną, phishingową lub
 oszukańczą, natomiast \texttt{label=0} oznacza wiadomość prawdziwą.
+
+W tabeli~\ref{tab:raw-dataset-schema-inventory} zestawiono kolumny, z których
+pobierano temat, treść i etykietę przed sprowadzeniem danych do wspólnego
+schematu.
 
 \input{tex/tables/raw_dataset_schema_inventory}
 
@@ -318,7 +342,7 @@ oszukańczą, natomiast \texttt{label=0} oznacza wiadomość prawdziwą.
 
 Po normalizacji odrzucano rekordy, w których puste były jednocześnie temat i treść.
 Przykład pozbawiony jakiegokolwiek tekstu wnosi niewiele do uczenia, a może wprowadzać artefakty techniczne.
-Jeżeli pewien korpus zawierałby dużo pustych rekordów tylko w jednej klasie, model mógłby nauczyć się, że brak
+Jeżeli pewien zbiór zawierałby dużo pustych rekordów tylko w jednej klasie, model mógłby nauczyć się, że brak
 danych jest cechą klasy, co nie byłoby wiarygodną regułą w realnym wdrożeniu.
 
 \subsubsection{Deduplikacja}
@@ -338,7 +362,7 @@ nagłówkami lub linkami śledzącymi.
 \begin{figure}[htbp]
 \centering
 \input{tex/plots/deduplication_sample_counts}
-\caption{Liczba rekordów przed deduplikacją oraz po deduplikacji.}
+\caption{Liczba rekordów przed deduplikacją oraz po deduplikacji. Źródło: opracowanie własne.}
 \label{fig:deduplication-sample-counts}
 \end{figure}
 
@@ -353,16 +377,16 @@ rozmiaru grupy duplikatów wyniosła 2, a największa grupa zawierała 7832
 wiadomości.
 
 Rysunek~\ref{fig:deduplication-sample-counts} zestawia dwa poziomy analizy:
-osobne korpusy źródłowe oraz zbiór połączony ze wszystkich źródeł poza
+osobne zbiory źródłowe oraz zbiór połączony ze wszystkich źródeł poza
 \texttt{enron}.
 Dzięki temu widać zarówno wpływ deduplikacji na dane używane do dalszego
 łączenia, jak i skalę powtórzeń w poszczególnych źródłach. Największą różnicę
-widać w osobno pokazanym zbiorze \texttt{enron}. Jest to korpus poczty z jednej
+widać w osobno pokazanym zbiorze \texttt{enron}. Jest to archiwum poczty z jednej
 firmy, w którym ta sama wiadomość mogła trafić do wielu odbiorców, tworząc dużą
 liczbę powtórzeń.
 
 Rysunek~\ref{fig:duplicate-group-sizes} pokazuje, że większość grup duplikatów
-jest niewielka. Jest to typowe dla korpusów e-mailowych: część wiadomości
+jest niewielka. Jest to typowe dla zbiorów e-mailowych: część wiadomości
 występuje dokładnie lub prawie dokładnie dwa razy, natomiast bardzo duże grupy
 są rzadsze. Ze względu na długi ogon rozkładu większe grupy zostały połączone
 w przedziały. Nawet niewielkie grupy są jednak istotne, ponieważ przy losowym
@@ -371,7 +395,7 @@ podziale danych mogłyby zostać rozdzielone między trening i test.
 \begin{figure}[htbp]
 \centering
 \input{tex/plots/duplicate_group_sizes}
-\caption{Rozmiary grup duplikatów po połączeniu zbiorów danych poza \texttt{enron}.}
+\caption{Rozmiary grup duplikatów po połączeniu zbiorów danych poza \texttt{enron}. Źródło: opracowanie własne.}
 \label{fig:duplicate-group-sizes}
 \end{figure}
 
@@ -406,7 +430,7 @@ krótkie obcięcie treści mogłoby usuwać informacje ważne dla klasyfikacji.
 \begin{figure}[htbp]
 \centering
 \input{tex/plots/body_word_count_boxplot}
-\caption{Rozkład długości treści wiadomości według etykiety w analizowanym wariancie danych.}
+\caption{Rozkład długości treści wiadomości według etykiety w analizowanym wariancie danych. Źródło: opracowanie własne.}
 \label{fig:body-word-count-boxplot}
 \end{figure}
 
@@ -439,21 +463,22 @@ związanych ze spamem pojawiają się między innymi \texttt{canadianpharmacy},
 \texttt{bordercolor}. Część z nich odpowiada klasycznym kampaniom reklamowym i
 farmaceutycznym, a część odzwierciedla konkretne źródła wiadomości
 phishingowych. Z kolei wśród terminów powiązanych z wiadomościami legalnymi
-pojawiają się między innymi \texttt{theweathernetwork}, \texttt{accuweather},
-\texttt{reproducible}, \texttt{speakup} oraz \texttt{cbsnews}.
+pojawiają się między innymi nazwy serwisów pogodowych, takie jak
+\texttt{accuweather}, oraz tokeny \texttt{reproducible}, \texttt{speakup} i
+\texttt{cbsnews}.
 
 \begin{figure}[htbp]
 \centering
 \input{tex/plots/spam_associated_terms}
-\caption{Terminy najsilniej powiązane z klasą pozytywną według wygładzonego ilorazu szans.}
+\caption{Terminy najsilniej powiązane z klasą pozytywną według wygładzonego ilorazu szans. Źródło: opracowanie własne.}
 \label{fig:spam-associated-terms}
 \end{figure}
 
 Rysunek~\ref{fig:spam-associated-terms} wskazuje, że wysoka pozycja słów
-farmaceutycznych potwierdza, że część spamu w korpusie ma charakter reklamowy.
+farmaceutycznych potwierdza, że część spamu w zbiorze ma charakter reklamowy.
 Jednocześnie obecność bardzo specyficznych tokenów pokazuje ryzyko uczenia się
 artefaktów zbioru. Duży model językowy może poprawnie klasyfikować takie
-wiadomości, ale dobra skuteczność na korpusie zawierającym powtarzalne słowa
+wiadomości, ale dobra skuteczność na zbiorze zawierającym powtarzalne słowa
 kampanii nie musi automatycznie oznaczać odporności na nowy, bardziej
 wyrafinowany phishing.
 
@@ -466,8 +491,8 @@ inaczej przygotowywały przykłady treningowe.
 
 \begin{enumerate}
   \item \textbf{Klasyfikacja sekwencji} - Model ładowano przez \\\texttt{AutoModelForSequenceClassification} z biblioteki \texttt{transformers}. Treść wiadomości była tokenizowana bez szablonu
-czatu, a kolumna \texttt{label} trafiała do trenera jako etykieta. Ten wariant
-stanowił punkt odniesienia dla klasycznej klasyfikacji tekstu.
+czatu, a kolumna \texttt{label} trafiała do trenera jako etykieta. Taki wariant
+odpowiada klasycznej klasyfikacji tekstu.
   \item  \textbf{Następny token} - Klasyfikację sprowadzono do przewidywania następnego tokenu. Dla każdej wiadomości budowano instrukcję w formacie czatu, w której model miał wybrać jedną z dwóch etykiet. W ewaluacji model nie
 generował tekstu. Porównywano prawdopodobieństwa tokenów odpowiadających klasom
 \texttt{ham} i \texttt{spam} w pozycji następnego tokenu po instrukcji.
@@ -477,8 +502,8 @@ generował tekstu. Porównywano prawdopodobieństwa tokenów odpowiadających kl
 
 We wszystkich wariantach liczba trenowanych parametrów była ograniczona przez
 adaptery LoRA. W dalszej części rozdziału najpierw przeanalizowano dobór
-parametrów dla metody następnego tokenu. Wybrane ustawienia stały się następnie
-punktem odniesienia dla pozostałych sposobów fine-tuningu.
+parametrów dla metody następnego tokenu. Wybrane ustawienia wykorzystano później
+przy treningu pozostałych sposobów fine-tuningu.
 
 \subsection{Ocena modelu bazowego bez dostrajania}
 
@@ -529,11 +554,13 @@ preferencji modelu przy wyborze etykiety.
 \label{tab:unmodified-baseline-metrics}
 \end{table}
 
+Zera w kolumnie \textit{Spam pred.} oznaczają, że model bazowy nie wybrał klasy
+\texttt{spam} ani razu. Dlatego F1 i \emph{recall} dla klasy pozytywnej pozostają
+równe 0\%, mimo że część zbiorów zawiera wiadomości niepożądane.
+
 Wyniki w tabeli~\ref{tab:unmodified-baseline-metrics} pokazują, że oba warianty
-dały ten sam rezultat. Model w każdym przypadku wskazywał klasę \texttt{ham},
-co widać po zerowym odsetku predykcji klasy \texttt{spam}. Nie wynikało to z
-błędu parsera, ponieważ w wariancie generacyjnym wszystkie odpowiedzi zostały
-poprawnie odczytane.
+dały ten sam rezultat. Nie wynikało to z błędu parsera, ponieważ w wariancie
+generacyjnym wszystkie odpowiedzi zostały poprawnie odczytane.
 
 Na zbiorze \texttt{enron} model uzyskał 100\%, ponieważ wszystkie
 wiadomości w tej próbce należały do klasy \texttt{ham}. Podobnie wynik 71,6\%
@@ -541,16 +568,16 @@ na zbiorze \texttt{spam\_ham} odpowiadał udziałowi wiadomości poprawnych w
 próbce, a nie rzeczywistej zdolności wykrywania spamu. Znacznie lepiej pokazują
 to metryki związane z klasą pozytywną: \emph{recall} oraz F1 dla spamu wyniosły
 0\% na każdym zbiorze zawierającym wiadomości niepożądane. Na zbiorze
-\texttt{fraudulent\_email\_corpus}, który składa się wyłącznie z wiadomości
-oszukańczych, model nie wskazał poprawnie ani jednego przykładu.
+wiadomości oszukańczych \texttt{fraudulent\_email\_corpus} model nie wskazał
+poprawnie ani jednego przykładu.
 
 Wyniki modelu bazowego pokazują więc, że samo sformułowanie zadania w postaci
 instrukcji nie wystarczało w tej konfiguracji.
 
-\subsection{Dobór parametrów treningu} 
+\section{Dobór parametrów treningu}
 
-Po przygotowaniu danych i przetestowaniu modelu bazowego dobrano parametry
-fine-tuningu. Eksperymenty przeprowadzono dla metody opartej na przewidywaniu
+Po przygotowaniu danych i przetestowaniu modelu bazowego kolejnym etapem był
+dobór parametrów fine-tuningu. Eksperymenty przeprowadzono dla metody opartej na przewidywaniu
 następnego tokenu. Model porównywał prawdopodobieństwa dwóch tokenów odpowiedzi:
 \texttt{ham} oraz \texttt{spam}, a klasę końcową wybierał na podstawie
 większego prawdopodobieństwa.
@@ -560,7 +587,7 @@ dostrajania zastosowano adapter LoRA. We wszystkich konfiguracjach użyto tego
 samego \texttt{seed}'a równego 67, aby zachować powtarzalność podziału danych i
 próbkowania.
 
-\subsubsection{Przestrzeń hiperparametrów}
+\subsection{Przestrzeń hiperparametrów}
 
 Przeanalizowano 16 konfiguracji. Zmieniane parametry obejmowały maksymalną
 długość kontekstu, współczynnik uczenia\footnote{ang. \emph{learning rate}},
@@ -579,7 +606,7 @@ Tabela~\ref{tab:checkpoint-config-mapping} przedstawia zakres konfiguracji obję
 \label{tab:checkpoint-config-mapping}
 \end{table}
 
-\subsubsection{Ewaluacja pośrednich punktów kontrolnych}
+\subsection{Ewaluacja pośrednich punktów kontrolnych}
 
 Oceniono zarówno końcowe adaptery, jak i pośrednie punkty
 kontrolne\footnote{ang. \emph{checkpoint}}. Celem było znalezienie momentu, w
@@ -593,7 +620,7 @@ uczenia. Łącznie oceniono 160
 punktów treningu, po cztery zbiory danych dla każdego punktu. Daje to 640
 zakończonych pomiarów.
 
-\subsubsection{Zbiory użyte do ewaluacji}
+\subsection{Zbiory użyte do ewaluacji}
 
 Ewaluację przeprowadzono oddzielnie dla czterech zbiorów. Pierwszy zbiór,
 oznaczony jako \texttt{train\_subset}, wydzielono z części treningowej
@@ -611,7 +638,7 @@ względem spamu o charakterze odmiennym od wiadomości treningowych.
 metryki zadania binarnego, w szczególności F1 dla klasy pozytywnej. Każdy z
 tych zbiorów został ograniczony do 1000 przykładów.
 
-\subsubsection{Metryki oceny}
+\subsection{Metryki oceny}
 
 Wyniki analizowano za pomocą metryk \emph{accuracy}, \emph{precision},
 \emph{recall}, F1, \emph{specificity}, \emph{balanced accuracy},
@@ -620,7 +647,7 @@ zbiorów zewnętrznych jest jednoklasowa, nie wszystkie metryki są jednakowo
 informacyjne. Dla \texttt{enron} kluczowa jest \emph{specificity}, a dla
 \texttt{fraudulent\_email\_corpus} \emph{recall}.
 
-Z tego powodu do porównania konfiguracji wykorzystano następujący wzór:
+Do porównania konfiguracji wykorzystano następujący wzór:
 
 \[
 S_{\mathrm{ext}} =
@@ -634,7 +661,7 @@ S_{\mathrm{ext}} =
 W ten sposób porównanie uwzględniało trzy różne typy danych zewnętrznych, a nie
 tylko jedną metrykę z jednego zbioru.
 
-\subsubsection{Statystyki przebiegu treningu}
+\subsection{Statystyki przebiegu treningu}
 
 Przeanalizowano również metryki zapisywane podczas treningu. Nie były one
 głównym kryterium wyboru modelu, ale pomagały sprawdzić, jak szybko model
@@ -651,7 +678,7 @@ współczynnikiem uczenia,
 \input{tex/plots/checkpoint_training_loss_diagnostics}
 \caption{Przebieg funkcji straty dla wybranych konfiguracji treningu. Wykres
 \emph{training loss} został wygładzony medianą kroczącą, aby ograniczyć szum
-wynikający z pomiaru na kolejnych batchach.}
+wynikający z pomiaru na kolejnych batchach. Źródło: opracowanie własne.}
 \label{fig:checkpoint-training-loss-diagnostics}
 \end{figure}
 
@@ -668,7 +695,7 @@ jednoznacznie na lepszy wynik zewnętrzny.
 \centering
 \input{tex/plots/checkpoint_validation_metrics_diagnostics}
 \caption{Przebieg F1 oraz \emph{accuracy} na zbiorze walidacyjnym dla wybranych
-konfiguracji treningu.}
+konfiguracji treningu. Źródło: opracowanie własne.}
 \label{fig:checkpoint-validation-metrics-diagnostics}
 \end{figure}
 
@@ -682,14 +709,14 @@ konfiguracje. O wyborze parametrów decydowały przede wszystkim wyniki na
 \begin{figure}[htbp]
 \centering
 \input{tex/plots/checkpoint_training_runtime_context}
-\caption{Czas treningu poszczególnych konfiguracji. Kolor słupka oznacza
-maksymalną długość kontekstu. Porównanie obejmuje 15 treningów, dla których
-zapisano metrykę \texttt{train\_runtime}.}
+\caption{Czas treningu poszczególnych konfiguracji. Źródło: opracowanie własne.}
 \label{fig:checkpoint-training-runtime-context}
 \end{figure}
 
 Rysunek~\ref{fig:checkpoint-training-runtime-context} pokazuje, że największy
-wpływ na czas treningu miała maksymalna długość kontekstu. Konfiguracje z
+wpływ na czas treningu miała maksymalna długość kontekstu. Kolor słupka
+odpowiada maksymalnej długości kontekstu; wykres obejmuje 15 treningów, dla
+których zapisano metrykę \texttt{train\_runtime}. Konfiguracje z
 limitem 512 tokenów trenowały się od około 1,02 do 1,84 godziny, natomiast
 warianty z limitem 1024 tokenów od około 2,46 do 4,25 godziny. Średnio oznaczało
 to wzrost z 1,48 do 3,52 godziny oraz spadek przepustowości z około 16,0 do 6,6
@@ -700,7 +727,7 @@ konfiguracjami o tym samym kontekście były mniejsze niż różnica między sam
 długościami kontekstu. Dłuższy kontekst był więc wyraźnie droższy, a jak pokazano
 w dalszej części pracy, nie dawał przewagi uzasadniającej taki koszt.
 
-\subsubsection{Ranking konfiguracji}
+\subsection{Ranking konfiguracji}
 
 Tabela~\ref{tab:checkpoint-config-ranking} przedstawia ranking najlepszych
 punktów kontrolnych dla poszczególnych konfiguracji. Dla każdej konfiguracji
@@ -741,7 +768,7 @@ zaadaptować modelu do zadania.
 \centering
 \input{tex/plots/checkpoint_external_score_ranking}
 \caption{Najlepszy wynik zewnętrzny uzyskany przez każdą analizowaną konfigurację
-metody klasyfikacji następnego tokenu.}
+metody klasyfikacji następnego tokenu. Źródło: opracowanie własne.}
 \label{fig:checkpoint-external-score-ranking}
 \end{figure}
 
@@ -758,7 +785,7 @@ przy zmianie źródła danych.
 \centering
 \input{tex/plots/checkpoint_top_config_dataset_metrics}
 \caption{Porównanie metryk dla pięciu najlepszych konfiguracji według wyniku
-zewnętrznego.}
+zewnętrznego. Źródło: opracowanie własne.}
 \label{fig:checkpoint-top-config-dataset-metrics}
 \end{figure}
 
@@ -769,15 +796,16 @@ zmieniała się skuteczność w kolejnych ocenianych punktach kontrolnych. Wnios
 dotyczące wyboru parametrów oparto jednak na opisanym wcześniej wyniku
 zewnętrznym oraz analizie luki generalizacji.
 
-\begin{figure}[H]
+\begin{figure}[p]
 \centering
 \input{tex/plots/checkpoint_accuracy_grid}
 \caption{Przebieg \emph{accuracy} dla analizowanych konfiguracji. Każdy panel
-odpowiada jednej konfiguracji, a linie przedstawiają osobne zbiory ewaluacyjne.}
+odpowiada jednej konfiguracji, a linie przedstawiają osobne zbiory ewaluacyjne.
+Źródło: opracowanie własne.}
 \label{fig:checkpoint-accuracy-grid}
 \end{figure}
 
-\subsubsection{Analiza przeuczenia}
+\subsection{Analiza przeuczenia}
 
 Porównanie wyników na \texttt{train\_subset} i zbiorach zewnętrznych pozwala
 ocenić ryzyko przeuczenia. Sam wynik na podzbiorze treningowym jest
@@ -799,7 +827,8 @@ zbioru podobnego do treningowego na dane o innej charakterystyce.
 \centering
 \input{tex/plots/checkpoint_generalization_gap}
 \caption{Luka generalizacji między F1 na \texttt{train\_subset} a wynikiem
-zewnętrznym dla najlepszych punktów kontrolnych poszczególnych konfiguracji.}
+zewnętrznym dla najlepszych punktów kontrolnych poszczególnych konfiguracji.
+Źródło: opracowanie własne.}
 \label{fig:checkpoint-generalization-gap}
 \end{figure}
 
@@ -817,11 +846,11 @@ pozostałych czterech najlepszych konfiguracjach.
 \centering
 \input{tex/plots/checkpoint_external_score_trajectory}
 \caption{Przebieg wyniku zewnętrznego dla pięciu najlepszych konfiguracji w
-kolejnych ocenianych punktach kontrolnych.}
+kolejnych ocenianych punktach kontrolnych. Źródło: opracowanie własne.}
 \label{fig:checkpoint-external-score-trajectory}
 \end{figure}
 
-\subsubsection{Wybór najlepszej konfiguracji}
+\subsection{Wybór najlepszej konfiguracji}
 
 Na podstawie wyników jako najlepszą konfigurację metody
 klasyfikacji następnego tokenu wybrano \texttt{K08}. Konfiguracja ta osiągnęła najwyższy wynik zewnętrzny
@@ -848,7 +877,7 @@ wykrywalności spamu kosztem nadmiernej liczby fałszywych alarmów. Z tego
 powodu konfiguracja \texttt{K08} została przyjęta jako reprezentatywny wariant
 metody klasyfikacji następnego tokenu.
 
-\subsubsection{Profil błędów wybranej konfiguracji}
+\subsection{Profil błędów wybranej konfiguracji}
 
 Dla wybranej konfiguracji \texttt{K08} przeanalizowano również profil błędów.
 Rysunek~\ref{fig:checkpoint-best-error-rates} zestawia odsetek decyzji typu
@@ -866,11 +895,11 @@ w stronę jednej klasy.
 \centering
 \input{tex/plots/checkpoint_best_error_rates}
 \caption{Odsetki błędów typu \emph{false positive} i \emph{false negative} dla
-wybranego punktu kontrolnego konfiguracji \texttt{K08}.}
+wybranego punktu kontrolnego konfiguracji \texttt{K08}. Źródło: opracowanie własne.}
 \label{fig:checkpoint-best-error-rates}
 \end{figure}
 
-\subsubsection{Wnioski z eksperymentu}
+\subsection{Wnioski z eksperymentu}
 
 Analiza pokazała, że wynik na \texttt{train\_subset} nie wystarczał do wyboru
 najlepszej konfiguracji. Najlepsze warianty miały tam bardzo wysokie F1, więc
@@ -895,11 +924,11 @@ metryki walidacyjne, ale też okresowo oceniać model na danych z innych źróde
 
 Klasyfikacja przez przewidywanie następnego tokenu sprawdziła się w tym zadaniu.
 Po dostrojeniu model dobrze wykrywał wiadomości oszukańcze i utrzymywał niski
-odsetek fałszywych alarmów. Najlepszym wariantem był \texttt{K08}; w dalszej
-analizie traktowano go więc jako właściwy punkt odniesienia dla metody
-zwracającej etykietę \texttt{ham}/\texttt{spam}. 
+odsetek fałszywych alarmów. Najlepszym wariantem był \texttt{K08}; jego
+parametry wykorzystano później przy porównaniu metod zwracających etykietę
+\texttt{ham}/\texttt{spam}.
 
-\subsection{Porównanie metod dostrajania}
+\section{Porównanie metod dostrajania}
 
 Po wybraniu najlepszej konfiguracji dla wariantu przewidywania następnego
 tokenu porównano pozostałe sposoby dostrajania modelu. W tym etapie nie
@@ -921,6 +950,9 @@ tokenu porównuje bezpośrednio prawdopodobieństwa etykiet \texttt{ham} i
 \texttt{spam}, więc nie wprowadza osobnego problemu parsowania. Odpowiedź
 strukturyzowana ogranicza swobodę formatu przez wymuszenie pola \texttt{label},
 ale nadal pozostaje wariantem opartym na generowaniu tekstu.
+
+W tabeli~\ref{tab:method-comparison-best} zestawiono najlepszy punkt kontrolny
+każdej metody oraz metryki, na których oparto porównanie.
 
 \begin{table}[htbp]
 \centering
@@ -944,7 +976,7 @@ więc na jednoznaczną dominację jednej metody we wszystkich warunkach ewaluacj
 \caption{Porównanie najlepszych wariantów metod na czterech zbiorach
 ewaluacyjnych. Dla \texttt{train\_subset} i \texttt{spam\_ham} pokazano F1, dla
 \texttt{enron} \emph{specificity}, a dla \texttt{fraudulent\_email\_corpus}
-\emph{recall}.}
+\emph{recall}. Źródło: opracowanie własne.}
 \label{fig:method-comparison-dataset-metrics}
 \end{figure}
 
@@ -954,12 +986,13 @@ ewaluacyjnych. Dla \texttt{train\_subset} i \texttt{spam\_ham} pokazano F1, dla
 \caption{Porównanie błędów typu \emph{false positive} na zbiorze \texttt{enron}
 oraz \emph{false negative} na zbiorze \texttt{fraudulent\_email\_corpus} dla
 najlepszych wariantów metod. Punkty położone bliżej lewego dolnego rogu mają
-korzystniejszy profil błędów.}
+korzystniejszy profil błędów. Źródło: opracowanie własne.}
 \label{fig:method-error-tradeoff}
 \end{figure}
 
-Różnice między metodami widać wyraźniej dopiero po rozbiciu wyniku na
-poszczególne zbiory ewaluacyjne. Klasyfikacja sekwencji, czyli metoda
+Rysunek~\ref{fig:method-comparison-dataset-metrics} pokazuje, że różnice między
+metodami widać wyraźniej dopiero po rozbiciu wyniku na poszczególne zbiory
+ewaluacyjne. Klasyfikacja sekwencji, czyli metoda
 \texttt{01}, osiąga bardzo wysoki wynik na \texttt{train\_subset} i pełny
 \emph{recall} na \texttt{fraudulent\_email\_corpus}, ale wypada słabiej na
 \texttt{enron} oraz \texttt{spam\_ham}. Taki profil oznacza, że metoda dobrze
@@ -991,10 +1024,10 @@ oszukańczych oraz wysokie F1 na \texttt{spam\_ham}. Ważna jest też prostota
 inferencji: model nie musi generować odpowiedzi ani utrzymywać formatu
 tekstowego, ponieważ decyzja wynika z porównania dwóch prawdopodobieństw.
 
-Do porównania włączono także przebieg wyników w kolejnych punktach kontrolnych.
-Metoda, która wcześniej osiąga dobry wynik, jest praktycznie łatwiejsza do
-strojenia, nawet jeśli osiągnięcie całej epoki zajmuje więcej czasu w porównaniu 
-do innych metod.
+Moment osiągnięcia najwyższego \(S_{\mathrm{ext}}\) różnił się między metodami.
+W tabeli~\ref{tab:method-training-convergence} podano odpowiadający mu punkt
+kontrolny. Wcześniejsza stabilizacja wyniku zewnętrznego ułatwia wybór momentu
+zatrzymania treningu, choć nie oznacza krótszego czasu pojedynczej epoki.
 
 \begin{table}[htbp]
 \centering
@@ -1010,16 +1043,18 @@ konfiguracji każdej metody.}
 \input{tex/plots/method_training_trajectories}
 \caption{Przebieg F1 na \texttt{train\_subset} oraz wyniku zewnętrznego
 \(S_{\mathrm{ext}}\) dla najlepszej konfiguracji każdej metody. Linia
-przerywana oznacza punkt kontrolny o najwyższym wyniku zewnętrznym.}
+przerywana oznacza punkt kontrolny o najwyższym wyniku zewnętrznym. Źródło:
+opracowanie własne.}
 \label{fig:method-training-trajectories}
 \end{figure}
 
-We wszystkich metodach F1 na \texttt{train\_subset} rosło już w pierwszych
+Rysunek~\ref{fig:method-training-trajectories} pokazuje, że we wszystkich
+metodach F1 na \texttt{train\_subset} rosło już w pierwszych
 ocenianych punktach kontrolnych i szybko zbliżało się do wartości bliskich 1.
 Wynik na danych podobnych do treningowych stabilizował się więc wcześniej niż
 wynik zewnętrzny. Krzywa \(S_{\mathrm{ext}}\) była mniej regularna, zwłaszcza w
-pierwszej części treningu. Z tego powodu sam wynik na \texttt{train\_subset} nie
-był wystarczającym kryterium wyboru modelu.
+pierwszej części treningu. Sam wynik na \texttt{train\_subset} nie był więc
+wystarczającym kryterium wyboru modelu.
 
 Metody \texttt{02}, \texttt{03} i \texttt{04} osiągnęły najlepszy wynik
 zewnętrzny w siódmym ocenianym punkcie kontrolnym, odpowiadającym krokowi 3000.
@@ -1030,10 +1065,184 @@ punktów kontrolnych potrzebnych do uzyskania najlepszego wyniku warianty
 generatywne i wariant następnego tokenu zbiegały więc szybciej niż klasyfikacja
 sekwencji.
 
-Wśród kompletnie ocenionych wariantów najlepszym wyborem pozostaje metoda
-\texttt{03}. Jej przewaga liczbowa nad metodami \texttt{02} i \texttt{04} jest
-mała, dlatego decyzja nie wynika wyłącznie z różnicy w \(S_{\mathrm{ext}}\).
-Istotne jest również to, że wariant następnego tokenu łączy wysoką skuteczność z
-prostą inferencją i nie wymaga parsera odpowiedzi. W dalszych eksperymentach
-stanowi więc najbardziej uzasadniony punkt odniesienia dla klasyfikacji
-\texttt{ham}/\texttt{spam}.
+Wśród metod ocenionych w pełnym zaplanowanym zakresie najwyższy
+\(S_{\mathrm{ext}}\) uzyskała metoda \texttt{03}. Jej przewaga liczbowa nad
+metodami \texttt{02} i \texttt{04} jest mała, dlatego przy wyborze uwzględniono
+również brak generowania tekstu i parsera odpowiedzi. Metodę \texttt{03} wybrano
+do porównania z pozostałymi klasyfikatorami spamu.
+
+\section{Porównanie z metodami bazowymi}
+
+Porównanie obejmowało metody klasyfikujące treść wiadomości jako
+\texttt{ham} albo \texttt{spam}, a więc korzystające z tego samego wejścia co
+model językowy. Pełne filtry pocztowe wykorzystują również reputację nadawcy,
+wyniki SPF/DKIM/DMARC, listy reputacyjne i nagłówki wiadomości, których nie
+zawierały badane zbiory danych.
+
+Metody bazowe trenowano na tym samym podziale danych co modele dostrajane. Do
+oceny wykorzystano \texttt{train\_subset}, \texttt{enron},
+\texttt{fraudulent\_email\_corpus} oraz \texttt{spam\_ham}, przy limicie 2000
+próbek na zbiór. Zastosowano ten sam dobór metryk co wcześniej: F1 dla
+\texttt{train\_subset} i \texttt{spam\_ham}, \emph{specificity} dla
+\texttt{enron} oraz \emph{recall} dla \texttt{fraudulent\_email\_corpus}.
+Taki dobór metryk ogranicza wpływ zbiorów jednoklasowych, dla których accuracy
+łatwo prowadziłoby do mylącej interpretacji.
+
+\subsection{Dobór parametrów metod bazowych}
+
+Parametry metod bazowych dobierano na części walidacyjnej obejmującej 2\%
+danych z \texttt{training\_all}. Trzy zbiory zewnętrzne wykorzystano dopiero
+po wyborze konfiguracji. Dla każdej sprawdzanej konfiguracji dobierano próg
+decyzji maksymalizujący F1 na zbiorze walidacyjnym. Regresję logistyczną, SVM i
+\texttt{fastText} porządkowano według F1 obliczonego dla całej części
+walidacyjnej, a kolejnym kryterium była \emph{balanced accuracy}. W przypadku
+MiniLM pierwszym kryterium była średnia wyników F1 obliczonych osobno dla
+poszczególnych źródeł danych. Ograniczało to wpływ najliczniejszego lub
+najłatwiejszego źródła na wybór konfiguracji. Następnie uwzględniano F1 dla
+całej części walidacyjnej i \emph{balanced accuracy}. W
+tabeli~\ref{tab:sota-tuned-configurations} podano F1 dla całej części
+walidacyjnej.
+
+Zakres uczenia zależał od metody. Dla klasyfikatorów korzystających z TF-IDF
+na danych treningowych dopasowywano wektoryzator i właściwy klasyfikator.
+\texttt{fastText} uczył reprezentacje n-gramów oraz klasyfikator.
+Wagi MiniLM nie były aktualizowane: model wyznaczał wektory wiadomości, na
+których uczono regresję logistyczną. W DistilBERT dostrajano cały enkoder wraz z
+głowicą klasyfikacyjną.
+
+Dla regresji logistycznej sprawdzono cztery wartości parametru \(C\): 0,01;
+0,1; 1 i 10. Dla SVM tę samą listę połączono z dwiema reprezentacjami
+TF-IDF: n-gramami słów długości 1--2 oraz n-gramami znaków długości 3--5.
+Strojenie \texttt{fastText} wykonano w dwóch etapach. Najpierw wybrano
+współczynnik uczenia i liczbę epok, a następnie wymiar wektorów oraz zakres
+n-gramów słów i znaków. Dla MiniLM porównano reprezentacje całej wiadomości,
+fragmentów tekstu oraz osobno zakodowanych tematu i treści. Sprawdzono też
+normalizację wektorów, ważenie klas i parametr \(C\) regresji logistycznej.
+Dla regresji logistycznej oceniono 4 konfiguracje, dla SVM 8, dla
+\texttt{fastText} 26, a dla MiniLM 64. Naive Bayes nie podlegał strojeniu.
+Użyto n-gramów słów długości 1--2, słownika ograniczonego do 200 tys. cech i
+parametru wygładzania \(\alpha=1\).
+
+\begin{table}[htbp]
+\centering
+\scriptsize
+\resizebox{\textwidth}{!}{\input{tex/tables/sota_tuned_configurations}}
+\caption{Konfiguracje metod bazowych wybrane na zbiorze walidacyjnym.}
+\label{tab:sota-tuned-configurations}
+\end{table}
+
+DistilBERT trenowano przez jedną epokę z kontekstem 512 tokenów,
+współczynnikiem uczenia \(2\cdot10^{-5}\), rozmiarem partii 16 i liniowym
+harmonogramem współczynnika uczenia. Parametr \emph{weight decay} wynosił
+0,01, a rozgrzewka obejmowała pierwsze 6\% kroków. Dla DistilBERT nie
+przeszukiwano hiperparametrów; na zbiorze walidacyjnym dobrano jedynie próg
+klasyfikacji. Trening jednej epoki zajął 7650 sekund, czyli około 2 godzin i
+8 minut.
+
+\subsection{Skuteczność klasyfikacji}
+
+\begin{table}[htbp]
+\centering
+\small
+\resizebox{\textwidth}{!}{\input{tex/tables/sota_baseline_comparison}}
+\caption{Porównanie metod bazowych z najlepszym wariantem modelu Qwen3-0.6B
+dostrojonym metodą LoRA. Wartość \(S_{\mathrm{ext}}\) obliczono na podstawie
+metryk ze zbiorów zewnętrznych: \texttt{enron},
+\texttt{fraudulent\_email\_corpus} i \texttt{spam\_ham}.}
+\label{tab:sota-baseline-comparison}
+\end{table}
+
+Najwyższy wynik wśród metod bazowych uzyskał DistilBERT:
+\(S_{\mathrm{ext}}=92{,}3\%\). Wartość \emph{specificity} na \texttt{enron}
+wyniosła 89,3\%, \emph{recall} na
+\texttt{fraudulent\_email\_corpus} 99,9\%, a F1 na \texttt{spam\_ham} 87,8\%.
+TF-IDF z Naive Bayes osiągnął 90,7\%, a SVM 90,1\%. Różnica między tymi
+klasyfikatorami wyniosła 0,6 punktu procentowego. Naive Bayes uzyskał wyższą
+\emph{specificity} na \texttt{enron}, natomiast SVM miał nieco wyższe F1 na
+\texttt{spam\_ham}.
+
+Regresja logistyczna, \texttt{fastText} i MiniLM uzyskały od 79,1\% do 80,6\%.
+Wyniki na podzbiorze danych treningowych i F1 walidacyjne pozostawały wysokie,
+lecz na \texttt{enron} wartości \emph{specificity} wynosiły tylko 70,5--75,0\%.
+Na \texttt{spam\_ham} również dominowały fałszywe alarmy. Regresja logistyczna
+i \texttt{fastText} przepuściły odpowiednio 4 i 19 wiadomości spamowych, ale
+błędnie zatrzymały 518 i 534 wiadomości pożądane. MiniLM popełnił 451 takich
+błędów. Wysokie F1 na części walidacyjnej nie przełożyło się zatem na równie
+dobre wyniki dla wiadomości z innych źródeł.
+
+\begin{figure}[htbp]
+\centering
+\input{tex/plots/sota_baseline_external_score}
+\caption{Wynik zewnętrzny \(S_{\mathrm{ext}}\) dla metod bazowych oraz
+najlepszego wariantu Qwen3-0.6B + LoRA. Źródło: opracowanie własne.}
+\label{fig:sota-baseline-external-score}
+\end{figure}
+
+Qwen3-0.6B + LoRA uzyskał \(S_{\mathrm{ext}}=98{,}0\%\), o 5,7 punktu
+procentowego więcej niż DistilBERT. Różnica wynikała głównie z
+\emph{specificity} na \texttt{enron}, równego 96,9\%, oraz F1 na
+\texttt{spam\_ham}, równego 97,2\%. Na jednoklasowym zbiorze wiadomości
+oszukańczych oba modele osiągnęły \emph{recall} 99,9\%. Wynik Qwen3 trzeba
+jednak interpretować z uwzględnieniem sposobu wyboru modelu: te same zbiory
+zewnętrzne służyły wcześniej do wskazania jego konfiguracji i punktu
+kontrolnego, podczas gdy parametry metod bazowych dobierano bez ich użycia.
+
+\subsection{Koszt inferencji}
+
+Koszt działania porównano na komputerze z układem Apple M3 Pro, 12 rdzeniami
+CPU i 18~GiB pamięci współdzielonej. Metody transformerowe korzystały z
+dostępnej akceleracji sprzętowej, natomiast TF-IDF i \texttt{fastText} działały
+na CPU.
+
+Do pomiaru wszystkich klasyfikatorów użyto tej samej, deterministycznie wybranej
+próbki 1000 wiadomości ze zbioru \texttt{spam\_ham}. Próba obejmowała 716
+wiadomości \texttt{ham} oraz 284 wiadomości \texttt{spam}. Do czasu inferencji
+wliczano również przygotowanie wejścia. W zależności od metody była to
+wektoryzacja TF-IDF, wyznaczenie reprezentacji przez MiniLM albo tokenizacja dla
+DistilBERT i Qwen3. Nie wliczano ładowania modelu ani pojedynczego przebiegu
+rozgrzewającego.
+
+Każdą metodę uruchomiono z rozmiarem partii podanym w
+tabeli~\ref{tab:sota-inference-costs}.
+
+\begin{table}[htbp]
+\centering
+\scriptsize
+\resizebox{\textwidth}{!}{\input{tex/tables/sota_inference_costs}}
+\caption{Koszt inferencji na wspólnej próbce 1000 wiadomości.}
+\label{tab:sota-inference-costs}
+\end{table}
+
+Naive Bayes i regresja logistyczna przetwarzały około 10,5 tys. wiadomości na
+sekundę, a SVM 2,2 tys. Ich zapisane modele z wektoryzatorami zajmowały
+8,1--13,0~MiB. Przepustowość \texttt{fastText}, równa 8,8 tys. wiadomości na
+sekundę, była zbliżona do Naive Bayes i regresji logistycznej. Jego model
+zajmował jednak 980~MiB, a szczytowe użycie pamięci operacyjnej wyniosło około
+1,36~GiB.
+
+MiniLM przetwarzał 336,7 wiadomości na sekundę. DistilBERT osiągnął 57,9
+wiadomości na sekundę, a inferencja na całej próbce trwała 17,3 sekundy. Jego
+model zajmował 256~MiB, natomiast szczytowe użycie pamięci operacyjnej wyniosło
+563~MiB. Był około sześciokrotnie wolniejszy od MiniLM i ośmiokrotnie szybszy
+od Qwen3.
+
+\begin{figure}[htbp]
+\centering
+\input{tex/plots/sota_inference_throughput}
+\caption{Przepustowość metod na wspólnej próbce 1000 wiadomości. Oś pozioma ma
+skalę logarytmiczną. Źródło: opracowanie własne.}
+\label{fig:sota-inference-throughput}
+\end{figure}
+
+Qwen3 przetwarzał 7,3 wiadomości na sekundę. Inferencja trwała 136,7 sekundy,
+czyli około 1440 razy dłużej niż dla Naive Bayes. Szczytowe użycie pamięci
+operacyjnej wyniosło 3466~MiB, a model bazowy z adapterem zajmował 1526~MiB.
+Sam adapter LoRA miał 77,1~MiB i wymagał osobnego załadowania wag
+Qwen3-0.6B.
+
+Qwen3 uzyskał najwyższy \(S_{\mathrm{ext}}\), ale miał najniższą przepustowość
+i największe użycie pamięci. DistilBERT był około ośmiokrotnie szybszy i
+potrzebował mniej pamięci, lecz jego wynik był niższy o 5,7 punktu procentowego.
+Naive Bayes i SVM osiągnęły co najmniej 2,2 tys. wiadomości na sekundę, a ich
+modele zajmowały nie więcej niż 13~MiB. Ich wyniki zewnętrzne były jednak
+niższe od wyniku Qwen3 odpowiednio o 7,3 i 7,9 punktu procentowego.

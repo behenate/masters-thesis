@@ -1,0 +1,24 @@
+{
+  "config_id": "tfidf_char_wb_3_5_svm_c10",
+  "C": 10.0,
+  "threshold": 0.10311141869539675,
+  "vectorizer": "char_wb_3_5",
+  "max_df": 0.95,
+  "validation_metrics": {
+    "accuracy": 0.9977515458122541,
+    "precision": 0.9977528089887641,
+    "recall": 0.9977528089887641,
+    "f1": 0.9977528089887641,
+    "specificity": 0.9977502812148481,
+    "balanced_accuracy": 0.9977515451018061,
+    "false_positive_count": 2,
+    "false_negative_count": 2,
+    "true_positive_count": 888,
+    "true_negative_count": 887,
+    "false_positive_rate": 0.0022497187851518562,
+    "false_negative_rate": 0.0022471910112359553,
+    "spam_prediction_rate": 0.5002810567734682,
+    "classification_failure_count": 0,
+    "classification_failure_rate": 0.0
+  }
+}

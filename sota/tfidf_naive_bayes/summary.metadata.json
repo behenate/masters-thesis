@@ -1,0 +1,36 @@
+{
+  "alpha": 1.0,
+  "datasets": [
+    "train_subset",
+    "enron",
+    "fraudulent_email_corpus",
+    "spam_ham"
+  ],
+  "method": "tfidf_multinomial_naive_bayes",
+  "model_id": "TfidfVectorizer + MultinomialNB",
+  "sample_limit": 2000,
+  "seed": 67,
+  "summary_path": "/Users/wojciechdrozdz/uni/Magisterka/Semestr III/Praca Magisterska/sota/tfidf_naive_bayes/summary.csv",
+  "test_split": 0.06,
+  "train_split": 0.92,
+  "training_metadata": {
+    "raw_rows": 88970,
+    "source_path": "/Users/wojciechdrozdz/uni/Magisterka/Semestr III/Praca Magisterska/dataset/combined_datasets/generated/ceas_2008__ling__nazario__spam_assassin__trec_2007__dedupe_high__mode_mixed_50_50__spam_0_5__f0f1de70ab.parquet",
+    "test_rows": 5339,
+    "train_ham_count": 40926,
+    "train_rows": 81852,
+    "train_spam_count": 40926,
+    "validation_rows": 1779
+  },
+  "training_runtime_seconds": 31.817885582975578,
+  "validation_split": 0.02,
+  "vectorizer": {
+    "max_df": 0.95,
+    "max_features": 200000,
+    "min_df": 2,
+    "ngram_range": [
+      1,
+      2
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+\begin{tabular}{lrrrrr}
+\hline
+\textbf{Metoda} & \textbf{Train F1 [\%]} & \textbf{Enron spec. [\%]} & \textbf{Fraud recall [\%]} & \textbf{SpamHam F1 [\%]} & \textbf{\(S_{\mathrm{ext}}\) [\%]} \\
+\hline
+TF-IDF + NB & 96.8 & 87.5 & 99.4 & 85.1 & 90.7 \\
+TF-IDF + LR & 100.0 & 70.5 & 100.0 & 68.4 & 79.6 \\
+TF-IDF + SVM & 100.0 & 85.0 & 99.7 & 85.6 & 90.1 \\
+\texttt{fastText} & 99.9 & 70.9 & 99.9 & 66.5 & 79.1 \\
+MiniLM + LR & 96.8 & 75.0 & 98.5 & 68.4 & 80.6 \\
+\texttt{DistilBERT} & 99.9 & 89.3 & 99.9 & 87.8 & 92.3 \\
+Qwen3 + LoRA, \texttt{03} & 99.9 & 96.9 & 99.9 & 97.2 & 98.0 \\
+\hline
+\end{tabular}

@@ -1,0 +1,26 @@
+\begin{tikzpicture}
+\begin{axis}[
+    width=0.90\textwidth, height=0.49\textwidth, ybar,
+    ymin=75, ymax=100, ytick={75,80,85,90,95,100}, ylabel={\(S_{\mathrm{ext}}\) [\%]},
+    symbolic x coords={fastText,LR,MiniLM,SVM,NB,DistilBERT,Qwen3-0.6B},
+    xtick={fastText,LR,MiniLM,SVM,NB,DistilBERT,Qwen3-0.6B},
+    xticklabel style={font=\footnotesize, rotate=35, anchor=east},
+    yticklabel style={font=\footnotesize}, label style={font=\small},
+    ymajorgrids, grid style={plotGrid}, tick style={draw=none}, bar width=12pt,
+    enlarge x limits=0.10,
+    nodes near coords={\pgfmathprintnumber[fixed, precision=1]{\pgfplotspointmeta}},
+    every node near coord/.append style={font=\scriptsize},
+    legend style={at={(0.5,-0.28)}, anchor=north, legend columns=2, draw=none, font=\footnotesize},
+]
+\addplot[fill=plotBlue, draw=black, line width=0.2pt, bar shift=0pt, point meta=y] coordinates {
+        (fastText,79.1)
+        (LR,79.6)
+        (MiniLM,80.6)
+        (SVM,90.1)
+        (NB,90.7)
+        (DistilBERT,92.3)
+};
+\addplot[fill=plotSpam, draw=black, line width=0.2pt, bar shift=0pt, point meta=y] coordinates {(Qwen3-0.6B,98.0)};
+\legend{Metody bazowe,Qwen3-0.6B}
+\end{axis}
+\end{tikzpicture}

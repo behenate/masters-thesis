@@ -1,0 +1,11 @@
+\begin{tabular}{llllr}
+\hline
+\textbf{Metoda} & \textbf{Reprezentacja} & \textbf{Parametry} & \textbf{Próg} & \textbf{Wal. F1 [\%]} \\
+\hline
+TF-IDF + LR & słowa 1--2 & \(C=10\) & 0.358 & 99.4 \\
+TF-IDF + SVM & znaki 3--5 & \(C=10\) & 0.103 & 99.8 \\
+\texttt{fastText} & znaki 3--6, słowa 1 & \(lr=0{,}25\), 20 epok, \(d=100\) & 0.252 & 99.6 \\
+MiniLM + LR & temat i treść osobno & po 256 tokenów, norm., \(C=10\) & 0.581 & 96.3 \\
+\texttt{DistilBERT} & klasyfikacja sekwencji & 1 epoka, 512 tokenów, \(lr=2\cdot10^{-5}\) & 0.462 & 99.6 \\
+\hline
+\end{tabular}

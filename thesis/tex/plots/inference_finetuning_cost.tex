@@ -1,0 +1,66 @@
+\begingroup
+\centering
+\begin{tikzpicture}[
+    >=Stealth,
+    font=\sffamily,
+    panelInference/.style={rounded corners=6pt, draw=plotBlue!45, fill=plotBlue!4,
+        line width=0.75pt},
+    panelTraining/.style={rounded corners=6pt, draw=plotHam!45, fill=plotHam!4,
+        line width=0.75pt},
+    title/.style={font=\small\bfseries, align=center, text=black!85},
+    small/.style={font=\scriptsize, align=center, text=black!72},
+    box/.style={rounded corners=3pt, draw=black!25, fill=white,
+        minimum height=0.62cm, align=center, font=\scriptsize},
+    memBlue/.style={rounded corners=2pt, draw=plotBlue!45, fill=plotBlue!12,
+        minimum height=0.48cm, align=center, font=\scriptsize},
+    memAccent/.style={rounded corners=2pt, draw=plotAccent!45, fill=plotAccent!12,
+        minimum height=0.48cm, align=center, font=\scriptsize},
+    memHam/.style={rounded corners=2pt, draw=plotHam!45, fill=plotHam!12,
+        minimum height=0.48cm, align=center, font=\scriptsize},
+    memSpam/.style={rounded corners=2pt, draw=plotSpam!45, fill=plotSpam!10,
+        minimum height=0.48cm, align=center, font=\scriptsize},
+    arrow/.style={->, draw=black!55, line width=0.75pt},
+    note/.style={rounded corners=4pt, draw=black!18, fill=white,
+        align=center, font=\scriptsize, text=black!72}
+]
+
+\path[use as bounding box] (-0.20,-3.92) rectangle (13.20,3.72);
+
+\draw[panelInference] (0.00,-3.12) rectangle (6.15,3.25);
+\draw[panelTraining] (6.75,-3.12) rectangle (12.90,3.25);
+
+\node[title, text=plotBlue!85] at (3.08,2.88) {Inferencja};
+\node[title, text=plotHam!85] at (9.83,2.88) {Fine-tuning};
+
+\node[box, minimum width=1.45cm] (inputInference) at (0.90,1.95) {wejście};
+\node[box, minimum width=1.70cm] (modelInference) at (3.08,1.95) {model};
+\node[box, minimum width=1.55cm] (outputInference) at (5.20,1.95) {wynik};
+\draw[arrow] (inputInference.east) -- (modelInference.west);
+\draw[arrow] (modelInference.east) -- (outputInference.west);
+
+\node[small] at (3.08,1.15) {parametry pozostają stałe};
+
+\node[small, anchor=west] at (0.55,0.38) {Pamięć w trakcie pracy};
+\node[memBlue, minimum width=4.80cm] at (3.08,-0.20) {wagi modelu};
+\node[memAccent, minimum width=3.20cm] at (2.28,-0.78) {aktywacje wejścia};
+
+\node[box, minimum width=1.45cm] (inputTraining) at (7.65,1.95) {dane};
+\node[box, minimum width=1.70cm] (modelTraining) at (9.83,1.95) {model};
+\node[box, minimum width=1.70cm] (updateTraining) at (11.95,1.95) {aktualizacja};
+\draw[arrow] (inputTraining.east) -- (modelTraining.west);
+\draw[arrow] (modelTraining.east) -- (updateTraining.west);
+
+\node[small] at (9.83,1.15) {funkcja straty i krok optymalizacji};
+
+\node[small, anchor=west] at (7.30,0.38) {Pamięć w trakcie treningu};
+\node[memBlue, minimum width=4.80cm] at (9.83,-0.20) {wagi modelu bazowego};
+\node[memAccent, minimum width=4.15cm] at (9.50,-0.78) {aktywacje};
+\node[memSpam, minimum width=3.55cm] at (9.20,-1.36) {gradienty};
+\node[memHam, minimum width=3.05cm] at (8.95,-1.94) {stan optymalizatora};
+\node[memHam, minimum width=2.35cm] at (8.95,-2.52) {trenowane parametry};
+
+\node[note, minimum width=12.15cm, minimum height=0.62cm] at (6.45,-3.55)
+    {Koszt rośnie wraz z liczbą parametrów, długością kontekstu i rozmiarem partii danych.};
+
+\end{tikzpicture}
+\endgroup

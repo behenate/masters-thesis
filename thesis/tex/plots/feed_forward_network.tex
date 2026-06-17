@@ -1,0 +1,50 @@
+\begingroup
+\centering
+\begin{tikzpicture}[
+    >=Stealth,
+    neuron/.style={circle, draw=plotBlue, fill=plotBlue!10, minimum size=8mm, inner sep=0pt},
+    hidden/.style={circle, draw=plotAccent, fill=plotAccent!12, minimum size=8mm, inner sep=0pt},
+    output/.style={circle, draw=plotHam, fill=plotHam!12, minimum size=8mm, inner sep=0pt},
+    conn/.style={->, draw=black!35, line width=0.35pt},
+    mainconn/.style={->, draw=black!70, line width=0.7pt},
+    label/.style={font=\small},
+    smalllabel/.style={font=\scriptsize, align=center}
+]
+
+\foreach \y/\name/\lab in {1.1/i1/$x_1$,0/i2/$x_2$,-1.1/i3/$x_d$}
+    \node[neuron] (\name) at (0,\y) {\lab};
+
+\foreach \y/\name/\lab in {1.65/h1/$h_1$,0.55/h2/$h_2$,-0.55/h3/$h_3$,-1.65/h4/$h_m$}
+    \node[hidden] (\name) at (3.2,\y) {\lab};
+
+\foreach \y/\name/\lab in {1.1/o1/$y_1$,0/o2/$y_2$,-1.1/o3/$y_d$}
+    \node[output] (\name) at (6.4,\y) {\lab};
+
+\foreach \i in {i1,i2,i3}
+    \foreach \h in {h1,h2,h3,h4}
+        \draw[conn] (\i) -- (\h);
+
+\foreach \h in {h1,h2,h3,h4}
+    \foreach \o in {o1,o2,o3}
+        \draw[conn] (\h) -- (\o);
+
+\draw[mainconn] (-0.95,0) -- (i2);
+\draw[mainconn] (o2) -- (7.35,0);
+
+\node[label] at (0,2.35) {Wejście};
+\node[label] at (3.2,2.35) {Warstwa ukryta};
+\node[label] at (6.4,2.35) {Wyjście};
+
+\node[smalllabel] at (0,-2.35) {$d_{\mathrm{model}}$};
+\node[smalllabel] at (3.2,-2.35) {$d_{\mathrm{ff}}$};
+\node[smalllabel] at (6.4,-2.35) {$d_{\mathrm{model}}$};
+
+\node[smalllabel, fill=white, inner sep=2pt] at (1.6,1.95) {$W_1+b_1$};
+\node[smalllabel, fill=white, inner sep=2pt] at (3.2,-2.85) {aktywacja $\sigma$};
+\node[smalllabel, fill=white, inner sep=2pt] at (4.8,1.95) {$W_2+b_2$};
+
+\node[smalllabel, anchor=east] at (-1.05,0) {$x$};
+\node[smalllabel, anchor=west] at (7.45,0) {$\mathrm{FFN}(x)$};
+
+\end{tikzpicture}
+\endgroup

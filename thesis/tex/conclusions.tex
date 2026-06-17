@@ -1,6 +1,175 @@
 \chapter{Podsumowanie i wnioski}
-    \section{Synteza przeprowadzonych badań i uzyskanych wyników}
-    \section{Odpowiedzi na pytania badawcze}
-    \section{Wnioski dotyczące skuteczności i praktyczności fine-tuning'u LLM}
-    \section{Ograniczenia pracy}
-    \section{Kierunki dalszych badań}
+
+\section{Synteza przeprowadzonych badań}
+
+Praca dotyczyła wykorzystania modelu Qwen3-0.6B do wykrywania niechcianej
+poczty na podstawie tematu i treści wiadomości. Publiczne korpusy sprowadzono
+do wspólnego schematu, usunięto puste rekordy i duplikaty, a dane treningowe
+zbalansowano. Trzy źródła pozostawiono poza treningiem, aby oceniać model także
+na wiadomościach o innej charakterystyce.
+
+Model bez dostrajania przypisywał wszystkie oceniane wiadomości do klasy
+\texttt{ham}. Na zbalansowanym \texttt{train\_subset} oznaczało to 50,0\%
+\emph{accuracy} i F1 równe 0 dla klasy pozytywnej. Po dostrojeniu najlepszy
+wynik uzyskała konfiguracja \texttt{K08}: kontekst 512 tokenów, współczynnik
+uczenia \(10^{-4}\), LoRA \(r=32\), \(\alpha=64\) oraz dropout 0,05. Siódmy
+oceniany punkt kontrolny osiągnął \(S_{\mathrm{ext}}=98{,}0\%\), F1 równe
+97,2\% na \texttt{spam\_ham}, \emph{specificity} 96,9\% na \texttt{enron} i
+\emph{recall} 99,9\% na \texttt{fraudulent\_email\_corpus}.
+
+Najlepsze warianty generowania etykiety, oceny następnego tokenu i odpowiedzi
+ustrukturyzowanej różniły się wynikiem zbiorczym o około 0,1 punktu
+procentowego. Najlepszą metodą bazową był DistilBERT z wynikiem
+\(S_{\mathrm{ext}}=92{,}3\%\). TF-IDF z Naive Bayes i SVM osiągnęły
+odpowiednio 90,7\% i 90,1\%.
+
+\section{Odpowiedzi na pytania badawcze}
+
+\begin{enumerate}
+    \item \textbf{Czy dostrojenie małego modelu językowego za pomocą LoRA
+    pozwala poprawnie klasyfikować wiadomości ze zbioru treningowego i ze źródeł
+    niewykorzystanych do aktualizacji wag?}
+
+    Sam prompt nie wystarczył, aby model bez dostrajania poprawnie wykonywał
+    klasyfikację. Po dostrojeniu z wykorzystaniem adaptera LoRA model uzyskał
+    wysokie wyniki na podzbiorze danych treningowych oraz na trzech innych
+    korpusach.
+
+    \item \textbf{Który z badanych sposobów użycia modelu językowego daje
+    najkorzystniejsze połączenie skuteczności, niezależności decyzji od formatu
+    generowanej odpowiedzi i prostoty inferencji?}
+
+    Do dalszego porównania wybrano metodę oceny następnego tokenu. Jej przewaga
+    liczbowa nad generowaniem etykiety i odpowiedzi ustrukturyzowanej była
+    niewielka. Za wyborem przemawiał brak generowania tekstu: decyzja wynikała
+    bezpośrednio z porównania prawdopodobieństw etykiet i nie zależała od
+    parsera. Klasyfikacja sekwencji również nie wymagała parsera, ale uzyskała
+    niższy wynik zewnętrzny, równy 96,5\%.
+
+    \item \textbf{Jak parametry treningu oraz jego czas trwania wpływają
+    na wynik modelu na korpusach niewykorzystanych w treningu?}
+
+    Metryki na danych podobnych do treningowych szybko zbliżały się do 100\%,
+    przez co słabo rozróżniały konfiguracje. Warianty ze współczynnikiem uczenia
+    \(10^{-6}\) uzyskały niższe wyniki na pozostałych korpusach, a kontekst 1024
+    tokenów wydłużał trening bez poprawy najlepszego rezultatu. W grupie
+    wariantów ze współczynnikiem \(10^{-4}\) najlepiej wypadł adapter z
+    \(r=32\) i \(\alpha=64\). Mniejszy adapter uzyskał słabszy wynik, natomiast
+    zwiększenie pojemności ponad \(r=32\) i \(\alpha=64\) nie dawało regularnej
+    poprawy. Nie udało się określić jednoznacznego wpływu dropout. Dla
+    najlepszych konfiguracji najwyższe \(S_{\mathrm{ext}}\) pojawiało się przed
+    końcem treningu. Wybór
+    ostatniego adaptera lub kierowanie się wyłącznie metrykami treningowymi
+    prowadziłoby do wyboru słabszego wariantu.
+
+    \item \textbf{Jaki kompromis między skutecznością a kosztem inferencji
+    wynika z porównania dostrojonego modelu językowego z prostszymi
+    klasyfikatorami?}
+
+    Qwen3 uzyskał wynik \(S_{\mathrm{ext}}\) wyższy o 5,7 punktu procentowego
+    od DistilBERT, ale był od niego około ośmiokrotnie wolniejszy. Metody TF-IDF
+    przetwarzały od 2,2 do 10,6 tys. wiadomości na sekundę, przy wyniku
+    zewnętrznym niższym o 7,3--18,4 punktu procentowego. Przepustowość Qwen3,
+    równa 7,3 wiadomości na sekundę, może ograniczać zastosowanie tego modelu
+    jako jedynego filtra całego ruchu. Pomiary wykonane na jednym komputerze
+    nie wystarczają jednak do wyceny konkretnego wdrożenia.
+\end{enumerate}
+
+\section{Ograniczenia pracy}
+
+Eksperymenty przeprowadzono na publicznych korpusach, z których część powstała
+wiele lat temu. Wiadomości z poszczególnych źródeł różnią się formatowaniem,
+słownictwem i sposobem nadawania etykiet. Deduplikacja ograniczyła liczbę
+powtórzeń, ale nie usunęła wszystkich cech pozwalających rozpoznać źródło
+wiadomości. Wyników nie potwierdzono na bieżącym strumieniu poczty.
+
+Trzy zbiory zewnętrzne nie były używane do treningu Qwen3, ale ich wyniki
+służyły do wyboru konfiguracji i punktu kontrolnego. W metodach bazowych
+parametry dobierano wyłącznie na części walidacyjnej, a wymienione zbiory
+wykorzystano dopiero do oceny wybranego wariantu.
+
+Każdy trening wykonano z jednym ziarnem losowym. Nie obliczano przedziałów
+ufności i nie powtarzano tych samych konfiguracji, dlatego różnice rzędu
+0,1--0,3 punktu procentowego mogą wynikać częściowo z losowości treningu lub
+próbkowania. Dotyczy to zwłaszcza kolejności najlepszych sposobów dostrajania.
+
+Zakres strojenia nie był jednakowy. Szesnaście konfiguracji i pośrednie punkty
+kontrolne oceniono dla metody następnego tokenu. Pozostałe metody korzystały z
+wybranej części tej przestrzeni, a dla odpowiedzi ustrukturyzowanej ukończono
+dwie konfiguracje. Dla metod bazowych sprawdzono ograniczone zbiory parametrów
+i jeden podział walidacyjny. Naive Bayes nie podlegał strojeniu, a DistilBERT
+wytrenowano tylko z jednym zestawem parametrów.
+Przedstawione wyniki dotyczą więc wyłącznie sprawdzonych konfiguracji.
+
+Badanie objęło jeden model bazowy i jeden jego rozmiar. Pomiar wydajności
+wykonano na jednym komputerze i dla jednej próbki. Nie sprawdzono zachowania
+przy wielu równoczesnych żądaniach, opóźnień krańcowych, zużycia energii ani
+kosztu pracy serwera. Zmierzone wartości pokazują względną różnicę między
+metodami w badanym środowisku, ale nie opisują infrastruktury produkcyjnej.
+
+Klasyfikacja binarna łączy spam reklamowy, phishing i wiadomości oszukańcze w
+jedną klasę. Model nie określa rodzaju zagrożenia ani nie wyjaśnia, który
+fragment wiadomości wpłynął na decyzję. Do modelu przekazywano tylko temat i
+treść, bez reputacji nadawcy, pełnych nagłówków i mechanizmów uwierzytelniania
+domeny.
+
+\section{Możliwość wdrożenia}
+
+Koszt inferencji porównano na wspólnej próbce 1000 wiadomości. Qwen3 z
+adapterem LoRA przetwarzał 7,3 wiadomości na sekundę, a przetworzenie całej
+próbki trwało 136,7 sekundy. Proces wykorzystał szczytowo 3466~MiB pamięci
+operacyjnej, natomiast model bazowy i adapter zajmowały razem około 1526~MiB na
+dysku. DistilBERT przetwarzał 57,9 wiadomości na sekundę, wykorzystywał
+szczytowo 563~MiB pamięci i zajmował 256~MiB na dysku. Dla TF-IDF z Naive
+Bayes przepustowość wyniosła około 10,6 tys. wiadomości na sekundę, szczytowe
+użycie pamięci 337~MiB, a rozmiar modelu z wektoryzatorem 13~MiB.
+
+Zmierzona przepustowość Qwen3 ogranicza możliwość wykorzystania go jako
+jedynego filtra pierwszej linii bez skalowania infrastruktury. Szybszy sprzęt,
+kwantyzacja i przetwarzanie wiadomości w partiach mogłyby poprawić
+przepustowość. Na podstawie wykonanych
+testów nie można oszacować kosztu konkretnego wdrożenia serwerowego.
+
+DistilBERT osiągnął najlepszy wynik wśród metod bazowych i działał szybciej od
+Qwen3, ale nadal był wielokrotnie wolniejszy od TF-IDF.
+
+Koszt inferencji można byłoby ograniczyć przez zastosowanie układu kaskadowego.
+Uwierzytelnianie nadawcy, reguły, reputacja i tani klasyfikator tekstu
+obsługiwałyby przypadki jednoznaczne, a model językowy analizowałby tylko
+pozostałe wiadomości. W pracy nie sprawdzono, czy Qwen3 poprawia wyniki właśnie
+dla przykładów, co do których prostszy klasyfikator jest niepewny.
+
+Model Qwen3-0.6B z adapterem LoRA jest prototypem klasyfikatora treści, a nie
+kompletnym filtrem pocztowym. W systemie produkcyjnym jego wynik mógłby być
+jednym z sygnałów używanych do podjęcia decyzji. Samodzielne odrzucanie
+wiadomości wymagałoby dokładniejszej kontroli fałszywych alarmów i testów na
+danych produkcyjnych.
+
+\section{Kierunki dalszych badań}
+
+Wyniki odpowiedzi ustrukturyzowanej trzeba uzupełnić o dwie brakujące
+konfiguracje. Szersze przeszukanie parametrów Naive Bayes i DistilBERT
+pozwoliłoby sprawdzić, czy ich obecne wyniki są bliskie najlepszym dla przyjętych
+danych. Osobno trzeba dobrać progi klasyfikacji do założonego kosztu
+\emph{false positive} i \emph{false negative}.
+
+Kolejny eksperyment powinien rozdzielić wybór konfiguracji Qwen3 od testu na
+zbiorach zewnętrznych. Można również przeprowadzić walidację
+\emph{leave-one-source-out}, kolejno wyłączając z treningu każde źródło. Innym
+wariantem jest podział czasowy, w którym do testu trafiają nowsze wiadomości.
+Pomiar na niezbalansowanym strumieniu pozwoliłby
+ocenić liczbę fałszywych alarmów przy proporcjach klas zbliżonych do ruchu
+produkcyjnego. Osobne etykiety
+spamu reklamowego, phishingu i oszustw pozwoliłyby sprawdzić, czy model
+rozpoznaje także rodzaj zagrożenia.
+
+Ocena wdrożeniowa wymaga porównania wariantów kwantyzacji, silników inferencji
+i ustawień przetwarzania partiami na sprzęcie serwerowym. Oprócz średniej
+przepustowości należy zmierzyć opóźnienie, użycie pamięci przy równoczesnych
+żądaniach oraz koszt przetworzenia określonej liczby wiadomości. Osobnego testu
+wymaga też układ kaskadowy z tanim klasyfikatorem pierwszego etapu.
+
+W badanych warunkach dostrojony Qwen3-0.6B uzyskał wyższy wynik zbiorczy niż
+metody bazowe, lecz wymagał znacznie więcej czasu i pamięci. Qwen3 mógłby
+pełnić rolę klasyfikatora drugiego etapu, ale takiego układu nie oceniono w
+eksperymentach.

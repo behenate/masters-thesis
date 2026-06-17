@@ -1,0 +1,26 @@
+{
+  "config_id": "minilm_subject_body256_norm_cwnone_c10",
+  "representation": "subject_body256",
+  "normalized": true,
+  "class_weight": "none",
+  "C": 10.0,
+  "threshold": 0.5808626599554912,
+  "validation_metrics": {
+    "accuracy": 0.9629005059021922,
+    "precision": 0.9629213483146067,
+    "recall": 0.9629213483146067,
+    "f1": 0.9629213483146066,
+    "specificity": 0.9628796400449944,
+    "balanced_accuracy": 0.9629004941798005,
+    "false_positive_count": 33,
+    "false_negative_count": 33,
+    "true_positive_count": 857,
+    "true_negative_count": 856,
+    "false_positive_rate": 0.03712035995500562,
+    "false_negative_rate": 0.03707865168539326,
+    "spam_prediction_rate": 0.5002810567734682,
+    "classification_failure_count": 0,
+    "classification_failure_rate": 0.0
+  },
+  "validation_source_macro_f1": 0.9286875185566343
+}

@@ -1,0 +1,27 @@
+{
+  "config_id": "tfidf_word_1_2_logreg_c10",
+  "C": 10.0,
+  "threshold": 0.35790480267505553,
+  "ngram_range": [
+    1,
+    2
+  ],
+  "max_df": 0.95,
+  "validation_metrics": {
+    "accuracy": 0.9943788645306352,
+    "precision": 0.9899777282850779,
+    "recall": 0.998876404494382,
+    "f1": 0.994407158836689,
+    "specificity": 0.9898762654668166,
+    "balanced_accuracy": 0.9943763349805993,
+    "false_positive_count": 9,
+    "false_negative_count": 1,
+    "true_positive_count": 889,
+    "true_negative_count": 880,
+    "false_positive_rate": 0.010123734533183352,
+    "false_negative_rate": 0.0011235955056179776,
+    "spam_prediction_rate": 0.5047779651489601,
+    "classification_failure_count": 0,
+    "classification_failure_rate": 0.0
+  }
+}

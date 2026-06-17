@@ -1,0 +1,17 @@
+\begin{tabular}{
+    |>{\centering\arraybackslash}m{0.24\linewidth}
+    |>{\centering\arraybackslash}m{0.31\linewidth}
+    |>{\centering\arraybackslash}m{0.31\linewidth}|}
+    \hline
+    & \textbf{Rzeczywista wiadomość niepożądana}
+    & \textbf{Rzeczywista wiadomość pożądana} \\
+    \hline
+    \textbf{Wiadomość przewidziana jako niepożądana}
+    & \shortstack[c]{\\[0.2em]{\textbf{TP}}\\[0.2em]\small\emph{True positive}\\\small Poprawnie wykryty spam}
+    & \shortstack[c]{\\[0.2em]{\textbf{FP}}\\[0.2em]\small\emph{False positive}\\\small Pożądana wiadomość\\\small oznaczona jako spam} \\
+    \hline
+    \textbf{Wiadomość przewidziana jako pożądana}
+    & \shortstack[c]{\\[0.2em]{\textbf{FN}}\\[0.2em]\small\emph{False negative}\\\small Spam przepuszczony\\\small jako wiadomość pożądana}
+    & \shortstack[c]{\\[0.2em]{\textbf{TN}}\\[0.2em]\small\emph{True negative}\\\small Poprawnie rozpoznana\\\small wiadomość pożądana} \\
+    \hline
+\end{tabular}

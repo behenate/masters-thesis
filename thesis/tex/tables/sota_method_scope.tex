@@ -1,0 +1,13 @@
+\begin{tabular}{p{0.22\textwidth}p{0.31\textwidth}p{0.18\textwidth}p{0.18\textwidth}}
+\hline
+\textbf{Grupa metod} & \textbf{Główne źródło sygnału} & \textbf{Wymaga metadanych poczty} & \textbf{Ujęcie w eksperymentach} \\
+\hline
+Uwierzytelnianie i reputacja nadawcy & Nagłówki SMTP, DNS, SPF, DKIM, DMARC, reputacja adresów IP i domen & Tak & Nie \\
+Systemy regułowe i reputacyjne & Reguły treści, adresy URL, listy reputacyjne, scoring, czasem filtr bayesowski & Częściowo & Nie \\
+TF-IDF + klasyfikator & Treść wiadomości reprezentowana przez cechy leksykalne & Nie & Tak \\
+\texttt{fastText} & N-gramy słów i szybki model liniowy z embeddingami & Nie & Tak \\
+Embeddingi zdań + klasyfikator & Wektor semantyczny wiadomości i klasyfikator liniowy & Nie & Tak \\
+Transformer klasyfikacyjny & Dostrajany enkoder tekstu z głowicą klasyfikacyjną & Nie & Tak \\
+Mały model językowy z LoRA & Dostrojony model generatywny, etykieta lub prawdopodobieństwo etykiety & Nie & Główna metoda opisywana w pracy \\
+\hline
+\end{tabular}

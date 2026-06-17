@@ -1,0 +1,104 @@
+\begingroup
+\begin{tikzpicture}[
+    >=Stealth,
+    font=\sffamily,
+    token/.style={rounded corners=2pt, draw=black!25, fill=plotBlue!8,
+        minimum width=2.2cm, minimum height=0.58cm, align=center, font=\small},
+    emb/.style={rounded corners=2pt, draw=plotBlue!45, fill=plotBlue!10,
+        minimum width=1.75cm, minimum height=0.42cm},
+    block/.style={rounded corners=6pt, draw=plotAccent!60, fill=plotAccent!5,
+        line width=0.9pt},
+    subblock/.style={rounded corners=4pt, draw=plotAccent!55, fill=white,
+        line width=0.75pt, minimum width=3.0cm, minimum height=0.85cm,
+        align=center, font=\small},
+    stage/.style={rounded corners=5pt, draw=plotBlue!45, fill=plotBlue!5,
+        line width=0.75pt, align=center},
+    arrow/.style={->, draw=black!60, line width=0.75pt},
+    flow/.style={->, draw=plotBlue!75, line width=0.9pt},
+    small/.style={font=\scriptsize, text=black!70, align=center},
+    label/.style={font=\small\bfseries, align=center}
+]
+
+\path[use as bounding box] (-0.35,-5.95) rectangle (25.1,5.35);
+
+% Tokeny wejściowe.
+\node[label] at (1.10,4.65) {Tokeny};
+\foreach \word/\name/\y in {
+    Lorem/tok1/3.80,
+    ipsum/tok2/2.75,
+    dolor/tok3/1.70,
+    sit/tok4/0.65,
+    amet/tok5/-0.40
+} {
+    \node[token] (\name) at (1.10,\y) {\texttt{\word}};
+}
+
+% Embeddingi.
+\node[label] at (3.70,4.65) {Wektory\\+ pozycja};
+\foreach \name/\y in {emb1/3.80,emb2/2.75,emb3/1.70,emb4/0.65,emb5/-0.40} {
+    \node[emb] (\name) at (3.70,\y) {};
+    \foreach \dx in {-0.58,-0.29,0,0.29,0.58} {
+        \draw[plotBlue!45, line width=0.35pt] ($(\name.center)+(\dx,-0.18)$) -- ++(0,0.36);
+    }
+}
+\foreach \a/\b in {tok1/emb1,tok2/emb2,tok3/emb3,tok4/emb4,tok5/emb5}
+    \draw[arrow] (\a.east) -- (\b.west);
+
+% Stos bloków Transformera.
+\node[block, minimum width=10.05cm, minimum height=7.30cm, fill=plotBlue!6] (trblock4) at (10.55,1.18) {};
+\node[block, minimum width=10.05cm, minimum height=7.30cm, fill=plotBlue!9] (trblock3) at (10.40,1.33) {};
+\node[block, minimum width=10.05cm, minimum height=7.30cm, fill=plotBlue!12] (trblock2) at (10.25,1.48) {};
+\node[block, minimum width=10.05cm, minimum height=7.30cm, fill=plotAccent!5] (trblock) at (10.10,1.63) {};
+\node[font=\bfseries, text=plotAccent!85] at (10.10,4.85) {Stos bloków Transformer};
+\node[small] at (10.10,4.42) {każdy blok zawiera attention oraz sieć feed-forward};
+
+\node[subblock, fill=plotAccent!11, minimum width=3.05cm, minimum height=0.95cm] (attn4) at (8.22,2.52) {};
+\node[subblock, fill=plotAccent!15, minimum width=3.05cm, minimum height=0.95cm] (attn3) at (8.07,2.66) {};
+\node[subblock, fill=plotAccent!19, minimum width=3.05cm, minimum height=0.95cm] (attn2) at (7.92,2.80) {};
+\node[subblock, fill=white, minimum width=3.05cm, minimum height=0.95cm] (attn) at (7.77,2.94)
+    {multi-head\\attention};
+
+\node[subblock, minimum width=3.05cm, minimum height=1.10cm] (ffn) at (12.35,2.94)
+    {feed-forward\\network};
+
+\coordinate (inputbus) at (5.45,2.94);
+\coordinate (blockout) at (trblock.east |- ffn.east);
+
+\draw[flow] (inputbus) -- (attn.west);
+\draw[flow] (attn.east) -- (ffn.west);
+\draw[flow] (ffn.east) -- (blockout);
+
+\draw[arrow] (emb1.east) -- (5.45,3.80);
+\draw[arrow] (emb2.east) -- (5.45,2.75);
+\draw[arrow] (emb3.east) -- (5.45,1.70);
+\draw[arrow] (emb4.east) -- (5.45,0.65);
+\draw[arrow] (emb5.east) -- (5.45,-0.40);
+\draw[plotBlue!45, line width=0.55pt] (5.45,-0.45) -- (5.45,3.85);
+
+% Warstwa wyjściowa i rozkład następnego tokenu.
+\node[stage, minimum width=2.55cm, minimum height=1.05cm] (out) at (18.00,2.94)
+    {warstwa liniowa\\+ softmax};
+\draw[arrow] (trblock4.east |- ffn.east) -- (out.west);
+
+\node[label, align=left, anchor=west] at (20.60,4.65)
+    {Prawdopodobieństwa\\następnego tokenu};
+\draw[arrow] (out.east) -- (20.45,2.94);
+
+\foreach \tok/\pct/\w/\y in {
+    consectetur/42\%/1.90/3.65,
+    elit/27\%/1.22/2.85,
+    adipiscing/16\%/0.72/2.05,
+    ./8\%/0.36/1.25,
+    \ldots/7\%/0.32/0.45
+} {
+    \node[font=\scriptsize, anchor=east] at (21.70,\y) {\texttt{\tok}};
+    \draw[plotGrid, line width=2.4pt] (21.90,\y) -- (23.90,\y);
+    \draw[plotAccent, line width=2.4pt] (21.90,\y) -- ++(\w,0);
+    \node[font=\scriptsize, anchor=west, text=black!70] at (24.05,\y) {\pct};
+}
+
+\node[small, anchor=west, align=left] at (20.60,-0.75)
+    {Model nie zwraca od razu słowa.\\Najpierw oblicza rozkład nad słownikiem,\\z którego wybierany jest kolejny token.};
+
+\end{tikzpicture}
+\endgroup

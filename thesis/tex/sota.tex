@@ -1,18 +1,148 @@
-\chapter{Przegląd istniejących metod wykrywania spamu}
-    \section{Tradycyjne metody filtrowania}
-        \subsection{Filtry oparte na regułach}
-        \subsection{Filtry statystyczne (np. Bayesowskie)}
-        \subsection{Listy czarne i białe (Black/White Lists)}
-    \section{Metody oparte na klasycznym uczeniu maszynowym}
-        \subsection{Modele wektorów nośnych (SVM)}
-        \subsection{Drzewa decyzyjne i lasy losowe}
-        \subsection{Inne algorytmy klasyfikacji}
-    \section{Metody oparte na głębokim uczeniu}
-        \subsection{Sieci neuronowe konwolucyjne (CNN) w analizie tekstu}
-        \subsection{Sieci neuronowe rekurencyjne (RNN, LSTM, GRU)}
-        \subsection{Modele oparte na architekturze Transformer (przed erą LLM na dużą skalę)}
-    \section{Wykorzystanie dużych modeli językowych (LLM) do klasyfikacji tekstu}
-        \subsection{Podejścia zero-shot i few-shot}
-        \subsection{Fine-tuning LLM do zadań specyficznych}
-        \subsection{Dotychczasowe badania nad LLM w kontekście spamu}
-    \section{Podsumowanie i identyfikacja luki badawczej}
+\chapter{Przegląd metod wykrywania niechcianej poczty}
+
+Praktyczny filtr pocztowy korzysta nie tylko z tematu i treści wiadomości, ale
+też z nagłówków SMTP, adresów IP, domen, historii nadawcy, wyników
+uwierzytelniania i informacji o odsyłaczach. Analiza tekstu jest jedną z jego
+warstw. Pozostałe mechanizmy oceniają nadawcę, wykrywają znane kampanie albo
+sprawdzają podejrzane adresy URL. W przeglądzie uwzględniono zarówno te
+rozwiązania, jak i metody możliwe do uruchomienia na zbiorach tekstowych użytych
+w części badawczej.
+
+\section{Wielowarstwowe systemy filtrowania poczty}
+
+W produkcyjnych skrzynkach pocztowych pierwsza decyzja często zapada jeszcze przed
+analizą pełnej treści wiadomości. Dostawca poczty może sprawdzić, czy nadawca
+spełnia wymagania techniczne, czy wiadomość przechodzi uwierzytelnianie SPF,
+DKIM i DMARC, czy adres IP ma dobrą reputację oraz czy domena nie występuje w
+kampaniach nadużyć. Wymagania publikowane dla nadawców poczty Gmail wskazują
+wprost na znaczenie SPF lub DKIM, polityki DMARC, poprawnego formatu wiadomości
+i utrzymywania niskiego odsetka zgłoszeń spamu\autocite{gmail-sender-guidelines}.
+Podobny obraz widać w ustawieniach Microsoft Defender for Office 365, gdzie
+osobno konfigurowane są między innymi polityki antyspamowe, antyphishingowe,
+obsługa podszywania się pod nadawcę i reakcje na DMARC\autocite{microsoft-defender-o365-security-settings}.
+
+SpamAssassin opiera decyzję na zestawie testów punktowanych, regułach
+treści, listach dozwolonych i blokowanych, testach sieciowych oraz mechanizmach
+uczących się\autocite{spamassassin-conf}. Rspamd udostępnia osobne moduły dla
+SPF, DKIM, DMARC, reputacji, list DNS, fuzzy hashy, phishingu, sieci neuronowych
+i wielu innych sygnałów\autocite{rspamd-modules}. Oba filtry działają jako
+systemy punktowe, które składają wiele sygnałów w jedną decyzję.
+
+\section{Metody regułowe, reputacyjne i uwierzytelnianie nadawcy}
+
+W filtrze pocztowym reguła jest jawnie zapisanym warunkiem sprawdzanym na
+wiadomości lub jej metadanych. Po spełnieniu warunku filtr może dodać określoną
+liczbę punktów do wyniku spamu, zablokować wiadomość albo przekazać ją do dalszej
+analizy. Reguły są nadal używane, ponieważ działają szybko, są interpretowalne i
+pozwalają reagować na znane schematy nadużyć bez ponownego trenowania modelu.
+Reguła może dotyczyć fragmentu nagłówka, nietypowego adresu URL, słowa często
+występującego w danej kampanii albo kombinacji kilku prostszych testów.
+Administrator może też podnieść lub obniżyć wagę konkretnego testu, co ułatwia
+bezpośrednią kontrolę nad polityką filtrowania.
+
+Słabą stroną reguł jest zależność od wcześniej zauważonych wzorców. Nadawcy
+spamu mogą zmieniać pisownię słów, przenosić treść do obrazów, rotować domeny
+lub modyfikować szablony wiadomości. Dlatego reguły zwykle nie występują same,
+lecz są łączone z reputacją nadawcy, listami domen, uwierzytelnianiem i
+klasyfikatorami treści. Przeglądy metod antyphishingowych również pokazują, że
+obrona przed phishingiem obejmuje kilka rodzin podejść: listy znanych adresów,
+heurystyki, analizę treści, analizę wizualną oraz metody uczenia maszynowego
+\autocite{wood-antiphishing-review-2022}.
+
+Uwierzytelnianie nadawcy rozwiązuje inny problem niż klasyfikacja tekstu.
+Mechanizmy SPF, DKIM i DMARC pomagają ustalić, czy wiadomość mogła zostać
+wysłana w imieniu deklarowanej domeny. Poprawnie uwierzytelniona wiadomość może
+być niechcianą reklamą albo pochodzić z przejętego konta, dlatego analiza treści
+pozostaje potrzebna.
+
+\section{Klasyczne metody uczenia maszynowego}
+
+Klasyczne modele uczenia maszynowego oparte na cechach leksykalnych są
+najprostszym porównaniem dla klasyfikacji treści. Wiadomość zamienia się wtedy
+na wektor cech, na przykład przez zliczanie słów, n-gramy albo TF-IDF, a
+następnie trenuje klasyfikator taki jak Naive Bayes, regresja logistyczna lub
+SVM. To stosuknowo proste podejście, które charakteryzuje się tanim treningiem, szybką inferencją,
+oraz dobrymi wynikami, zakładając odpowiednio dobrane dane treningowe.
+
+Bayesowskie filtrowanie spamu było badane już we wczesnych pracach nad
+automatycznym filtrowaniem poczty. Androutsopoulos i współautorzy porównali
+Naive Bayes z podejściem pamięciowym i pokazali, że automatycznie uczone filtry
+mogą wyraźnie przewyższać ręcznie konstruowane reguły słów kluczowych
+\autocite{androutsopoulos-naive-bayes-spam}. Nowsze prace nadal porównują z nimi
+nowe rozwiązania. Janez-Martino i współautorzy porównali między innymi
+reprezentacje TF-IDF i bag-of-words z klasyfikatorami Naive Bayes,
+drzewami decyzyjnymi oraz SVM w zadaniu klasyfikacji wiadomości spamowych
+\autocite{janez-martino-spam-supervised-2020}.
+
+Porównanie z klasycznymi metodami pozwala ocenić, ile z wyniku można uzyskać
+dzięki dopasowaniu do słownictwa zbioru treningowego. Wynik TF-IDF bliski
+wynikowi modelu językowego podważałby zasadność użycia droższego rozwiązania.
+Przewaga modelu językowego na danych z innych źródeł wskazywałaby natomiast na
+lepszą generalizację.
+
+Reprezentacja leksykalna dobrze wychwytuje powtarzalne zwroty, nazwy produktów,
+typowe frazy oszustw i często występujące domeny. Gorzej radzi sobie z
+parafrazą, długim kontekstem i wiadomościami, w których znaczenie wynika z
+relacji między kilkoma zdaniami, ponieważ warianty typu bag-of-words tracą
+kolejność słów i słabiej opisują zależności semantyczne
+\autocite{le-distributed-representations-2014}. Rzadkie cechy oraz krótka treść
+wiadomości mogą dodatkowo prowadzić do przeuczenia i słabszej generalizacji
+\autocite{xu-alternative-text-representation-2013}. W danych e-mailowych oznacza
+to ryzyko dopasowania się do cech konkretnego korpusu, na przykład
+charakterystycznego formatowania albo powtarzalnych fragmentów stopki.
+
+\section{Szybkie modele tekstowe i reprezentacje semantyczne}
+
+Pomiędzy klasycznym TF-IDF a pełnym dostrajaniem transformera znajdują się metody
+pośrednie. Jedną z nich jest \texttt{fastText}, czyli szybki klasyfikator tekstu
+oparty na prostym modelu liniowym i reprezentacjach n-gramów. Autorzy
+\texttt{fastText} pokazali, że taki model może być konkurencyjny wobec
+głębszych klasyfikatorów tekstu, a jednocześnie trenuje się i działa bardzo
+szybko\autocite{joulin-fasttext-bag-of-tricks}.
+
+Drugim wariantem pośrednim jest użycie gotowego modelu embeddingowego do
+zamiany wiadomości na wektor semantyczny, a następnie wytrenowanie prostego
+klasyfikatora liniowego. Sentence-BERT został zaproponowany właśnie po to, aby
+uzyskiwać reprezentacje zdań nadające się do porównań semantycznych i dalszych
+zadań bez kosztownego porównywania każdej pary tekstów przez pełny model BERT
+\autocite{reimers-sentence-bert}. W eksperymentach sprawdzono ten wariant za
+pomocą MiniLM i regresji logistycznej.
+
+Słabszym punktem takiego wariantu jest brak treningu pod konkretny typ nadużyć.
+Gotowy model embeddingowy może dobrze oddawać ogólne znaczenie tekstu, ale
+słabiej reagować na drobne sygnały istotne dla filtra pocztowego: nietypowe
+domeny, zapis kwot, celowe literówki albo powtarzalne elementy szablonów
+kampanii.
+
+\section{Modele transformerowe i językowe}
+
+Modele transformerowe budują reprezentację zależną od kontekstu. W wariancie
+klasyfikacyjnym model, taki jak BERT lub DistilBERT, otrzymuje tekst wiadomości
+i zwraca etykietę przez głowicę klasyfikacyjną. DistilBERT jest mniejszą wersją
+BERT-a uzyskaną przez destylację wiedzy; według autorów zachowuje dużą część
+jakości modelu bazowego, przy mniejszym rozmiarze i szybszym działaniu
+\autocite{sanh-distilbert}.
+
+Modele językowe wymagają więcej pamięci niż metody TF-IDF, a ich inferencja jest
+wolniejsza i zależy od długości kontekstu. Mogą jednak lepiej wykorzystywać
+kontekst i uogólniać poza dosłowne słownictwo zbioru treningowego. Dlatego w
+części badawczej oceniono również ich profil błędów na danych spoza zbioru
+treningowego.
+
+\section{Zakres porównania eksperymentalnego}
+
+Bezpośrednie porównanie objęło metody korzystające z treści wiadomości.
+Wiadomości przypisywano do klasy \texttt{ham} albo \texttt{spam}. Wykorzystane
+zbiory nie zawierają spójnych danych o reputacji nadawcy, DNS, pełnych
+nagłówkach ani historii ruchu.
+Tabela~\ref{tab:sota-method-scope} wskazuje, które metody omówiono jako kontekst
+literaturowy, a które uruchomiono w eksperymentach.
+
+\begin{table}[H]
+\centering
+\small
+\resizebox{\textwidth}{!}{\input{tex/tables/sota_method_scope}}
+\caption{Zakres metod omawianych w przeglądzie oraz ich wykorzystanie w części
+eksperymentalnej.}
+\label{tab:sota-method-scope}
+\end{table}

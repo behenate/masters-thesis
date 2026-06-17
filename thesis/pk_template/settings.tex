@@ -1,0 +1,97 @@
+\usepackage[top=2.5cm,bottom=2.5cm,left=3.5cm,right=2.5cm,a4paper]{geometry} % Page margins
+
+% Packages for formatting and functionality
+\usepackage{csvsimple}
+\usepackage{graphicx} % For including images
+\usepackage[T1]{fontenc} % Font encoding
+\usepackage[utf8]{inputenc} % Input encoding
+\usepackage[polish]{babel} % Polish language support
+\usepackage{tgtermes} % Times New Roman font
+\usepackage{titlesec} % Customizing section titles
+\usepackage{tocloft} % Customizing table of contents
+\usepackage{setspace} % Line spacing
+\usepackage{indentfirst} % Indent first paragraph of sections
+\usepackage{ragged2e} % Justify text
+\usepackage[format=plain,
+            labelfont=it,
+            textfont=it,
+            labelsep=period,
+            justification=centering]{caption}% Image decription
+
+\usepackage{minted} % Code blocks
+\usepackage[style=ieee]{biblatex}
+\usepackage{csquotes}
+\usepackage{afterpage}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\hypersetup{colorlinks,%
+citecolor=black,%
+filecolor=black,%
+linkcolor=black,%
+urlcolor=black,%
+}
+
+
+% Path to images
+\graphicspath{ {./images/} }
+
+% Customizing figure captions
+\makeatletter
+\renewcommand{\fnum@figure}{Rys. \thefigure}
+\makeatother
+
+% Customizing spacing for chapters, sections, and subsections
+\titlespacing*{\chapter}{0pt}{0pt}{6pt}
+\titlespacing*{\section}{6pt}{6pt}{6pt}
+\titlespacing*{\subsection}{6pt}{6pt}{6pt}
+
+% Customizing table of contents title font
+\renewcommand{\cfttoctitlefont}{\fontsize{16}{18}\selectfont\bfseries}
+
+% Settings for paragraph indentation and line spacing
+\setlength{\parindent}{0.63cm}
+\setstretch{1.25}
+
+% Justify paragraphs
+\justifying
+
+% Customizing section font size to 13pt
+\titleformat{\section}
+  {\normalfont\fontsize{13}{15}\bfseries} % Font size and style
+  {\thesection}{1em}{}
+
+% Customizing subsection font size to 12pt
+\titleformat{\subsection}
+  {\normalfont\fontsize{12}{14}\bfseries} % Font size and style
+  {\thesubsection}{1em}{}
+  
+% Ustawienia bloków kodu 
+\setminted{
+  frame=single,
+  baselinestretch=1
+  }
+
+
+\makeatletter
+\renewcommand{\@makechapterhead}[1]{%
+  {\parindent \z@ \raggedright 
+    \ifnum \c@secnumdepth >\m@ne
+      \fontsize{14}{16}\bfseries \thechapter\quad
+    \fi
+     \fontsize{14}{16} \bfseries #1\par\nobreak
+    \vskip 6\p@
+  }}
+\makeatother
+
+\addbibresource{bibliografia.bib}
+
+
+\newcommand\blankpage{%
+    \null
+    \thispagestyle{empty}%
+    \addtocounter{page}{-1}%
+    \newpage}
+
+\let\tempone\itemize
+\let\temptwo\enditemize
+\renewenvironment{itemize}{\tempone\addtolength{\itemsep}{-0.4\baselineskip}}{\temptwo}

@@ -1,0 +1,78 @@
+\begingroup
+\begin{tikzpicture}[
+    >=Stealth,
+    font=\sffamily,
+    stage/.style={rounded corners=5pt, draw=plotBlue!50, fill=plotBlue!5,
+        line width=0.8pt, minimum width=12.35cm, minimum height=1.02cm,
+        align=center},
+    chip/.style={rounded corners=2pt, draw=black!25, fill=white,
+        minimum height=0.48cm, inner xsep=5pt, align=center, font=\scriptsize},
+    byte/.style={rounded corners=2pt, draw=plotAccent!45, fill=plotAccent!8,
+        minimum height=0.48cm, inner xsep=4pt, align=center, font=\scriptsize},
+    merge/.style={rounded corners=2pt, draw=plotHam!45, fill=plotHam!8,
+        minimum height=0.48cm, inner xsep=4pt, align=center, font=\scriptsize},
+    arrow/.style={->, draw=black!55, line width=0.8pt},
+    small/.style={font=\scriptsize, text=black!70, align=center},
+    title/.style={font=\tiny\bfseries, text=black!85, align=center}
+]
+
+\path[use as bounding box] (-0.15,-3.85) rectangle (12.60,3.95);
+
+\foreach \name/\y in {
+    input/3.25,
+    regex/1.75,
+    bytes/0.25,
+    bpe/-1.25,
+    ids/-2.75
+} {
+    \node[stage] (\name) at (6.20,\y) {};
+    \draw[black!15, line width=0.5pt] (2.80,\y-0.41) -- (2.80,\y+0.41);
+}
+
+\node[title] at (1.47,3.25) {\shortstack{Tekst\\wejściowy}};
+\node[title] at (1.47,1.75) {\shortstack{1. Podział\\wyrażeniem\\regularnym}};
+\node[title] at (1.47,0.25) {\shortstack{2. Bajty\\UTF-8}};
+\node[title] at (1.47,-1.25) {\shortstack{3. Reguły\\BPE}};
+\node[title] at (1.47,-2.75) {Identyfikatory};
+
+% Komórki w wierszach są układane w stałym obszarze x=3.55..10.95.
+% Dzięki temu rozkład przypomina space-between i nie zależy od długości podpisu.
+\node[chip, minimum width=4.10cm, fill=plotBlue!8] at (7.25,3.25)
+    {\texttt{Lorem ipsum dolor sit amet}};
+
+\node[chip] at (3.75,1.75) {\texttt{Lorem}};
+\node[chip] at (5.50,1.75) {$\sqcup$\texttt{ipsum}};
+\node[chip] at (7.25,1.75) {$\sqcup$\texttt{dolor}};
+\node[chip] at (9.00,1.75) {$\sqcup$\texttt{sit}};
+\node[chip] at (10.65,1.75) {$\sqcup$\texttt{amet}};
+
+\node[byte, anchor=west, minimum width=3.25cm] at (3.55,0.25)
+    {\texttt{Lorem} $\rightarrow$ \texttt{76 111 ...}};
+\node[byte, anchor=east, minimum width=3.25cm] at (10.95,0.25)
+    {$\sqcup$\texttt{ipsum} $\rightarrow$ \texttt{32 105 ...}};
+
+\node[merge, anchor=west, minimum width=1.50cm] at (3.55,-1.25)
+    {\texttt{L}+\texttt{o} $\rightarrow$ \texttt{Lo}};
+\node[merge, minimum width=1.70cm] at (6.48,-1.25)
+    {\texttt{Lo}+\texttt{r} $\rightarrow$ \texttt{Lor}};
+\node[merge, anchor=east, minimum width=3.00cm] at (10.95,-1.25)
+    {\texttt{...} $\rightarrow$ dłuższe tokeny};
+
+\node[chip, fill=plotHam!8, anchor=west, minimum width=2.00cm] at (3.55,-2.75)
+    {\texttt{Lorem} $\rightarrow$ $id_1$};
+\node[chip, fill=plotHam!8, minimum width=2.00cm] at (7.25,-2.75)
+    {$\sqcup$\texttt{ipsum} $\rightarrow$ $id_2$};
+\node[chip, fill=plotHam!8, anchor=east, minimum width=2.00cm] at (10.95,-2.75)
+    {$\ldots$ $\rightarrow$ $id_n$};
+
+% Strzałki są centrowane względem prawej części wierszy, a nie całego pola z etykietą.
+\draw[arrow] (7.25,2.74) -- (7.25,2.26);
+\draw[arrow] (7.25,1.24) -- (7.25,0.76);
+\draw[arrow] (7.25,-0.26) -- (7.25,-0.74);
+\draw[arrow] (7.25,-1.76) -- (7.25,-2.24);
+
+\node[small, anchor=west] at (0.20,-3.55)
+    {$\sqcup$ oznacza spację poprzedzającą fragment tekstu.};
+
+\end{tikzpicture}
+\endgroup

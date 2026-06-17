@@ -1,10 +1,10 @@
-% Temporary faster compile: only build the research chapter while editing it.
-% To restore the full thesis compile, uncomment the disabled \include lines below.
+% Full thesis compile. Comment individual \include lines below only for temporary,
+% faster work on a selected chapter.
 \documentclass{agh-wi}
 \usepackage{scrhack}                        % Formatowanie kodów źródłowych programów
 
 \titlePL{Zastosowanie fine-tuning'u dużych modeli językowych do wykrywania niechcianej poczty elektronicznej}  % Tytuł po polsku
-\titleEN{Title consistent with the topic/field of the thesis} % Tytuł po angielsku
+\titleEN{Application of Large Language Model Fine-Tuning in Unwanted Email Detection} % Tytuł po angielsku
 \author{Wojciech Dróżdż}
 \supervisor{dr inż. Dariusz Żelasko}
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -21,8 +21,8 @@
 \usepackage[sorting=none]{biblatex}           % Spis literatury ma być tworzony na podstawie zawartości bibliograficznej bazy danych
 \usepackage{amsmath}                          % Dodatkowe środowiska matematyczne
 \usepackage{amssymb}                          % Dodatkowe symbole matematyczne
-\usepackage[polish, intoc]{nomencl}           % Definiowanie symboli
 \usepackage{graphicx}                         % Wstawianie grafik zewnętrznych
+\usepackage{pdflscape}                        % Poziome strony dla szerokich rysunków
 \usepackage{xcolor}                           % Kolorowy tekst
 \usepackage{pgfplots}                         % Wykresy w LaTeX
 \usepackage{xurl}                             % Lepsze łamanie długich adresów URL
@@ -52,7 +52,7 @@
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  %  % Konfiguracja rysunków TikZ
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\usetikzlibrary{shapes.geometric,arrows.meta} 
+\usetikzlibrary{shapes.geometric,arrows.meta,calc} 
 \tikzstyle{every picture}+=[remember picture]
 \tikzstyle{na} = [baseline=-.5ex]
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -64,8 +64,6 @@
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  % Pakiet 'framed'
 \definecolor{shadecolor}{gray}{0.9}
- % Pakiet 'nomencl'
-\makenomenclature % Otwórz plik 'example.nlo'
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  % Definicje komend
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -83,51 +81,25 @@
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \frontmatter % Część wstępna
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\maketitle % Dodaj stronę tytułową
- %%%%%%%%%%%%%%%%%%%%%%%
- % Jeżeli chcesz komuś podziękować, to możesz użyć poniższego kodu
-\cleardoublepage
-\thispagestyle{empty}
-\vspace*{\fill}
-\begin{flushright}
-    \em
-    \begin{minipage}{0.75\textwidth}
-        Tutaj możesz umieścić treść podziękowań.
-        Tutaj możesz umieścić treść podziękowań.
-        Tutaj możesz umieścić treść podziękowań.
-        Tutaj możesz umieścić treść podziękowań.
-        Tutaj możesz umieścić treść podziękowań.
-    \end{minipage}
-\end{flushright}
- %%%%%%%%%%%%%%%%%%%%%%%
-\begin{abstractPL}
-    Streszczenie po polsku \ldots
-\end{abstractPL}
-\begin{abstractEN}
-    Abstract in English \ldots
-\end{abstractEN}
+\input{tex/pk_title_page} % Dodaj stronę tytułową zgodną ze wzorem PK
+\input{tex/pk_claims_page} % Oświadczenie o samodzielnym wykonaniu pracy
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\KOMAoptions{open=any} % Usuń puste strony generowane między elementami części wstępnej.
+\begingroup
+\footnotesize
 \tableofcontents   % Wygeneruj spis treści
-\begin{shaded}
-    Zawartość spisu treści \pauza tytuły rozdziałów oraz ich liczba zależą od tematyki pracy \pauza należy ustalić z opiekunem pracy.
-\end{shaded}
-\listoffigures     % Wygeneruj listę rysunków
-\listoftables      % Wygeneruj listę tabel
-\listofalgorithms  % Wygeneruj listę algorytmów
- % Wygeneruj listę kodów źródłowych
-% \lstlistoflistings % Jeżeli do tworzenia listingów używasz pakietu 'listings'
- \listoflistings % Jeżeli do tworzenia listingów używasz pakietu 'minted'
-\printnomenclature % Wyświetl listę symboli
+\endgroup
+\KOMAoptions{twoside=true, open=right} % Przywróć standardowy układ części głównej.
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \mainmatter % Część główna
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  % Rozdziały części głównej
-% Temporary research-only compile: uncomment these lines to restore the full thesis.
-% \include{tex/introduction}
-% \include{tex/sota}
+\include{tex/introduction}
+\include{tex/theory}
+\include{tex/sota}
 \include{tex/research}
-% \include{tex/conclusions}
+\include{tex/conclusions}
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \appendix % Dodatek
@@ -137,6 +109,7 @@
 % \include{tex/example}
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\KOMAoptions{open=any} % Część końcowa nie wymaga pustych stron między spisami.
 \backmatter % Część końcowa
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  % Rozdziały części końcowej
@@ -148,7 +121,16 @@
  %  'thebibliography', to pamiętaj — powinien zawierać tylko te publikacje, 
  %  do których odwołujesz się w pracy. 
 
+\begingroup
+\setlength{\emergencystretch}{3em}
 \printbibliography  % Wyświetl spis literatury
+\endgroup
+\listoffigures     % Wygeneruj listę rysunków
+\listoftables      % Wygeneruj listę tabel
+% \listofalgorithms  % Włącz ponownie, jeżeli w pracy pojawią się algorytmy.
+ % Wygeneruj listę kodów źródłowych
+% \lstlistoflistings % Jeżeli do tworzenia listingów używasz pakietu 'listings'
+ \listoflistings % Jeżeli do tworzenia listingów używasz pakietu 'minted'
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \end{document}

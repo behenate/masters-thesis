@@ -1,0 +1,29 @@
+{
+  "config_id": "fasttext_lr0.25_ep20_w1_d100_char3_6",
+  "lr": 0.25,
+  "epoch": 20,
+  "wordNgrams": 1,
+  "dim": 100,
+  "minn": 3,
+  "maxn": 6,
+  "threshold": 0.25175016641616826,
+  "thread": 8,
+  "seed": 67,
+  "validation_metrics": {
+    "accuracy": 0.9955030916245081,
+    "precision": 0.9910913140311804,
+    "recall": 1.0,
+    "f1": 0.9955257270693512,
+    "specificity": 0.9910011248593926,
+    "balanced_accuracy": 0.9955005624296963,
+    "false_positive_count": 8,
+    "false_negative_count": 0,
+    "true_positive_count": 890,
+    "true_negative_count": 881,
+    "false_positive_rate": 0.008998875140607425,
+    "false_negative_rate": 0.0,
+    "spam_prediction_rate": 0.5047779651489601,
+    "classification_failure_count": 0,
+    "classification_failure_rate": 0.0
+  }
+}

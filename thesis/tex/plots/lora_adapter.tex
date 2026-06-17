@@ -1,0 +1,70 @@
+\begingroup
+\centering
+\begin{tikzpicture}[
+    >=Stealth,
+    font=\sffamily,
+    input/.style={rounded corners=3pt, draw=black!35, fill=white,
+        minimum width=1.25cm, minimum height=0.75cm, align=center},
+    frozen/.style={rounded corners=4pt, draw=plotBlue!60, fill=plotBlue!8,
+        minimum width=2.65cm, minimum height=1.08cm, align=center},
+    trainable/.style={rounded corners=4pt, draw=plotHam!60, fill=plotHam!10,
+        minimum width=1.70cm, minimum height=1.05cm, align=center},
+    activation/.style={rounded corners=3pt, draw=plotHam!45, fill=white,
+        minimum width=1.10cm, minimum height=0.68cm, align=center},
+    result/.style={rounded corners=3pt, draw=plotAccent!55, fill=plotAccent!8,
+        minimum width=1.75cm, minimum height=0.75cm, align=center},
+    sum/.style={circle, draw=black!45, fill=white, minimum size=7.5mm, inner sep=0pt},
+    arrow/.style={->, draw=black!60, line width=0.75pt},
+    trainarrow/.style={->, draw=plotHam!80, line width=0.85pt},
+    frozenarrow/.style={->, draw=plotBlue!80, line width=0.85pt},
+    small/.style={font=\scriptsize, align=center, text=black!75},
+    label/.style={font=\small, align=center}
+]
+
+\path[use as bounding box] (-0.10,-2.72) rectangle (13.15,2.90);
+
+\draw[rounded corners=5pt, draw=plotBlue!35, fill=plotBlue!3, line width=0.5pt]
+    (2.42,0.08) rectangle (8.55,2.08);
+
+\draw[rounded corners=5pt, draw=plotHam!35, fill=plotHam!4, line width=0.5pt]
+    (2.02,-2.18) rectangle (10.48,-0.30);
+
+\node[input] (x) at (0.70,0.00) {$x$};
+
+\node[frozen] (w0) at (4.20,1.08)
+    {$W_0$\\[-0.1em]{\scriptsize zamrożone wagi}\\[-0.2em]{\scriptsize $d_{\mathrm{out}} \times d_{\mathrm{in}}$}};
+\node[result] (baseout) at (7.30,1.08)
+    {$W_0x$};
+
+\node[trainable] (a) at (3.25,-1.24)
+    {$A$\\[-0.1em]{\scriptsize trenowana}\\[-0.2em]{\scriptsize $r \times d_{\mathrm{in}}$}};
+\node[activation] (rank) at (5.25,-1.24)
+    {$r$\\[-0.1em]{\scriptsize $r \ll d$}};
+\node[trainable] (b) at (7.25,-1.24)
+    {$B$\\[-0.1em]{\scriptsize trenowana}\\[-0.2em]{\scriptsize $d_{\mathrm{out}} \times r$}};
+\node[result] (delta) at (9.40,-1.24)
+    {$\frac{\alpha}{r}BAx$};
+
+\node[sum] (add) at (10.75,0.00) {$+$};
+\node[result, minimum width=1.10cm] (out) at (12.15,0.00)
+    {$y$};
+
+\draw[frozenarrow] (x.east) -- ++(0.85,0) |- (w0.west);
+\draw[frozenarrow] (w0.east) -- (baseout.west);
+\draw[frozenarrow] (baseout.east) -| (add.north);
+
+\draw[trainarrow] (x.east) -- ++(0.85,0) |- (a.west);
+\draw[trainarrow] (a.east) -- (rank.west);
+\draw[trainarrow] (rank.east) -- (b.west);
+\draw[trainarrow] (b.east) -- (delta.west);
+\draw[trainarrow] (delta.east) -| (add.south);
+
+\draw[arrow] (add.east) -- (out.west);
+\node[small, text=plotBlue!80] at (5.30,2.30) {ścieżka modelu bazowego};
+\node[small, text=plotHam!80] at (6.10,-2.43) {adapter LoRA aktualizowany podczas dostrajania};
+\node[small, anchor=west] at (11.15,-0.68)
+    {$y = W_0x + \frac{\alpha}{r}BAx$};
+
+\node[small, anchor=east] at (0.08,0.00) {wejście};
+\end{tikzpicture}
+\endgroup
