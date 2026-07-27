@@ -1,0 +1,55 @@
+\chapter*{Summary}
+\addcontentsline{toc}{chapter}{Summary}
+\markboth{Summary}{Summary}
+
+\begingroup
+\small
+
+This thesis investigates whether a small open-weight language model can be
+adapted to distinguish unwanted email from legitimate correspondence.
+Qwen3-0.6B was fine-tuned with Low-Rank Adaptation (LoRA). The classifier used
+only the message subject and body. The positive class included advertising
+spam, phishing, and fraudulent messages. Attachments, transport headers,
+sender reputation, and email authentication results were outside the scope of
+the experiments.
+
+Public email datasets were converted to a common schema, cleaned, deduplicated,
+and split into training, validation, and evaluation subsets. Three datasets
+were excluded from training and evaluated separately. Sixteen configurations
+were compared for classification based on the probability of the next token.
+They differed in context length, learning rate, LoRA rank, scaling factor, and
+dropout. Intermediate training checkpoints were evaluated. Three alternative
+task formulations were also tested: sequence classification, label generation
+with parsing, and structured response generation.
+
+The unmodified model assigned every evaluated message to the legitimate class.
+After fine-tuning, the best configuration used a context of 512 tokens, a
+learning rate of \(10^{-4}\), LoRA rank \(r=32\), scaling factor
+\(\alpha=64\), and dropout of 0.05. It achieved an aggregate external score
+of 98.0\%, including an F1 score of 97.2\% on the \texttt{spam\_ham} dataset,
+specificity of 96.9\% on \texttt{enron}, and recall of 99.9\% on
+\texttt{fraudulent\_email\_corpus}. The best variants of label generation,
+next-token scoring, and structured generation differed by approximately 0.1
+percentage point. Next-token scoring was selected because it compares the
+probabilities of the \texttt{spam} and \texttt{ham} labels directly and
+requires no parser for generated text.
+
+The selected model was compared with classifiers based on TF-IDF, fastText,
+MiniLM sentence representations, and DistilBERT. DistilBERT obtained the best
+result among these methods, with an aggregate external score of 92.3\%. Qwen3
+exceeded this result by 5.7 percentage points. On a common sample of 1,000
+messages, Qwen3 processed 7.3 messages per second and used approximately
+3,466 MiB of memory, while DistilBERT reached 57.9 messages per second. The
+TF-IDF classifiers processed between 2.2 and 10.6 thousand messages per second.
+
+These results are insufficient to justify deploying the model as a complete
+production email filter. The experiments covered one base model, one random
+seed, public datasets, and a single inference environment. In a production
+system, the model could instead act as a second-stage classifier for messages
+not resolved by authentication checks, sender reputation, rules, or a less
+expensive text classifier.
+
+\medskip
+\noindent\textbf{Keywords:} unwanted email, spam detection, phishing, language
+models, Qwen3, LoRA, text classification
+\endgroup
