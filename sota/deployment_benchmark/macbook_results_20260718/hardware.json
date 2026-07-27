@@ -1,0 +1,15 @@
+{
+  "accelerator": "Apple Metal Performance Shaders",
+  "cuda_available": false,
+  "logical_cpu_count": 12,
+  "machine": "arm64",
+  "mps_available": true,
+  "mps_built": true,
+  "physical_cpu_count": 12,
+  "platform": "macOS-26.5.1-arm64-arm-64bit",
+  "processor": "arm",
+  "python": "3.12.1",
+  "recorded_at_utc": "2026-07-18T14:24:44.048249+00:00",
+  "system_memory_gib": 18.0,
+  "torch": "2.11.0"
+}

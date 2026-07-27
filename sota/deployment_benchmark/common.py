@@ -300,6 +300,20 @@ class ResourceMonitor:
 
     def snapshot(self) -> dict[str, int]:
         self._sample()
+        torch_module = sys.modules.get("torch")
+        if torch_module is not None:
+            try:
+                if torch_module.cuda.is_available():
+                    self.peak_accelerator_allocated = max(
+                        self.peak_accelerator_allocated,
+                        int(torch_module.cuda.max_memory_allocated()),
+                    )
+                    self.peak_accelerator_driver = max(
+                        self.peak_accelerator_driver,
+                        int(torch_module.cuda.max_memory_reserved()),
+                    )
+            except (AttributeError, RuntimeError):
+                pass
         with self._lock:
             return {
                 "peak_rss_bytes": self.peak_rss,

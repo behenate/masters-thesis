@@ -44,6 +44,16 @@ def selected_device() -> str:
     return "cpu"
 
 
+def benchmark_batch_size(default: int) -> int:
+    raw_value = os.environ.get("BENCHMARK_BATCH_SIZE")
+    if raw_value is None:
+        return default
+    value = int(raw_value)
+    if value < 1:
+        raise ValueError("BENCHMARK_BATCH_SIZE must be positive")
+    return value
+
+
 def snapshot_path(model_id: str, additional_cache_roots: list[Path] | None = None) -> Path | None:
     cache_roots = list(additional_cache_roots or [])
     cache_roots.extend(
@@ -159,6 +169,7 @@ def benchmark_minilm(texts: list[str]) -> tuple[list[int], dict[str, Any], Calla
     classifier = saved["classifier"]
     threshold = float(saved["threshold"])
     load_seconds = time.perf_counter() - started
+    batch_size = benchmark_batch_size(64)
 
     def split_text(values: list[str]) -> tuple[list[str], list[str]]:
         subjects, bodies = [], []
@@ -174,8 +185,18 @@ def benchmark_minilm(texts: list[str]) -> tuple[list[int], dict[str, Any], Calla
 
     def encode(values: list[str]) -> np.ndarray:
         subjects, bodies = split_text(values)
-        subject_embeddings = model.encode(subjects, batch_size=64, show_progress_bar=False, normalize_embeddings=False)
-        body_embeddings = model.encode(bodies, batch_size=64, show_progress_bar=False, normalize_embeddings=False)
+        subject_embeddings = model.encode(
+            subjects,
+            batch_size=batch_size,
+            show_progress_bar=False,
+            normalize_embeddings=False,
+        )
+        body_embeddings = model.encode(
+            bodies,
+            batch_size=batch_size,
+            show_progress_bar=False,
+            normalize_embeddings=False,
+        )
         embeddings = np.concatenate([subject_embeddings, body_embeddings], axis=1)
         return normalize(embeddings, norm="l2", axis=1)
 
@@ -192,7 +213,7 @@ def benchmark_minilm(texts: list[str]) -> tuple[list[int], dict[str, Any], Calla
         "preprocessing_seconds": 0.0,
         "forward_seconds": inference_seconds,
         "inference_seconds": inference_seconds,
-        "batch_size": 64,
+        "batch_size": batch_size,
         "device": str(getattr(model, "device", selected_device())),
         "artifact_size_bytes": unique_file_size(artifact_paths),
         "feature_count": int(classifier.coef_.shape[1]),
@@ -218,7 +239,7 @@ def benchmark_distilbert(texts: list[str]) -> tuple[list[int], dict[str, Any], C
     model.eval()
     synchronize_accelerator()
     load_seconds = time.perf_counter() - started
-    batch_size = 32
+    batch_size = benchmark_batch_size(32)
 
     def predict(values: list[str]) -> list[int]:
         predictions: list[int] = []
@@ -351,7 +372,7 @@ def benchmark_qwen(texts: list[str], labels: list[int]) -> tuple[list[int], dict
     prompt_rows.sort(key=lambda item: item[0])
     preprocessing_seconds = time.perf_counter() - started
 
-    batch_size = 16
+    batch_size = benchmark_batch_size(16)
 
     def forward(rows: list[tuple[int, int, list[int]]]) -> list[tuple[int, int]]:
         output = []

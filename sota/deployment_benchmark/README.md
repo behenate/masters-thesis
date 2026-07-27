@@ -38,9 +38,31 @@ Run all deployment tests:
 ./.venv/bin/python sota/deployment_benchmark/run_benchmark.py --overwrite
 ```
 
+The transformer worker batch size can be overridden for hardware-specific
+throughput tests:
+
+```bash
+BENCHMARK_BATCH_SIZE=64 ./.venv/bin/python \
+  sota/deployment_benchmark/benchmark_worker.py \
+  --method qwen3_lora_next_token \
+  --output /tmp/qwen_batch64.json
+```
+
+Repeated worker results can be aggregated with medians:
+
+```bash
+./.venv/bin/python sota/deployment_benchmark/aggregate_repeats.py \
+  --input sota/deployment_benchmark/a100_results_20260727/repeats \
+  --output sota/deployment_benchmark/inference_benchmark.csv
+```
+
 The combined results are written to `inference_benchmark.csv`; machine details
 are stored in `hardware.json`. Generated models, samples and intermediate worker
 results are ignored by Git.
+
+The tracked benchmark currently contains medians from three runs on an NVIDIA
+A100-SXM4 80 GB. The earlier Apple M3 Pro measurement is preserved in
+`macbook_results_20260718`.
 
 On Apple Silicon, MPS and the CPU share unified memory. The reported process RSS
 and MPS driver allocation therefore overlap and must not be added together.

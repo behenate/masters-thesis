@@ -1076,8 +1076,8 @@ zawierały badane zbiory danych.
 
 Metody bazowe trenowano na tym samym podziale danych co modele dostrajane. Do
 oceny wykorzystano \texttt{train\_subset}, \texttt{enron},
-\texttt{fraudulent\_email\_corpus} oraz \texttt{spam\_ham}, przy limicie 2000
-próbek na zbiór. Zastosowano ten sam dobór metryk co wcześniej: F1 dla
+\texttt{fraudulent\_email\_corpus} oraz \texttt{spam\_ham}.
+Zastosowano ten sam dobór metryk co wcześniej: F1 dla
 \texttt{train\_subset} i \texttt{spam\_ham}, \emph{specificity} dla
 \texttt{enron} oraz \emph{recall} dla \texttt{fraudulent\_email\_corpus}.
 Taki dobór metryk ogranicza wpływ zbiorów jednoklasowych, dla których accuracy
@@ -1184,10 +1184,10 @@ kontrolnego, podczas gdy parametry metod bazowych dobierano bez ich użycia.
 
 \subsection{Koszt inferencji}
 
-Koszt działania porównano na komputerze z układem Apple M3 Pro, 12 rdzeniami
-CPU i 18~GiB pamięci współdzielonej. Metody transformerowe korzystały z
-dostępnej akceleracji sprzętowej, natomiast TF-IDF i \texttt{fastText} działały
-na CPU.
+Koszt działania porównano na instancji z systemem Linux, kartą NVIDIA
+A100-SXM4 80~GB, procesorem Intel Xeon Platinum 8470 i 96~GiB pamięci
+operacyjnej. Procesom udostępniono 12 wątków CPU. Metody transformerowe
+korzystały z GPU, natomiast TF-IDF i \texttt{fastText} działały na CPU.
 
 Do pomiaru wszystkich klasyfikatorów użyto tej samej, deterministycznie wybranej
 próbki 1000 wiadomości ze zbioru \texttt{spam\_ham}. Próba obejmowała 716
@@ -1197,29 +1197,34 @@ wektoryzacja TF-IDF, wyznaczenie reprezentacji przez MiniLM albo tokenizacja dla
 DistilBERT i Qwen3. Nie wliczano ładowania modelu ani pojedynczego przebiegu
 rozgrzewającego.
 
-Każdą metodę uruchomiono z rozmiarem partii podanym w
-tabeli~\ref{tab:sota-inference-costs}.
+Rozmiar partii metod korzystających z GPU dobrano w krótkich testach
+poprzedzających pomiar. Wybrano 256 dla MiniLM, 512 dla DistilBERT i 64 dla
+Qwen3. Metody działające na CPU przetwarzały całą próbkę jednocześnie. Każdy
+pomiar wykonano trzykrotnie, a w tabeli~\ref{tab:sota-inference-costs} podano
+medianę. Wartość VRAM oznacza szczytową ilość pamięci przydzielonej przez
+PyTorch, a nie całą pamięć zarezerwowaną przez proces.
 
 \begin{table}[htbp]
 \centering
 \scriptsize
 \resizebox{\textwidth}{!}{\input{tex/tables/sota_inference_costs}}
-\caption{Koszt inferencji na wspólnej próbce 1000 wiadomości.}
+\caption{Mediana kosztu inferencji na wspólnej próbce 1000 wiadomości.}
 \label{tab:sota-inference-costs}
 \end{table}
 
-Naive Bayes i regresja logistyczna przetwarzały około 10,5 tys. wiadomości na
-sekundę, a SVM 2,2 tys. Ich zapisane modele z wektoryzatorami zajmowały
-8,1--13,0~MiB. Przepustowość \texttt{fastText}, równa 8,8 tys. wiadomości na
-sekundę, była zbliżona do Naive Bayes i regresji logistycznej. Jego model
-zajmował jednak 980~MiB, a szczytowe użycie pamięci operacyjnej wyniosło około
-1,36~GiB.
+Naive Bayes i regresja logistyczna osiągnęły przepustowość około 6,3 tys.
+wiadomości na sekundę, a SVM 1,3 tys. Ich zapisane modele z wektoryzatorami
+zajmowały 8,1--13,0~MiB. \texttt{fastText} przetwarzał 2,9 tys. wiadomości na
+sekundę. Jego model zajmował 980~MiB, a szczytowe użycie pamięci operacyjnej
+wyniosło około 1,25~GiB.
 
-MiniLM przetwarzał 336,7 wiadomości na sekundę. DistilBERT osiągnął 57,9
-wiadomości na sekundę, a inferencja na całej próbce trwała 17,3 sekundy. Jego
-model zajmował 256~MiB, natomiast szczytowe użycie pamięci operacyjnej wyniosło
-563~MiB. Był około sześciokrotnie wolniejszy od MiniLM i ośmiokrotnie szybszy
-od Qwen3.
+MiniLM przetwarzał 717,9 wiadomości na sekundę. Szczytowe użycie pamięci
+wyniosło około 1,03~GiB RAM i 1266~MiB VRAM. DistilBERT osiągnął 283,5
+wiadomości na sekundę, a inferencja na całej próbce trwała 3,53 sekundy. Jego
+model zajmował 256~MiB. Proces wykorzystał szczytowo około 1,12~GiB RAM i
+8847~MiB VRAM. Tak duże użycie pamięci GPU wynikało między innymi z rozmiaru
+partii równego 512. DistilBERT był około 2,5 raza wolniejszy od MiniLM i 2,3
+raza szybszy od Qwen3.
 
 \begin{figure}[htbp]
 \centering
@@ -1229,15 +1234,16 @@ skalę logarytmiczną. Źródło: opracowanie własne.}
 \label{fig:sota-inference-throughput}
 \end{figure}
 
-Qwen3 przetwarzał 7,3 wiadomości na sekundę. Inferencja trwała 136,7 sekundy,
-czyli około 1440 razy dłużej niż dla Naive Bayes. Szczytowe użycie pamięci
-operacyjnej wyniosło 3466~MiB, a model bazowy z adapterem zajmował 1526~MiB.
-Sam adapter LoRA miał 77,1~MiB i wymagał osobnego załadowania wag
-Qwen3-0.6B.
+Qwen3 przetwarzał 125,1 wiadomości na sekundę. Inferencja trwała 7,99 sekundy,
+czyli około 51 razy dłużej niż dla Naive Bayes. Szczytowe użycie pamięci
+operacyjnej wyniosło około 2,53~GiB, a VRAM 2787~MiB. Model bazowy z adapterem
+zajmował 1526~MiB. Sam adapter LoRA miał 77,1~MiB i wymagał osobnego
+załadowania wag Qwen3-0.6B.
 
 Qwen3 uzyskał najwyższy \(S_{\mathrm{ext}}\), ale miał najniższą przepustowość
-i największe użycie pamięci. DistilBERT był około ośmiokrotnie szybszy i
-potrzebował mniej pamięci, lecz jego wynik był niższy o 5,7 punktu procentowego.
-Naive Bayes i SVM osiągnęły co najmniej 2,2 tys. wiadomości na sekundę, a ich
-modele zajmowały nie więcej niż 13~MiB. Ich wyniki zewnętrzne były jednak
-niższe od wyniku Qwen3 odpowiednio o 7,3 i 7,9 punktu procentowego.
+i największy rozmiar modelu. DistilBERT był około 2,3 raza szybszy, lecz przy
+zastosowanym rozmiarze partii zużywał więcej VRAM, a jego wynik był niższy o
+5,7 punktu procentowego. Naive Bayes i SVM osiągnęły co najmniej 1,3 tys.
+wiadomości na sekundę, a ich modele zajmowały nie więcej niż 13~MiB. Ich wyniki
+zewnętrzne były jednak niższe od wyniku Qwen3 odpowiednio o 7,3 i 7,9 punktu
+procentowego.

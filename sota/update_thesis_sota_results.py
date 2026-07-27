@@ -128,8 +128,8 @@ def write_quality_plot(values: dict[str, dict[str, float]]) -> None:
 \begin{axis}[
     width=0.90\textwidth, height=0.49\textwidth, ybar,
     ymin=75, ymax=100, ytick={75,80,85,90,95,100}, ylabel={\(S_{\mathrm{ext}}\) [\%]},
-    symbolic x coords={fastText,LR,MiniLM,SVM,NB,DistilBERT,Qwen},
-    xtick={fastText,LR,MiniLM,SVM,NB,DistilBERT,Qwen},
+    symbolic x coords={fastText,LR,MiniLM,SVM,NB,DistilBERT,Qwen3-0.6B},
+    xtick={fastText,LR,MiniLM,SVM,NB,DistilBERT,Qwen3-0.6B},
     xticklabel style={font=\footnotesize, rotate=35, anchor=east},
     yticklabel style={font=\footnotesize}, label style={font=\small},
     ymajorgrids, grid style={plotGrid}, tick style={draw=none}, bar width=12pt,
@@ -138,11 +138,11 @@ def write_quality_plot(values: dict[str, dict[str, float]]) -> None:
     every node near coord/.append style={font=\scriptsize},
     legend style={at={(0.5,-0.28)}, anchor=north, legend columns=2, draw=none, font=\footnotesize},
 ]
-\addplot[fill=plotBlue, draw=black, line width=0.2pt, point meta=y] coordinates {
+\addplot[fill=plotBlue, draw=black, line width=0.2pt, bar shift=0pt, point meta=y] coordinates {
 COORDS_BASE
 };
-\addplot[fill=plotSpam, draw=black, line width=0.2pt, point meta=y] coordinates {(Qwen,QWEN)};
-\legend{Metody bazowe,Qwen3-0.6B + LoRA}
+\addplot[fill=plotSpam, draw=black, line width=0.2pt, bar shift=0pt, point meta=y] coordinates {(Qwen3-0.6B,QWEN)};
+\legend{Metody bazowe,Qwen3-0.6B}
 \end{axis}
 \end{tikzpicture}
 """
@@ -157,8 +157,8 @@ def write_inference_outputs() -> None:
     order = [method for method, _ in METHODS] + ["qwen3_lora_next_token"]
     labels = dict(METHODS + [("qwen3_lora_next_token", r"Qwen3 + LoRA, \texttt{03}")])
     lines = [
-        r"\begin{tabular}{lrrrrrr}", r"\hline",
-        r"\textbf{Metoda} & \textbf{Partia} & \textbf{Ładowanie [s]} & \textbf{Inferencja [s]} & \textbf{Wiad./s} & \textbf{RAM [MiB]} & \textbf{Model [MiB]} \\",
+        r"\begin{tabular}{lrrrrrrr}", r"\hline",
+        r"\textbf{Metoda} & \textbf{Partia} & \textbf{Ładowanie [s]} & \textbf{Inferencja [s]} & \textbf{Wiad./s} & \textbf{RAM [MiB]} & \textbf{VRAM [MiB]} & \textbf{Model [MiB]} \\",
         r"\hline",
     ]
     for method in order:
@@ -166,7 +166,8 @@ def write_inference_outputs() -> None:
         lines.append(
             f"{labels[method]} & {int(float(row['batch_size']))} & {float(row['load_seconds']):.3f} & "
             f"{float(row['inference_seconds']):.3f} & {float(row['throughput_samples_per_second']):.1f} & "
-            f"{float(row['peak_rss_mib']):.1f} & {float(row['artifact_size_mib']):.1f} \\\\"
+            f"{float(row['peak_rss_mib']):.1f} & {float(row['peak_accelerator_allocated_mib']):.1f} & "
+            f"{float(row['artifact_size_mib']):.1f} \\\\"
         )
     lines.extend([r"\hline", r"\end{tabular}"])
     (THESIS / "tables" / "sota_inference_costs.tex").write_text("\n".join(lines) + "\n", encoding="utf-8")

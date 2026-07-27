@@ -38,9 +38,10 @@ The selected model was compared with classifiers based on TF-IDF, fastText,
 MiniLM sentence representations, and DistilBERT. DistilBERT obtained the best
 result among these methods, with an aggregate external score of 92.3\%. Qwen3
 exceeded this result by 5.7 percentage points. On a common sample of 1,000
-messages, Qwen3 processed 7.3 messages per second and used approximately
-3,466 MiB of memory, while DistilBERT reached 57.9 messages per second. The
-TF-IDF classifiers processed between 2.2 and 10.6 thousand messages per second.
+messages and an NVIDIA A100 GPU, Qwen3 processed 125.1 messages per second and
+used approximately 2,595 MiB of RAM and 2,787 MiB of GPU memory. DistilBERT
+reached 283.5 messages per second, while the TF-IDF classifiers processed
+between 1.3 and 6.4 thousand messages per second.
 
 These results are insufficient to justify deploying the model as a complete
 production email filter. The experiments covered one base model, one random
