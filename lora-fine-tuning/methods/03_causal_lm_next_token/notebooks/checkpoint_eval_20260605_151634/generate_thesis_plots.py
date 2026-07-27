@@ -477,8 +477,6 @@ def write_method_comparison_outputs() -> list[dict[str, Any]]:
     ]
     for item in best_records:
         method_label = rf"\texttt{{{item['method_label']}}}"
-        if item["method_id"] == "04":
-            method_label += r"$^{*}$"
         rows.append(
             f"{method_label} & \\texttt{{{item['config_label']}}} & {tex_escape(str(item['evaluated_checkpoint_number']))} & "
             f"{fmt(pct(item['train_f1']))} & {fmt(pct(item['enron_specificity']))} & "
@@ -576,8 +574,6 @@ def write_method_training_outputs(
     for method_id in sorted(by_method_best):
         item = by_method_best[method_id]
         method_label = rf"\texttt{{{item['method_label']}}}"
-        if item["method_id"] == "04":
-            method_label += r"$^{*}$"
         rows.append(
             f"{method_label} & \\texttt{{{item['config_label']}}} & "
             f"{tex_escape(str(item['evaluated_checkpoint_number']))} & "
@@ -766,7 +762,7 @@ def write_accuracy_grid(records: list[dict[str, Any]]) -> None:
             r"\begin{tikzpicture}",
             r"\begin{axis}[",
             r"    width=0.242\textwidth,",
-            r"    height=0.165\textwidth,",
+            r"    height=0.195\textheight,",
             rf"    title={{\texttt{{{config_label(config_index)}}}}},",
             r"    title style={font=\scriptsize, yshift=-1.5ex},",
             r"    xmin=1,",

@@ -935,11 +935,10 @@ tokenu porównano pozostałe sposoby dostrajania modelu. W tym etapie nie
 powtarzano pełnego przeszukiwania hiperparametrów. Sprawdzano raczej, czy przy
 zbliżonych ustawieniach treningu znaczenie ma sama postać zadania:
 klasyfikacja sekwencji, generowanie etykiety, ocena następnego tokenu albo
-generowanie odpowiedzi strukturyzowanej. Dla metod \texttt{01} i \texttt{02}
-oceniono cztery najlepsze konfiguracje wybrane na podstawie wcześniejszego
-eksperymentu. Metoda \texttt{03} obejmuje pełny ranking 16 konfiguracji opisany
-wcześniej. Dla metody \texttt{04} dostępne były wyniki dwóch konfiguracji,
-dlatego jej ocenę potraktowano jako częściową.
+generowanie odpowiedzi strukturyzowanej. Dla metod \texttt{01}, \texttt{02}
+i \texttt{04} oceniono cztery najlepsze konfiguracje wybrane na podstawie
+wcześniejszego eksperymentu. Metoda \texttt{03} obejmuje pełny ranking 16
+konfiguracji opisany wcześniej.
 
 Przy wyborze metody liczył się nie tylko wynik zbiorczy, ale też sposób
 działania modelu podczas inferencji. Klasyfikacja sekwencji zwraca decyzję bez
@@ -958,9 +957,7 @@ każdej metody oraz metryki, na których oparto porównanie.
 \centering
 \small
 \resizebox{\textwidth}{!}{\input{tex/tables/method_comparison_best}}
-\caption{Najlepsze punkty kontrolne uzyskane dla porównywanych metod.
-Gwiazdka przy metodzie \texttt{04} oznacza wynik częściowy, obejmujący dwie
-ocenione konfiguracje.}
+\caption{Najlepsze punkty kontrolne uzyskane dla porównywanych metod.}
 \label{tab:method-comparison-best}
 \end{table}
 
@@ -1002,11 +999,10 @@ zbiorze mieszanym.
 
 Metody \texttt{02}, \texttt{03} i \texttt{04} są znacznie bliżej siebie. Wariant
 generowania i parsowania odpowiedzi ma najwyższy F1 na \texttt{spam\_ham}, ale
-słabszy \emph{recall} na zbiorze wiadomości oszukańczych. Dla dwóch ocenionych
-konfiguracji metoda \texttt{04} lokuje się blisko najlepszych wariantów:
-osiąga najwyższą \emph{specificity} na \texttt{enron} i bardzo wysoki
-\emph{recall}, lecz jej F1 na \texttt{spam\_ham} jest niższe niż w metodach
-\texttt{02} i \texttt{03}.
+słabszy \emph{recall} na zbiorze wiadomości oszukańczych. Metoda \texttt{04}
+lokuje się blisko najlepszych wariantów: osiąga najwyższą \emph{specificity} na
+\texttt{enron} i bardzo wysoki \emph{recall}, lecz jej F1 na
+\texttt{spam\_ham} jest niższe niż w metodach \texttt{02} i \texttt{03}.
 
 Rysunek~\ref{fig:method-error-tradeoff} pokazuje tę różnicę od strony profilu
 błędów. Metoda \texttt{01} nie przepuszcza wiadomości oszukańczych w
@@ -1065,11 +1061,10 @@ punktów kontrolnych potrzebnych do uzyskania najlepszego wyniku warianty
 generatywne i wariant następnego tokenu zbiegały więc szybciej niż klasyfikacja
 sekwencji.
 
-Wśród metod ocenionych w pełnym zaplanowanym zakresie najwyższy
-\(S_{\mathrm{ext}}\) uzyskała metoda \texttt{03}. Jej przewaga liczbowa nad
-metodami \texttt{02} i \texttt{04} jest mała, dlatego przy wyborze uwzględniono
-również brak generowania tekstu i parsera odpowiedzi. Metodę \texttt{03} wybrano
-do porównania z pozostałymi klasyfikatorami spamu.
+Najwyższy \(S_{\mathrm{ext}}\) uzyskała metoda \texttt{03}. Jej przewaga
+liczbowa nad metodami \texttt{02} i \texttt{04} jest mała, dlatego przy wyborze
+uwzględniono również brak generowania tekstu i parsera odpowiedzi. Metodę
+\texttt{03} wybrano do porównania z pozostałymi klasyfikatorami spamu.
 
 \section{Porównanie z metodami bazowymi}
 

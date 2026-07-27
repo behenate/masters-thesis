@@ -94,11 +94,12 @@ ufności i nie powtarzano tych samych konfiguracji, dlatego różnice rzędu
 próbkowania. Dotyczy to zwłaszcza kolejności najlepszych sposobów dostrajania.
 
 Zakres strojenia nie był jednakowy. Szesnaście konfiguracji i pośrednie punkty
-kontrolne oceniono dla metody następnego tokenu. Pozostałe metody korzystały z
-wybranej części tej przestrzeni, a dla odpowiedzi ustrukturyzowanej ukończono
-dwie konfiguracje. Dla metod bazowych sprawdzono ograniczone zbiory parametrów
-i jeden podział walidacyjny. Naive Bayes nie podlegał strojeniu, a DistilBERT
-wytrenowano tylko z jednym zestawem parametrów.
+kontrolne oceniono dla metody następnego tokenu. Dla klasyfikacji sekwencji,
+generowania etykiety i odpowiedzi ustrukturyzowanej sprawdzono po cztery
+konfiguracje wybrane na podstawie tego eksperymentu. Dla metod bazowych
+sprawdzono ograniczone zbiory parametrów i jeden podział walidacyjny. Naive
+Bayes nie podlegał strojeniu, a DistilBERT wytrenowano tylko z jednym zestawem
+parametrów.
 Przedstawione wyniki dotyczą więc wyłącznie sprawdzonych konfiguracji.
 
 Badanie objęło jeden model bazowy i jeden jego rozmiar. Pomiar wydajności
@@ -147,8 +148,7 @@ danych produkcyjnych.
 
 \section{Kierunki dalszych badań}
 
-Wyniki odpowiedzi ustrukturyzowanej trzeba uzupełnić o dwie brakujące
-konfiguracje. Szersze przeszukanie parametrów Naive Bayes i DistilBERT
+Szersze przeszukanie parametrów Naive Bayes i DistilBERT
 pozwoliłoby sprawdzić, czy ich obecne wyniki są bliskie najlepszym dla przyjętych
 danych. Osobno trzeba dobrać progi klasyfikacji do założonego kosztu
 \emph{false positive} i \emph{false negative}.
