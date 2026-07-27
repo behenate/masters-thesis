@@ -187,12 +187,16 @@ działa w trzech głównych krokach:
     listę połączeń.
 \end{enumerate}
 
+Kolejne etapy tokenizacji zestawiono na
+rysunku~\ref{fig:bpe-tokenization-gpt2}.
+
 \begin{figure}[H]
 \centering
 \resizebox{\textwidth}{!}{\input{tex/plots/bpe_tokenization_gpt2}}
 \caption[Uproszczony przebieg tokenizacji bajtowego BPE]{Uproszczony przebieg tokenizacji tekstu \texttt{Lorem ipsum dolor sit amet}
-w wariancie bajtowego BPE stosowanym w GPT-2. Opracowanie własne.}
+w wariancie bajtowego BPE stosowanym w GPT-2.}
 \label{fig:bpe-tokenization-gpt2}
+\figuresource{opracowanie własne.}
 \end{figure}
 
 \subsubsection{Długość kontekstu}
@@ -209,6 +213,7 @@ zachowanego tekstu a kosztem obliczeniowym.
 W problemach binarnych, takich jak klasyfikacja korespondencji, podstawowym elementem ewaluacji modelu jest macierz pomyłek.
 Przedstawia ona 4 możliwe kombinacje klasyfikacji.
 W tej pracy klasą pozytywną jest spam, phishing lub inna wiadomość niepożądana, a klasą negatywną pożądana korespondencja.
+Znaczenie jej pól przedstawiono w tabeli~\ref{tab:confusion-matrix}.
 
 \begin{table}[H]
     \centering
@@ -426,18 +431,19 @@ praktycznych implementacjach stosuje się także normalizację warstw i połącz
 rezydualne, które stabilizują przepływ informacji przez wiele warstw
 modelu\autocite{vaswani-attention-is-all-you-need}.
 
-\begin{landscape}
+Ogólny przebieg danych przez model decoder-only przedstawiono na
+rysunku~\ref{fig:transformer-overview}.
+
 \begin{figure}[p]
-\hspace*{-0.3cm}\begin{minipage}{\linewidth}
 \centering
-\makebox[\linewidth][c]{\resizebox{0.98\linewidth}{!}{\input{tex/plots/transformer_overview}}}
-\caption{Uproszczony przepływ informacji w modelu językowym opartym na
+\resizebox{!}{0.77\textheight}{\input{tex/plots/transformer_overview}}
+\caption[Przepływ informacji w modelu opartym na architekturze Transformer]
+{Uproszczony przepływ informacji w modelu językowym opartym na
 architekturze Transformer dla sekwencji \texttt{Lorem ipsum dolor sit amet}.
-Opracowanie własne.}
+}
 \label{fig:transformer-overview}
-\end{minipage}
+\figuresource{opracowanie własne.}
 \end{figure}
-\end{landscape}
 
 \subsection{Mechanizm self-attention}
 
@@ -489,13 +495,16 @@ rzadko da się przypisać jednoznaczne działanie. W większości przypadków
 działanie jest trudne lub niemożliwe do rozszyfrowania. Model otrzymuje
 jednak wiele osobnych sposobów ważenia informacji w tej samej sekwencji.
 
+Przykładowy przepływ danych między głowami uwagi pokazano na
+rysunku~\ref{fig:multi-head-self-attention-recap}.
+
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{img/transformer_multi_headed_self_attention_recap}
-\caption{Schemat działania mechanizmu multi-head self-attention. Autor:
-Jay Alammar, źródło: \emph{The Illustrated Transformer}
-\autocite{alammar-illustrated-transformer}.}
+\caption{Schemat działania mechanizmu multi-head self-attention.}
 \label{fig:multi-head-self-attention-recap}
+\figuresource{Jay Alammar, \emph{The Illustrated Transformer}
+\autocite{alammar-illustrated-transformer}.}
 \end{figure}
 
 \subsection{Okno kontekstu i koszt przetwarzania sekwencji}
@@ -543,12 +552,15 @@ używanego przez resztę modelu.
 FFN przetwarza każdą pozycję osobno, ale korzysta z reprezentacji wzbogaconej
 wcześniej przez attention. W bloku Transformer attention zbiera więc informacje
 z sekwencji, a FFN wykonuje nieliniowe przekształcenie tej reprezentacji.
+Schemat dwóch przekształceń liniowych przedstawiono na
+rysunku~\ref{fig:feed-forward-network}.
 
 \begin{figure}[H]
 \centering
 \input{tex/plots/feed_forward_network}
 \caption{Uproszczony schemat sieci feed-forward typu MLP w bloku Transformera.}
 \label{fig:feed-forward-network}
+\figuresource{opracowanie własne.}
 \end{figure}
 
 \section{Dostrajanie modeli językowych}
@@ -652,13 +664,17 @@ W' = W + \Delta W,\qquad
 \Delta W = \frac{\alpha}{r}BA.
 \]
 
+Sposób dołączenia trenowanej poprawki do zamrożonej macierzy bazowej pokazano
+na rysunku~\ref{fig:lora-adapter}.
+
 \begin{figure}[H]
 \centering
 \resizebox{0.96\textwidth}{!}{\input{tex/plots/lora_adapter}}
 \caption[Uproszczony schemat adaptera LoRA]{Uproszczony schemat adaptera LoRA. Macierz bazowa pozostaje zamrożona,
 a podczas dostrajania aktualizowane są tylko dwie małe macierze niskiego
-rzędu. Opracowanie własne.}
+rzędu.}
 \label{fig:lora-adapter}
+\figuresource{opracowanie własne.}
 \end{figure}
 
 Parametr \(r\) określa rząd adaptacji, czyli rozmiar wewnętrznego wymiaru
@@ -768,8 +784,9 @@ i dostrajania.
 \centering
 \resizebox{0.98\textwidth}{!}{\input{tex/plots/inference_finetuning_cost}}
 \caption[Porównanie kosztu inferencji i dostrajania]{Porównanie składników kosztu inferencji i dostrajania modelu.
-Schemat jakościowy, opracowanie własne.}
+Schemat jakościowy.}
 \label{fig:inference-finetuning-cost}
+\figuresource{opracowanie własne.}
 \end{figure}
 
 Podczas inferencji nie przechowuje się gradientów ani stanu optymalizatora.

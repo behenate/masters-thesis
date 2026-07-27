@@ -114,6 +114,65 @@ Pole \texttt{subject} przechowuje temat wiadomości, \texttt{body} jej treść,
 źródłowego. Taki zapis pozwala porównywać zbiory o różnej strukturze bez
 opierania się na metadanych, które nie występują we wszystkich źródłach.
 
+\subsubsection{Charakterystyka poszczególnych źródeł}
+
+\textsc{enron}
+
+Zbiór \texttt{enron} jest największym z wybranych źródeł danych.
+Zawiera 517 401 wiadomości, z których wszystkie przynależą do klasy negatywnej.
+Jego zaletą jest duża liczność i naturalny charakter korespondencji,
+jednak jednocześnie jest to zbiór specyficzny domenowo. Pochodzi z archiwum
+organizacyjnego, dlatego może zawierać wiele powtarzalnych struktur, tematów,
+podpisów, cytowań oraz wątków wewnętrznych. Włączenie go w całości do zbioru
+treningowego nieproporcjonalnie zwiększałoby liczbę przykładów prawdziwej korespondencji, ale
+niekoniecznie poprawiłoby zdolność modelu do ogólnego rozpoznawania wiadomości
+pożądanych. Dlatego zbiór wykorzystano tylko do testów skuteczności modeli,
+a nie do samego treningu.
+
+\textsc{ling}
+
+Zbiór \texttt{ling} obejmuje 2 893 rekordy: 2 412 wiadomości pożądanych oraz
+481 przykładów klasy pozytywnej. Jest jednym z mniejszych zbiorów, posiada
+format z osobnym tematem, treścią i etykietą.
+
+\textsc{nazario}
+
+Zbiór \texttt{nazario} obejmuje 3 065 rekordów i jest prawie zbalansowany:
+1 500 wiadomości pożądanych oraz 1 565 przykładów klasy pozytywnej. Posiada
+pola tematu, treści oraz dodatkowych metadanych, takich jak nadawca,
+odbiorca, data i adresy URL.
+
+\textsc{trec\_2007}
+
+Zbiór \texttt{trec\_2007} zawiera 75 419 wiadomości, z czego 50 199 należy do
+klasy pozytywnej, a 25 220 do klasy negatywnej. Rozkład klas jest więc
+przesunięty w kierunku spamu, który stanowi około 66,6\% rekordów.
+
+\textsc{ceas\_2008}
+
+Zbiór \texttt{ceas\_2008} zawiera 39 154 wiadomości i również ma przewagę klasy
+pozytywnej, ale jest ona mniejsza niż w \texttt{trec\_2007}. W zbiorze znajduje
+się 21 842 wiadomości spamowych oraz 17 312 prawdziwych. Pola dostępne dla tego zbioru to
+temat, treść, nadawca, odbiorca, data i adresy URL.
+
+\textsc{fraudulent\_email\_corpus}
+
+Zbiór \texttt{fraudulent\_email\_corpus} dotyczy wiadomości oszukańczych.
+Jest jednoklasowy i zawiera 3 978 wiadomości traktowanych jako klasa pozytywna.
+Dane te są wartościowe z punktu widzenia różnorodności spamu,
+ponieważ wiadomości oszukańcze mogą różnić się od typowych reklam
+farmaceutycznych, newsletterów czy masowego phishingu.
+
+\textsc{spam\_assassin i spam\_ham}
+
+Zbiory \texttt{spam\_assassin} i \texttt{spam\_ham} są mniejsze, ale dobrze
+pasują do klasycznego zadania klasyfikacji spam/ham. \texttt{spam\_assassin}
+zawiera 5 796 rekordów, a \texttt{spam\_ham} 5 171. W obu przypadkach klasa
+pozytywna jest mniejszością. Reprezentują inny format i historię przygotowania danych niż
+zbiory CEAS i TREC użyte w treningu.
+
+\subsubsection{Porównanie zbiorów}
+
 Do eksperymentów wykorzystano zbiory wymienione w tabeli~\ref{tab:raw-dataset-inventory}.
 W tabeli podano liczność każdego źródła, rozkład klas oraz krótką informację o
 charakterze danych. Ten podział jest istotny, ponieważ część zbiorów służyła do
@@ -166,8 +225,10 @@ z jednego źródła.
 \begin{figure}[htbp]
 \centering
 \input{tex/plots/raw_dataset_sizes}
-\caption{Porównanie liczności dostępnych surowych zbiorów danych. Skala pozioma jest logarytmiczna. Źródło: opracowanie własne.}
+\caption{Porównanie liczności dostępnych surowych zbiorów danych. Skala pozioma
+jest logarytmiczna.}
 \label{fig:raw-dataset-sizes}
+\figuresource{opracowanie własne.}
 \end{figure}
 
 Rysunek~\ref{fig:raw-class-balance} przedstawia rozkład klas w źródłowych
@@ -186,65 +247,11 @@ rozpoznawania spamu.
 \begin{figure}[htbp]
 \centering
 \input{tex/plots/raw_class_balance}
-\caption{Rozkład klas w surowych zbiorach. Klasa pozytywna oznacza spam, phishing lub wiadomość oszukańczą. Źródło: opracowanie własne.}
+\caption{Rozkład klas w surowych zbiorach. Klasa pozytywna oznacza spam,
+phishing lub wiadomość oszukańczą.}
 \label{fig:raw-class-balance}
+\figuresource{opracowanie własne.}
 \end{figure}
-
-\subsubsection{Charakterystyka poszczególnych źródeł}
-\textsc{enron}
-
-Zbiór \texttt{enron} jest największym z wybranych źródeł danych.
-Zawiera 517 401 wiadomości, z których wszystkie przynależą do klasy negatywnej. 
-Jego zaletą jest duża liczność i naturalny charakter korespondencji,
-jednak jednocześnie jest to zbiór specyficzny domenowo. Pochodzi z archiwum
-organizacyjnego, dlatego może zawierać wiele powtarzalnych struktur, tematów,
-podpisów, cytowań oraz wątków wewnętrznych. Włączenie go w całości do zbioru
-treningowego nieproporcjonalnie zwiększałoby liczbę przykładów prawdziwej korespondencji, ale
-niekoniecznie poprawiłoby zdolność modelu do ogólnego rozpoznawania wiadomości
-pożądanych. Dlatego zbiór wykorzystano tylko do testów skuteczności modeli,
-a nie do samego treningu.
-
-\textsc{ling}
-
-Zbiór \texttt{ling} obejmuje 2 893 rekordy: 2 412 wiadomości pożądanych oraz
-481 przykładów klasy pozytywnej. Jest jednym z mniejszych zbiorów, posiada
-format z osobnym tematem, treścią i etykietą.
-
-\textsc{nazario}
-
-Zbiór \texttt{nazario} obejmuje 3 065 rekordów i jest prawie zbalansowany:
-1 500 wiadomości pożądanych oraz 1 565 przykładów klasy pozytywnej. posiada
-pola tematu, treści oraz dodatkowych metadanych, takich jak nadawca,
-odbiorca, data i adresy URL.
-
-\textsc{trec\_2007}
-
-Zbiór \texttt{trec\_2007} zawiera 75 419 wiadomości, z czego 50 199 należy do
-klasy pozytywnej, a 25 220 do klasy negatywnej. Rozkład klas jest więc
-przesunięty w kierunku spamu, który stanowi około 66,6\% rekordów.
-
-\textsc{ceas\_2008}
-
-Zbiór \texttt{ceas\_2008} zawiera 39 154 wiadomości i również ma przewagę klasy
-pozytywnej, ale jest ona mniejsza niż w \texttt{trec\_2007}. W zbiorze znajduje
-się 21 842 wiadomości spamowych oraz 17 312 prawdziwych. Pola dostępne dla tego zbioru to
-temat, treść, nadawca, odbiorca, data i adresy URL.
-
-\textsc{fraudulent\_email\_corpus}
-
-Zbiór \texttt{fraudulent\_email\_corpus} dotyczy wiadomości oszukańczych.
-Jest jednoklasowy i zawiera 3 978 wiadomości traktowanych jako klasa pozytywna.
-Dane te są wartościowe z punktu widzenia różnorodności spamu,
-ponieważ wiadomości oszukańcze mogą różnić się od typowych reklam
-farmaceutycznych, newsletterów czy masowego phishingu.\\
-
-\textsc{spam\_assassin i spam\_ham}
-
-Zbiory \texttt{spam\_assassin} i \texttt{spam\_ham} są mniejsze, ale dobrze
-pasują do klasycznego zadania klasyfikacji spam/ham. \texttt{spam\_assassin}
-zawiera 5 796 rekordów, a \texttt{spam\_ham} 5 171. W obu przypadkach klasa
-pozytywna jest mniejszością. Reprezentują inny format i historię przygotowania danych niż
-zbiory CEAS i TREC użyte w treningu.
 
 \subsubsection{Wybór głównego zbioru do eksperymentów}
 
@@ -270,8 +277,9 @@ agresywnej deduplikacji treści oraz próbkowaniu do proporcji 50/50. W składzi
 \begin{figure}[htbp]
 \centering
 \input{tex/plots/primary_source_composition}
-\caption{Udział źródeł w najczęściej używanym zbiorze treningowym. Źródło: opracowanie własne.}
+\caption{Udział źródeł w najczęściej używanym zbiorze treningowym.}
 \label{fig:primary-source-composition}
+\figuresource{opracowanie własne.}
 \end{figure}
 
 Rysunek~\ref{fig:primary-source-composition} przedstawia skład źródłowy
@@ -362,8 +370,9 @@ nagłówkami lub linkami śledzącymi.
 \begin{figure}[htbp]
 \centering
 \input{tex/plots/deduplication_sample_counts}
-\caption{Liczba rekordów przed deduplikacją oraz po deduplikacji. Źródło: opracowanie własne.}
+\caption{Liczba rekordów przed deduplikacją oraz po deduplikacji.}
 \label{fig:deduplication-sample-counts}
+\figuresource{opracowanie własne.}
 \end{figure}
 
 
@@ -395,8 +404,10 @@ podziale danych mogłyby zostać rozdzielone między trening i test.
 \begin{figure}[htbp]
 \centering
 \input{tex/plots/duplicate_group_sizes}
-\caption{Rozmiary grup duplikatów po połączeniu zbiorów danych poza \texttt{enron}. Źródło: opracowanie własne.}
+\caption{Rozmiary grup duplikatów po połączeniu zbiorów danych poza
+\texttt{enron}.}
 \label{fig:duplicate-group-sizes}
+\figuresource{opracowanie własne.}
 \end{figure}
 
 \subsubsection{Balansowanie klas}
@@ -430,8 +441,10 @@ krótkie obcięcie treści mogłoby usuwać informacje ważne dla klasyfikacji.
 \begin{figure}[htbp]
 \centering
 \input{tex/plots/body_word_count_boxplot}
-\caption{Rozkład długości treści wiadomości według etykiety w analizowanym wariancie danych. Źródło: opracowanie własne.}
+\caption{Rozkład długości treści wiadomości według etykiety w analizowanym
+wariancie danych.}
 \label{fig:body-word-count-boxplot}
+\figuresource{opracowanie własne.}
 \end{figure}
 
 Rysunek~\ref{fig:body-word-count-boxplot} pokazuje różnice długości między
@@ -470,8 +483,10 @@ pojawiają się między innymi nazwy serwisów pogodowych, takie jak
 \begin{figure}[htbp]
 \centering
 \input{tex/plots/spam_associated_terms}
-\caption{Terminy najsilniej powiązane z klasą pozytywną według wygładzonego ilorazu szans. Źródło: opracowanie własne.}
+\caption{Terminy najsilniej powiązane z klasą pozytywną według wygładzonego
+ilorazu szans.}
 \label{fig:spam-associated-terms}
+\figuresource{opracowanie własne.}
 \end{figure}
 
 Rysunek~\ref{fig:spam-associated-terms} wskazuje, że wysoka pozycja słów
@@ -678,8 +693,9 @@ współczynnikiem uczenia,
 \input{tex/plots/checkpoint_training_loss_diagnostics}
 \caption{Przebieg funkcji straty dla wybranych konfiguracji treningu. Wykres
 \emph{training loss} został wygładzony medianą kroczącą, aby ograniczyć szum
-wynikający z pomiaru na kolejnych batchach. Źródło: opracowanie własne.}
+wynikający z pomiaru na kolejnych batchach.}
 \label{fig:checkpoint-training-loss-diagnostics}
+\figuresource{opracowanie własne.}
 \end{figure}
 
 Na rysunku~\ref{fig:checkpoint-training-loss-diagnostics} widać, że konfiguracje
@@ -695,8 +711,9 @@ jednoznacznie na lepszy wynik zewnętrzny.
 \centering
 \input{tex/plots/checkpoint_validation_metrics_diagnostics}
 \caption{Przebieg F1 oraz \emph{accuracy} na zbiorze walidacyjnym dla wybranych
-konfiguracji treningu. Źródło: opracowanie własne.}
+konfiguracji treningu.}
 \label{fig:checkpoint-validation-metrics-diagnostics}
+\figuresource{opracowanie własne.}
 \end{figure}
 
 Rysunek~\ref{fig:checkpoint-validation-metrics-diagnostics} pokazuje podobne
@@ -709,8 +726,9 @@ konfiguracje. O wyborze parametrów decydowały przede wszystkim wyniki na
 \begin{figure}[htbp]
 \centering
 \input{tex/plots/checkpoint_training_runtime_context}
-\caption{Czas treningu poszczególnych konfiguracji. Źródło: opracowanie własne.}
+\caption{Czas treningu poszczególnych konfiguracji.}
 \label{fig:checkpoint-training-runtime-context}
+\figuresource{opracowanie własne.}
 \end{figure}
 
 Rysunek~\ref{fig:checkpoint-training-runtime-context} pokazuje, że największy
@@ -768,8 +786,9 @@ zaadaptować modelu do zadania.
 \centering
 \input{tex/plots/checkpoint_external_score_ranking}
 \caption{Najlepszy wynik zewnętrzny uzyskany przez każdą analizowaną konfigurację
-metody klasyfikacji następnego tokenu. Źródło: opracowanie własne.}
+metody klasyfikacji następnego tokenu.}
 \label{fig:checkpoint-external-score-ranking}
+\figuresource{opracowanie własne.}
 \end{figure}
 
 Rysunek~\ref{fig:checkpoint-top-config-dataset-metrics} przedstawia szczegóły
@@ -785,8 +804,9 @@ przy zmianie źródła danych.
 \centering
 \input{tex/plots/checkpoint_top_config_dataset_metrics}
 \caption{Porównanie metryk dla pięciu najlepszych konfiguracji według wyniku
-zewnętrznego. Źródło: opracowanie własne.}
+zewnętrznego.}
 \label{fig:checkpoint-top-config-dataset-metrics}
+\figuresource{opracowanie własne.}
 \end{figure}
 
 Uzupełniająco przeanalizowano również przebieg \emph{accuracy} dla wszystkich
@@ -801,8 +821,9 @@ zewnętrznym oraz analizie luki generalizacji.
 \input{tex/plots/checkpoint_accuracy_grid}
 \caption{Przebieg \emph{accuracy} dla analizowanych konfiguracji. Każdy panel
 odpowiada jednej konfiguracji, a linie przedstawiają osobne zbiory ewaluacyjne.
-Źródło: opracowanie własne.}
+}
 \label{fig:checkpoint-accuracy-grid}
+\figuresource{opracowanie własne.}
 \end{figure}
 
 \subsection{Analiza przeuczenia}
@@ -828,8 +849,9 @@ zbioru podobnego do treningowego na dane o innej charakterystyce.
 \input{tex/plots/checkpoint_generalization_gap}
 \caption{Luka generalizacji między F1 na \texttt{train\_subset} a wynikiem
 zewnętrznym dla najlepszych punktów kontrolnych poszczególnych konfiguracji.
-Źródło: opracowanie własne.}
+}
 \label{fig:checkpoint-generalization-gap}
+\figuresource{opracowanie własne.}
 \end{figure}
 
 Analiza przebiegu punktów kontrolnych wskazuje również, że wybór końcowego adaptera
@@ -846,8 +868,9 @@ pozostałych czterech najlepszych konfiguracjach.
 \centering
 \input{tex/plots/checkpoint_external_score_trajectory}
 \caption{Przebieg wyniku zewnętrznego dla pięciu najlepszych konfiguracji w
-kolejnych ocenianych punktach kontrolnych. Źródło: opracowanie własne.}
+kolejnych ocenianych punktach kontrolnych.}
 \label{fig:checkpoint-external-score-trajectory}
+\figuresource{opracowanie własne.}
 \end{figure}
 
 \subsection{Wybór najlepszej konfiguracji}
@@ -895,8 +918,9 @@ w stronę jednej klasy.
 \centering
 \input{tex/plots/checkpoint_best_error_rates}
 \caption{Odsetki błędów typu \emph{false positive} i \emph{false negative} dla
-wybranego punktu kontrolnego konfiguracji \texttt{K08}. Źródło: opracowanie własne.}
+wybranego punktu kontrolnego konfiguracji \texttt{K08}.}
 \label{fig:checkpoint-best-error-rates}
+\figuresource{opracowanie własne.}
 \end{figure}
 
 \subsection{Wnioski z eksperymentu}
@@ -973,8 +997,9 @@ więc na jednoznaczną dominację jednej metody we wszystkich warunkach ewaluacj
 \caption{Porównanie najlepszych wariantów metod na czterech zbiorach
 ewaluacyjnych. Dla \texttt{train\_subset} i \texttt{spam\_ham} pokazano F1, dla
 \texttt{enron} \emph{specificity}, a dla \texttt{fraudulent\_email\_corpus}
-\emph{recall}. Źródło: opracowanie własne.}
+\emph{recall}.}
 \label{fig:method-comparison-dataset-metrics}
+\figuresource{opracowanie własne.}
 \end{figure}
 
 \begin{figure}[htbp]
@@ -983,8 +1008,9 @@ ewaluacyjnych. Dla \texttt{train\_subset} i \texttt{spam\_ham} pokazano F1, dla
 \caption{Porównanie błędów typu \emph{false positive} na zbiorze \texttt{enron}
 oraz \emph{false negative} na zbiorze \texttt{fraudulent\_email\_corpus} dla
 najlepszych wariantów metod. Punkty położone bliżej lewego dolnego rogu mają
-korzystniejszy profil błędów. Źródło: opracowanie własne.}
+korzystniejszy profil błędów.}
 \label{fig:method-error-tradeoff}
+\figuresource{opracowanie własne.}
 \end{figure}
 
 Rysunek~\ref{fig:method-comparison-dataset-metrics} pokazuje, że różnice między
@@ -1039,9 +1065,9 @@ konfiguracji każdej metody.}
 \input{tex/plots/method_training_trajectories}
 \caption{Przebieg F1 na \texttt{train\_subset} oraz wyniku zewnętrznego
 \(S_{\mathrm{ext}}\) dla najlepszej konfiguracji każdej metody. Linia
-przerywana oznacza punkt kontrolny o najwyższym wyniku zewnętrznym. Źródło:
-opracowanie własne.}
+przerywana oznacza punkt kontrolny o najwyższym wyniku zewnętrznym.}
 \label{fig:method-training-trajectories}
+\figuresource{opracowanie własne.}
 \end{figure}
 
 Rysunek~\ref{fig:method-training-trajectories} pokazuje, że we wszystkich
@@ -1136,6 +1162,9 @@ klasyfikacji. Trening jednej epoki zajął 7650 sekund, czyli około 2 godzin i
 
 \subsection{Skuteczność klasyfikacji}
 
+Wyniki metod bazowych i wybranego wariantu Qwen3-0.6B zestawiono w
+tabeli~\ref{tab:sota-baseline-comparison}.
+
 \begin{table}[htbp]
 \centering
 \small
@@ -1165,12 +1194,16 @@ błędnie zatrzymały 518 i 534 wiadomości pożądane. MiniLM popełnił 451 ta
 błędów. Wysokie F1 na części walidacyjnej nie przełożyło się zatem na równie
 dobre wyniki dla wiadomości z innych źródeł.
 
+Różnice między wynikami zewnętrznymi porównano również na
+rysunku~\ref{fig:sota-baseline-external-score}.
+
 \begin{figure}[htbp]
 \centering
 \input{tex/plots/sota_baseline_external_score}
 \caption{Wynik zewnętrzny \(S_{\mathrm{ext}}\) dla metod bazowych oraz
-najlepszego wariantu Qwen3-0.6B + LoRA. Źródło: opracowanie własne.}
+najlepszego wariantu Qwen3-0.6B + LoRA.}
 \label{fig:sota-baseline-external-score}
+\figuresource{opracowanie własne.}
 \end{figure}
 
 Qwen3-0.6B + LoRA uzyskał \(S_{\mathrm{ext}}=98{,}0\%\), o 5,7 punktu
@@ -1226,12 +1259,16 @@ model zajmował 256~MiB. Proces wykorzystał szczytowo około 1,12~GiB RAM i
 partii równego 512. DistilBERT był około 2,5 raza wolniejszy od MiniLM i 2,3
 raza szybszy od Qwen3.
 
+Przepustowość wszystkich metod przedstawiono na
+rysunku~\ref{fig:sota-inference-throughput}.
+
 \begin{figure}[htbp]
 \centering
 \input{tex/plots/sota_inference_throughput}
 \caption{Przepustowość metod na wspólnej próbce 1000 wiadomości. Oś pozioma ma
-skalę logarytmiczną. Źródło: opracowanie własne.}
+skalę logarytmiczną.}
 \label{fig:sota-inference-throughput}
+\figuresource{opracowanie własne.}
 \end{figure}
 
 Qwen3 przetwarzał 125,1 wiadomości na sekundę. Inferencja trwała 7,99 sekundy,
