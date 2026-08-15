@@ -3,6 +3,12 @@
 \documentclass{agh-wi}
 \usepackage{scrhack}                        % Formatowanie kodów źródłowych programów
 
+% Zachowaj tytuł bieżącego rozdziału po lewej stronie nagłówka także w
+% jednostronnym układzie dokumentu.
+\ihead{\headmark}
+\chead{}
+\ohead{}
+
 \titlePL{Zastosowanie fine-tuning'u dużych modeli językowych do wykrywania niechcianej poczty elektronicznej}  % Tytuł po polsku
 \titleEN{Application of Large Language Model Fine-Tuning in Unwanted Email Detection} % Tytuł po angielsku
 \author{Wojciech Dróżdż}
@@ -86,7 +92,7 @@
 \frontmatter % Część wstępna
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{tex/pk_title_page} % Dodaj stronę tytułową zgodną ze wzorem PK
-\input{tex/pk_claims_page} % Oświadczenie o samodzielnym wykonaniu pracy
+% Oświadczenie o samodzielnym wykonaniu pracy jest składane jako osobny dokument.
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \KOMAoptions{open=any} % Usuń puste strony generowane między elementami części wstępnej.
@@ -94,12 +100,20 @@
 \footnotesize
 \tableofcontents   % Wygeneruj spis treści
 \endgroup
-\KOMAoptions{twoside=true, open=right} % Przywróć standardowy układ części głównej.
+\clearpage % Zakończ spis treści przed zmianą numeracji stron.
+\KOMAoptions{open=any} % Rozdziały zaczynają się bez wymuszania pustej strony.
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\mainmatter % Część główna
+% Standardowe \mainmatter wymusza nieparzystą stronę w trybie dwustronnym.
+% Poniższe dwie instrukcje włączają część główną i numerację arabską bez
+% dodawania pustej strony po spisie treści.
+\makeatletter
+\@mainmattertrue
+\global\c@page\@ne
+\gdef\thepage{\@arabic\c@page}
+\makeatother
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  % Rozdziały części głównej
-\include{tex/introduction}
+\input{tex/introduction}
 \include{tex/theory}
 \include{tex/sota}
 \include{tex/research}

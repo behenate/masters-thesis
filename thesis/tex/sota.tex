@@ -16,16 +16,16 @@ spełnia wymagania techniczne, czy wiadomość przechodzi uwierzytelnianie SPF,
 DKIM i DMARC, czy adres IP ma dobrą reputację oraz czy domena nie występuje w
 kampaniach nadużyć. Wymagania publikowane dla nadawców poczty Gmail wskazują
 wprost na znaczenie SPF lub DKIM, polityki DMARC, poprawnego formatu wiadomości
-i utrzymywania niskiego odsetka zgłoszeń spamu\autocite{gmail-sender-guidelines}.
+i utrzymywania niskiego odsetka zgłoszeń spamu~\autocite{gmail-sender-guidelines}.
 Podobny obraz widać w ustawieniach Microsoft Defender for Office 365, gdzie
 osobno konfigurowane są między innymi polityki antyspamowe, antyphishingowe,
-obsługa podszywania się pod nadawcę i reakcje na DMARC\autocite{microsoft-defender-o365-security-settings}.
+obsługa podszywania się pod nadawcę i reakcje na DMARC~\autocite{microsoft-defender-o365-security-settings}.
 
 SpamAssassin opiera decyzję na zestawie testów punktowanych, regułach
 treści, listach dozwolonych i blokowanych, testach sieciowych oraz mechanizmach
-uczących się\autocite{spamassassin-conf}. Rspamd udostępnia osobne moduły dla
+uczących się~\autocite{spamassassin-conf}. Rspamd udostępnia osobne moduły dla
 SPF, DKIM, DMARC, reputacji, list DNS, fuzzy hashy, phishingu, sieci neuronowych
-i wielu innych sygnałów\autocite{rspamd-modules}. Oba filtry działają jako
+i wielu innych sygnałów~\autocite{rspamd-modules}. Oba filtry działają jako
 systemy punktowe, które składają wiele sygnałów w jedną decyzję.
 
 \section{Metody regułowe, reputacyjne i uwierzytelnianie nadawcy}
@@ -47,7 +47,7 @@ lecz są łączone z reputacją nadawcy, listami domen, uwierzytelnianiem i
 klasyfikatorami treści. Przeglądy metod antyphishingowych również pokazują, że
 obrona przed phishingiem obejmuje kilka rodzin podejść: listy znanych adresów,
 heurystyki, analizę treści, analizę wizualną oraz metody uczenia maszynowego
-\autocite{wood-antiphishing-review-2022}.
+~\autocite{wood-antiphishing-review-2022}.
 
 Uwierzytelnianie nadawcy rozwiązuje inny problem niż klasyfikacja tekstu.
 Mechanizmy SPF, DKIM i DMARC pomagają ustalić, czy wiadomość mogła zostać
@@ -61,18 +61,18 @@ Klasyczne modele uczenia maszynowego oparte na cechach leksykalnych są
 najprostszym porównaniem dla klasyfikacji treści. Wiadomość zamienia się wtedy
 na wektor cech, na przykład przez zliczanie słów, n-gramy albo TF-IDF, a
 następnie trenuje klasyfikator taki jak Naive Bayes, regresja logistyczna lub
-SVM. To stosuknowo proste podejście, które charakteryzuje się tanim treningiem, szybką inferencją,
-oraz dobrymi wynikami, zakładając odpowiednio dobrane dane treningowe.
+SVM. Jest to stosunkowo proste podejście, które zapewnia tani trening i szybką
+inferencję, a przy odpowiednio dobranych danych może osiągać dobre wyniki.
 
 Bayesowskie filtrowanie spamu było badane już we wczesnych pracach nad
 automatycznym filtrowaniem poczty. Androutsopoulos i współautorzy porównali
 Naive Bayes z podejściem pamięciowym i pokazali, że automatycznie uczone filtry
 mogą wyraźnie przewyższać ręcznie konstruowane reguły słów kluczowych
-\autocite{androutsopoulos-naive-bayes-spam}. Nowsze prace nadal porównują z nimi
+~\autocite{androutsopoulos-naive-bayes-spam}. Nowsze prace nadal porównują z nimi
 nowe rozwiązania. Janez-Martino i współautorzy porównali między innymi
 reprezentacje TF-IDF i bag-of-words z klasyfikatorami Naive Bayes,
 drzewami decyzyjnymi oraz SVM w zadaniu klasyfikacji wiadomości spamowych
-\autocite{janez-martino-spam-supervised-2020}.
+~\autocite{janez-martino-spam-supervised-2020}.
 
 Porównanie z klasycznymi metodami pozwala ocenić, ile z wyniku można uzyskać
 dzięki dopasowaniu do słownictwa zbioru treningowego. Wynik TF-IDF bliski
@@ -85,27 +85,31 @@ typowe frazy oszustw i często występujące domeny. Gorzej radzi sobie z
 parafrazą, długim kontekstem i wiadomościami, w których znaczenie wynika z
 relacji między kilkoma zdaniami, ponieważ warianty typu bag-of-words tracą
 kolejność słów i słabiej opisują zależności semantyczne
-\autocite{le-distributed-representations-2014}. Rzadkie cechy oraz krótka treść
+~\autocite{le-distributed-representations-2014}. Rzadkie cechy oraz krótka treść
 wiadomości mogą dodatkowo prowadzić do przeuczenia i słabszej generalizacji
-\autocite{xu-alternative-text-representation-2013}. W danych e-mailowych oznacza
+~\autocite{xu-alternative-text-representation-2013}. W danych e-mailowych oznacza
 to ryzyko dopasowania się do cech konkretnego korpusu, na przykład
 charakterystycznego formatowania albo powtarzalnych fragmentów stopki.
 
 \section{Szybkie modele tekstowe i reprezentacje semantyczne}
 
 Pomiędzy klasycznym TF-IDF a pełnym dostrajaniem transformera znajdują się metody
-pośrednie. Jedną z nich jest \texttt{fastText}, czyli szybki klasyfikator tekstu
-oparty na prostym modelu liniowym i reprezentacjach n-gramów. Autorzy
+pośrednie. Jedną z nich jest \texttt{fastText}, który uczy reprezentacje słów z
+n-gramów znakowych i stosuje liniowy klasyfikator. Reprezentacje słów
+występujących w dokumencie są łączone przed wykonaniem klasyfikacji. Autorzy
 \texttt{fastText} pokazali, że taki model może być konkurencyjny wobec
 głębszych klasyfikatorów tekstu, a jednocześnie trenuje się i działa bardzo
-szybko\autocite{joulin-fasttext-bag-of-tricks}.
+szybko~\autocite{joulin-fasttext-bag-of-tricks}.
+W eksperymentach użyto klasyfikatora nadzorowanego z n-gramami znakowymi
+długości 3--6, unigramami słów, wektorami o wymiarze 100, współczynnikiem
+uczenia 0,25 i 20 epokami treningu.
 
 Drugim wariantem pośrednim jest użycie gotowego modelu embeddingowego do
 zamiany wiadomości na wektor semantyczny, a następnie wytrenowanie prostego
 klasyfikatora liniowego. Sentence-BERT został zaproponowany właśnie po to, aby
 uzyskiwać reprezentacje zdań nadające się do porównań semantycznych i dalszych
 zadań bez kosztownego porównywania każdej pary tekstów przez pełny model BERT
-\autocite{reimers-sentence-bert}. W eksperymentach sprawdzono ten wariant za
+~\autocite{reimers-sentence-bert}. W eksperymentach sprawdzono ten wariant za
 pomocą MiniLM i regresji logistycznej.
 
 Słabszym punktem takiego wariantu jest brak treningu pod konkretny typ nadużyć.
@@ -121,13 +125,32 @@ klasyfikacyjnym model, taki jak BERT lub DistilBERT, otrzymuje tekst wiadomości
 i zwraca etykietę przez głowicę klasyfikacyjną. DistilBERT jest mniejszą wersją
 BERT-a uzyskaną przez destylację wiedzy; według autorów zachowuje dużą część
 jakości modelu bazowego, przy mniejszym rozmiarze i szybszym działaniu
-\autocite{sanh-distilbert}.
+~\autocite{sanh-distilbert}.
 
 Modele językowe wymagają więcej pamięci niż metody TF-IDF, a ich inferencja jest
 wolniejsza i zależy od długości kontekstu. Mogą jednak lepiej wykorzystywać
 kontekst i uogólniać poza dosłowne słownictwo zbioru treningowego. Dlatego w
 części badawczej oceniono również ich profil błędów na danych spoza zbioru
 treningowego.
+
+Nowsze prace sprawdzają także modele językowe bez dostrajania. Si i
+współautorzy porównali klasyfikację wykonywaną przez ChatGPT z Naive Bayes,
+SVM, regresją logistyczną, siecią feed-forward i BERT-em. Na dużym zbiorze
+anglojęzycznym metody nadzorowane uzyskały lepsze wyniki, natomiast ChatGPT był
+bardziej konkurencyjny dla mniejszego zbioru chińskojęzycznego
+~\autocite{si-chatgpt-spam-2024}. Rojas-Galeano ocenił ChatGPT, GPT-4 i
+Flan-T5 na korpusie SpamAssassin. Flan-T5 uzyskał F1 równe 90\% przy
+klasyfikacji skróconej treści, a GPT-4 95\% po wcześniejszym streszczeniu
+wiadomości. Autor zaznaczył jednocześnie ograniczenie badania do jednego
+korpusu oraz koszt inferencji większych modeli
+~\autocite{rojas-galeano-zero-shot-spam-2024}. Wyniki te pokazują, że sam
+prompt może wystarczyć w części warunków, lecz nie zastępuje oceny na kilku
+źródłach ani analizy kosztu działania.
+
+Przywołane badania nie porównują kilku sposobów dostrojenia tego samego małego
+modelu z otwartymi wagami. W tej pracy sprawdzono cztery sformułowania zadania
+klasyfikacji dla Qwen3-0.6B, a uzyskane wyniki zestawiono ze zużyciem zasobów i
+przepustowością prostszych klasyfikatorów.
 
 \section{Zakres porównania eksperymentalnego}
 

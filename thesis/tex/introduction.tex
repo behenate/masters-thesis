@@ -12,14 +12,14 @@ danych lub pieniędzy.
 
 Jednym z etapów wielowarstwowego filtrowania poczty jest klasyfikacja tekstu.
 W klasycznych metodach treść reprezentuje się między innymi za pomocą TF-IDF,
-a następnie przekazuje do klasyfikatora. W przeciwieństwie do klasycznych metod klasyfikacji,
-modele językowe uwzględniają zależności między słowami i zdaniami oraz korzystają z wiedzy zdobytej podczas treningu
+a następnie przekazuje do klasyfikatora. Modele językowe wykorzystują natomiast
+reprezentacje zależne od kontekstu oraz wiedzę zdobytą podczas treningu
 wstępnego. Ich zastosowanie wiąże się jednak z wyższym kosztem treningu i
 inferencji niż w przypadku prostszych klasyfikatorów. Filtr pocztowy może
 przetwarzać duży strumień wiadomości, dlatego oprócz skuteczności znaczenie mają
 również czas odpowiedzi, przepustowość i zużycie zasobów. Powstaje zatem
-pytanie, czy modele językowe uzyskują lepsze wyniki w klasyfikacji oraz jaki 
-jest ich koszt w porównaniu do klasycznych klasyfikatorów.
+pytanie, czy modele językowe uzyskują lepsze wyniki w klasyfikacji oraz jaki
+jest ich koszt w porównaniu z klasycznymi klasyfikatorami.
 
 \section{Cel pracy}
 
@@ -43,10 +43,10 @@ rozstrzyga, czy wiadomość jest pożądana, ale nie określa rodzaju wykrytego
 nadużycia.
 
 Jako model bazowy wybrano \texttt{Qwen3-0.6B}, który dostrajano metodą LoRA.
-Dla klasyfikacji przez ocenę następnego tokenu porównano 16
-konfiguracji różniących się długością kontekstu, współczynnikiem uczenia i
-parametrami adaptera. Oceniono również pośrednie punkty kontrolne. Wybrane
-ustawienia wykorzystano później w porównaniu klasyfikacji sekwencji,
+Dla klasyfikacji przez ocenę następnego tokenu porównano 16 konfiguracji
+różniących się długością kontekstu, współczynnikiem uczenia i parametrami
+adaptera. Oceniono również pośrednie punkty kontrolne. Wybrane ustawienia
+wykorzystano następnie do porównania czterech metod: klasyfikacji sekwencji,
 generowania etykiety, oceny następnego tokenu oraz generowania odpowiedzi
 ustrukturyzowanej.
 
@@ -61,9 +61,9 @@ walidacyjnym. Koszt inferencji zmierzono na wspólnej próbce 1000 wiadomości.
 Zakres pracy opisują następujące pytania badawcze:
 
 \begin{enumerate}
-    \item Czy dostrojenie małego modelu językowego za pomocą LoRA pozwala
-    poprawnie klasyfikować wiadomości ze zbioru treningowego i ze źródeł
-    niewykorzystanych do aktualizacji wag?
+    \item Jakie wyniki osiąga mały model językowy dostrojony za pomocą LoRA na
+    próbce treningowej i w zewnętrznej walidacji obejmującej źródła
+    niewykorzystane do aktualizacji wag?
     \item Który z badanych sposobów użycia modelu językowego daje
     najkorzystniejsze połączenie skuteczności, niezależności decyzji od formatu
     generowanej odpowiedzi i prostoty inferencji?

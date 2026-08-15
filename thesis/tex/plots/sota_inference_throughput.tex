@@ -1,10 +1,10 @@
 \begin{tikzpicture}
 \begin{axis}[
-    width=0.90\textwidth, height=0.54\textwidth, xbar, xmode=log, log basis x=10,
+    width=0.80\textwidth, height=0.54\textwidth, xbar, xmode=log, log basis x=10,
     xmin=5, xmax=20000, xlabel={Wiadomości na sekundę},
     symbolic y coords={Qwen,DistilBERT,MiniLM,fastText,SVM,LR,NB},
     ytick={Qwen,DistilBERT,MiniLM,fastText,SVM,LR,NB},
-    yticklabels={Qwen3 + LoRA,DistilBERT,MiniLM + LR,fastText,TF-IDF + SVM,TF-IDF + LR,TF-IDF + NB},
+    yticklabels={Qwen3 + LoRA,DistilBERT,MiniLM + reg. logistyczna,fastText,TF-IDF + SVM,TF-IDF + reg. logistyczna,TF-IDF + Naive Bayes},
     xtick={10,100,1000,10000}, xticklabels={$10$,$100$,$1000$,$10000$},
     xmajorgrids, grid style={plotGrid}, tick style={draw=none}, bar width=8pt,
     yticklabel style={font=\footnotesize}, xticklabel style={font=\footnotesize}, label style={font=\small},

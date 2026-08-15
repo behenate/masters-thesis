@@ -20,6 +20,7 @@
     yticklabel style={font=\footnotesize},
     label style={font=\small},
     nodes near coords,
+    point meta=explicit symbolic,
     every node near coord/.append style={font=\scriptsize, anchor=south},
 ]
 \addplot[
@@ -27,16 +28,16 @@
     draw=none,
     bar width=9pt,
 ] coordinates {
-    (g2,3577)
-    (g3,586)
-    (g4,265)
-    (g5,153)
-    (g6to10,434)
-    (g11to20,168)
-    (g21to50,105)
-    (g51to100,28)
-    (g101to500,21)
-    (g501plus,7)
+    (g2,3577) [3577]
+    (g3,586) [586]
+    (g4,265) [265]
+    (g5,153) [153]
+    (g6to10,434) [434]
+    (g11to20,168) [168]
+    (g21to50,105) [105]
+    (g51to100,28) [28]
+    (g101to500,21) [21]
+    (g501plus,7) [7]
 };
 \end{axis}
 \end{tikzpicture}

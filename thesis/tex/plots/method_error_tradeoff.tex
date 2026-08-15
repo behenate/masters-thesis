@@ -15,16 +15,16 @@
     xticklabel style={font=\footnotesize},
     yticklabel style={font=\footnotesize},
     label style={font=\small},
-    legend style={at={(0.5,-0.22)}, anchor=north, legend columns=4, draw=none, font=\footnotesize},
+    legend style={at={(0.5,-0.22)}, anchor=north, legend columns=2, draw=none, font=\footnotesize},
 ]
 \addplot+[only marks, mark=*, mark size=2.2pt, color=plotBlue] coordinates {(4.70,0.00)};
-\node[font=\scriptsize, anchor=west] at (axis cs:4.70,0.00) {\texttt{01}};
+\node[font=\scriptsize, anchor=west] at (axis cs:4.70,0.00) {SeqCls};
 \addplot+[only marks, mark=square*, mark size=2.2pt, color=plotHam] coordinates {(2.50,1.80)};
-\node[font=\scriptsize, anchor=west] at (axis cs:2.50,1.80) {\texttt{02}};
+\node[font=\scriptsize, anchor=west] at (axis cs:2.50,1.80) {Gen.+parser};
 \addplot+[only marks, mark=triangle*, mark size=2.2pt, color=plotAccent] coordinates {(3.10,0.10)};
-\node[font=\scriptsize, anchor=west] at (axis cs:3.10,0.10) {\texttt{03}};
+\node[font=\scriptsize, anchor=west] at (axis cs:3.10,0.10) {Następny token};
 \addplot+[only marks, mark=diamond*, mark size=2.2pt, color=plotSpam] coordinates {(2.30,0.40)};
-\node[font=\scriptsize, anchor=west] at (axis cs:2.30,0.40) {\texttt{04}};
-\legend{\texttt{01},\texttt{02},\texttt{03},\texttt{04}}
+\node[font=\scriptsize, anchor=west] at (axis cs:2.30,0.40) {JSON};
+\legend{SeqCls,Generowanie + parser,Następny token,Strukturyzowany JSON}
 \end{axis}
 \end{tikzpicture}

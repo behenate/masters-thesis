@@ -14,7 +14,7 @@ sender reputation, and email authentication results were outside the scope of
 the experiments.
 
 Public email datasets were converted to a common schema, cleaned, deduplicated,
-and split into training, validation, and evaluation subsets. Three datasets
+and split into training, validation, and test subsets in an 80/10/10 ratio. Three datasets
 were excluded from training and evaluated separately. Sixteen configurations
 were compared for classification based on the probability of the next token.
 They differed in context length, learning rate, LoRA rank, scaling factor, and
@@ -33,6 +33,10 @@ next-token scoring, and structured generation differed by approximately 0.1
 percentage point. Next-token scoring was selected because it compares the
 probabilities of the \texttt{spam} and \texttt{ham} labels directly and
 requires no parser for generated text.
+
+The three external datasets were used to select the Qwen3 configuration and
+checkpoint. The aggregate score is therefore an external validation result,
+not an independent final test estimate.
 
 The selected model was compared with classifiers based on TF-IDF, fastText,
 MiniLM sentence representations, and DistilBERT. DistilBERT obtained the best

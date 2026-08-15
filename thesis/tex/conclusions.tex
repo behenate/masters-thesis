@@ -10,7 +10,7 @@ konfiguracji do oceny wyników na wiadomościach o innej charakterystyce.
 
 Model bez dostrajania przypisywał wszystkie oceniane wiadomości do klasy
 \texttt{ham}. Na zbalansowanym \texttt{train\_subset} oznaczało to 50,0\%
-\emph{accuracy} i F1 równe 0 dla klasy pozytywnej. Po dostrojeniu najlepszy
+\emph{accuracy} i F1 równe 0\% dla klasy pozytywnej. Po dostrojeniu najlepszy
 wynik uzyskała konfiguracja \texttt{K08}: kontekst 512 tokenów, współczynnik
 uczenia \(10^{-4}\), LoRA \(r=32\), \(\alpha=64\) oraz dropout 0,05. Siódmy
 oceniany punkt kontrolny osiągnął \(S_{\mathrm{ext}}=98{,}0\%\), F1 równe
@@ -26,13 +26,16 @@ odpowiednio 90,7\% i 90,1\%.
 \section{Odpowiedzi na pytania badawcze}
 
 \begin{enumerate}
-    \item \textbf{Czy dostrojenie małego modelu językowego za pomocą LoRA
-    pozwala poprawnie klasyfikować wiadomości ze zbioru treningowego i ze źródeł
-    niewykorzystanych do aktualizacji wag?}
+    \item \textbf{Jakie wyniki osiąga mały model językowy dostrojony za pomocą
+    LoRA na próbce treningowej i w zewnętrznej walidacji obejmującej źródła
+    niewykorzystane do aktualizacji wag?}
 
     W badanych warunkach dostrojenie za pomocą LoRA poprawiło klasyfikację
-    zarówno na danych podobnych do treningowych, jak i na trzech korpusach
-    zewnętrznych.
+    zarówno na próbce treningowej, jak i na trzech korpusach zewnętrznych.
+    Najlepszy wariant osiągnął F1 równe 99,9\% na \texttt{train\_subset} oraz
+    \(S_{\mathrm{ext}}=98{,}0\%\) w zewnętrznej walidacji. Druga wartość nie
+    jest wynikiem niezależnego testu końcowego, ponieważ służyła do wyboru
+    konfiguracji.
 
     \item \textbf{Który z badanych sposobów użycia modelu językowego daje
     najkorzystniejsze połączenie skuteczności, niezależności decyzji od formatu
@@ -71,6 +74,8 @@ odpowiednio 90,7\% i 90,1\%.
     TF-IDF działały jeszcze szybciej, przy niższych wynikach zewnętrznych.
     Pomiar na karcie NVIDIA A100 dotyczył przetwarzania w partiach, nie określa
     więc opóźnienia pojedynczego żądania ani kosztu utrzymania serwera.
+    Porównanie ma charakter orientacyjny, ponieważ metody różniły się budżetem
+    strojenia oraz rozmiarem partii użytym podczas inferencji.
 \end{enumerate}
 
 \section{Ograniczenia pracy}
