@@ -5,6 +5,7 @@ import argparse
 import csv
 import datetime as dt
 import gc
+import hashlib
 import importlib.util
 import json
 import math
@@ -45,6 +46,8 @@ SUMMARY_COLUMNS = [
     "method",
     "evaluation_method",
     "dataset",
+    "dataset_role",
+    "dataset_source",
     "config_index",
     "config_id",
     "checkpoint_type",
@@ -268,6 +271,18 @@ def parse_args() -> argparse.Namespace:
         default=list(DEFAULT_DATASETS),
         choices=list(DEFAULT_DATASETS),
         help="Datasets to evaluate separately.",
+    )
+    parser.add_argument(
+        "--dataset-manifest",
+        default=None,
+        help="Use frozen Parquet splits from a manifest created by dataset/prepare_evaluation_splits.py.",
+    )
+    parser.add_argument(
+        "--split-roles",
+        nargs="+",
+        choices=["external_validation", "final_test"],
+        default=["final_test"],
+        help="Manifest split roles to evaluate. Used only with --dataset-manifest.",
     )
     parser.add_argument("--sample-limit", type=int, default=2000)
     parser.add_argument("--batch-size", type=int, default=32)
@@ -555,6 +570,87 @@ def prepare_dataset_samples(dataset_names: list[str], sample_limit: int, seed: i
         print(f"Preparing dataset sample: {dataset_name} -> {sample_path}")
         metadata[dataset_name] = build_dataset_sample(dataset_name, sample_limit, seed, sample_path)
     return metadata
+
+
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def load_manifest_dataset_samples(
+    manifest_value: str,
+    split_roles: list[str],
+) -> tuple[dict[str, dict[str, Any]], Path, str]:
+    from datasets import load_dataset
+
+    manifest_path = Path(manifest_value).expanduser()
+    if not manifest_path.is_absolute():
+        manifest_path = (project_root() / manifest_path).resolve()
+    if not manifest_path.is_file():
+        raise SystemExit(f"Dataset manifest does not exist: {manifest_path}")
+
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    if manifest.get("schema_version") != 1:
+        raise SystemExit(
+            f"Unsupported dataset manifest schema: {manifest.get('schema_version')!r}"
+        )
+
+    selected_roles = set(split_roles)
+    samples: dict[str, dict[str, Any]] = {}
+    for entry in manifest.get("splits", []):
+        role = str(entry.get("role", ""))
+        if role not in selected_roles:
+            continue
+
+        name = str(entry.get("name", "")).strip()
+        if not name or name in samples:
+            raise SystemExit(f"Invalid or duplicate split name in manifest: {name!r}")
+
+        split_path = Path(str(entry.get("path", "")))
+        if not split_path.is_absolute():
+            split_path = (manifest_path.parent / split_path).resolve()
+        if not split_path.is_file():
+            raise SystemExit(f"Manifest split does not exist: {split_path}")
+
+        expected_sha256 = str(entry.get("sha256", ""))
+        actual_sha256 = sha256_file(split_path)
+        if expected_sha256 and actual_sha256 != expected_sha256:
+            raise SystemExit(
+                f"SHA-256 mismatch for {name}: expected {expected_sha256}, got {actual_sha256}"
+            )
+
+        dataset = load_dataset("parquet", data_files=str(split_path), split="train")
+        ham, spam = label_counts(dataset)
+        expected_rows = int(entry.get("rows", len(dataset)))
+        expected_ham = int(entry.get("ham_count", ham))
+        expected_spam = int(entry.get("spam_count", spam))
+        if (len(dataset), ham, spam) != (expected_rows, expected_ham, expected_spam):
+            raise SystemExit(
+                f"Manifest counts do not match {name}: "
+                f"expected rows/ham/spam={expected_rows}/{expected_ham}/{expected_spam}, "
+                f"got {len(dataset)}/{ham}/{spam}"
+            )
+
+        samples[name] = {
+            "dataset": name,
+            "role": role,
+            "source": str(entry.get("source", "")),
+            "path": str(split_path),
+            "rows": len(dataset),
+            "ham_count": ham,
+            "spam_count": spam,
+            "sha256": actual_sha256,
+            "content_sha256": entry.get("content_sha256", ""),
+        }
+
+    if not samples:
+        raise SystemExit(
+            f"Manifest contains no splits for roles: {', '.join(sorted(selected_roles))}"
+        )
+    return samples, manifest_path, sha256_file(manifest_path)
 
 
 def pretokenize_dataset_samples(
@@ -1044,6 +1140,8 @@ def result_row(
             "method": checkpoint.method,
             "evaluation_method": checkpoint.evaluation_method,
             "dataset": dataset_name,
+            "dataset_role": dataset_metadata.get("role", "legacy_sample"),
+            "dataset_source": dataset_metadata.get("source", dataset_name),
             "config_index": checkpoint.config_index,
             "config_id": checkpoint.config_id,
             "checkpoint_type": checkpoint.checkpoint_type,
@@ -1397,7 +1495,16 @@ def main() -> int:
             )
     checkpoints, checkpoint_selection = limit_checkpoints_per_run(checkpoints, args.checkpoints_per_run)
 
-    dataset_samples = prepare_dataset_samples(args.datasets, args.sample_limit, args.seed, output_dir)
+    manifest_path: Path | None = None
+    manifest_sha256: str | None = None
+    if args.dataset_manifest:
+        dataset_samples, manifest_path, manifest_sha256 = load_manifest_dataset_samples(
+            args.dataset_manifest,
+            args.split_roles,
+        )
+    else:
+        dataset_samples = prepare_dataset_samples(args.datasets, args.sample_limit, args.seed, output_dir)
+    dataset_names = list(dataset_samples)
     dataset_samples = pretokenize_dataset_samples(
         dataset_samples=dataset_samples,
         max_seq_lengths=sorted({checkpoint.max_seq_length for checkpoint in checkpoints}),
@@ -1418,7 +1525,10 @@ def main() -> int:
         "method_script": str(spec.script_path),
         "results_root": str(results_root),
         "output_dir": str(output_dir),
-        "datasets": args.datasets,
+        "datasets": dataset_names,
+        "dataset_manifest": str(manifest_path) if manifest_path else None,
+        "dataset_manifest_sha256": manifest_sha256,
+        "split_roles": args.split_roles if manifest_path else None,
         "sample_limit": args.sample_limit,
         "batch_size": args.batch_size,
         "min_batch_size": args.min_batch_size,
@@ -1453,7 +1563,9 @@ def main() -> int:
         f"Selected {len(checkpoints)} checkpoints/adapters "
         f"using checkpoints_per_run={args.checkpoints_per_run}"
     )
-    log(f"Evaluating datasets: {', '.join(args.datasets)}")
+    log(f"Evaluating datasets: {', '.join(dataset_names)}")
+    if manifest_path:
+        log(f"Using frozen dataset manifest: {manifest_path} ({manifest_sha256})")
     log("Running sequentially: one checkpoint at a time")
     log(f"Writing summary to: {summary_path}")
 
@@ -1486,7 +1598,7 @@ def main() -> int:
             rows = evaluate_checkpoint(
                 checkpoint,
                 dataset_samples,
-                list(args.datasets),
+                dataset_names,
                 str(output_dir),
                 spec,
                 method_module,

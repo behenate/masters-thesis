@@ -16,11 +16,11 @@ QWEN_SUMMARY = (
 )
 
 METHODS = [
-    ("tfidf_naive_bayes", "TF-IDF + NB"),
-    ("tfidf_logistic_regression", "TF-IDF + LR"),
+    ("tfidf_naive_bayes", "TF-IDF + Naive Bayes"),
+    ("tfidf_logistic_regression", "TF-IDF + regresja logistyczna"),
     ("tfidf_linear_svm", "TF-IDF + SVM"),
     ("fasttext", r"\texttt{fastText}"),
-    ("minilm_logistic_regression", "MiniLM + LR"),
+    ("minilm_logistic_regression", "MiniLM + regresja logistyczna"),
     ("distilbert_sequence_classification", r"\texttt{DistilBERT}"),
 ]
 
@@ -97,10 +97,11 @@ def write_configuration_table() -> None:
         (SOTA / "distilbert_sequence_classification" / "trained_model" / "evaluation_config.json").read_text(encoding="utf-8")
     )
     rows = [
-        ("TF-IDF + LR", "słowa 1--2", r"\(C=10\)", configs["tfidf_logistic_regression"]["threshold"], configs["tfidf_logistic_regression"]["validation_metrics"]["f1"]),
+        ("TF-IDF + Naive Bayes", "słowa 1--2", r"\(\alpha=1\), maks. 200 tys. cech", 0.5, None),
+        ("TF-IDF + regresja logistyczna", "słowa 1--2", r"\(C=10\)", configs["tfidf_logistic_regression"]["threshold"], configs["tfidf_logistic_regression"]["validation_metrics"]["f1"]),
         ("TF-IDF + SVM", "znaki 3--5", r"\(C=10\)", configs["tfidf_linear_svm"]["threshold"], configs["tfidf_linear_svm"]["validation_metrics"]["f1"]),
         (r"\texttt{fastText}", "znaki 3--6, słowa 1", r"\(lr=0{,}25\), 20 epok, \(d=100\)", configs["fasttext"]["threshold"], configs["fasttext"]["validation_metrics"]["f1"]),
-        ("MiniLM + LR", "temat i treść osobno", r"po 256 tokenów, norm., \(C=10\)", configs["minilm_logistic_regression"]["threshold"], configs["minilm_logistic_regression"]["validation_metrics"]["f1"]),
+        ("MiniLM + regresja logistyczna", "temat i treść osobno", r"po 256 tokenów, norm., \(C=10\)", configs["minilm_logistic_regression"]["threshold"], configs["minilm_logistic_regression"]["validation_metrics"]["f1"]),
         (r"\texttt{DistilBERT}", "klasyfikacja sekwencji", r"1 epoka, 512 tokenów, \(lr=2\cdot10^{-5}\)", distil["decision_threshold"], distil["validation_metrics"]["f1"]),
     ]
     lines = [
@@ -109,7 +110,8 @@ def write_configuration_table() -> None:
         r"\hline",
     ]
     for method, representation, parameters, threshold, validation_f1 in rows:
-        lines.append(f"{method} & {representation} & {parameters} & {threshold:.3f} & {validation_f1 * 100:.1f} \\\\")
+        validation_text = "--" if validation_f1 is None else f"{validation_f1 * 100:.1f}"
+        lines.append(f"{method} & {representation} & {parameters} & {threshold:.3f} & {validation_text} \\\\")
     lines.extend([r"\hline", r"\end{tabular}"])
     (THESIS / "tables" / "sota_tuned_configurations.tex").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
@@ -130,6 +132,7 @@ def write_quality_plot(values: dict[str, dict[str, float]]) -> None:
     ymin=75, ymax=100, ytick={75,80,85,90,95,100}, ylabel={\(S_{\mathrm{ext}}\) [\%]},
     symbolic x coords={fastText,LR,MiniLM,SVM,NB,DistilBERT,Qwen3-0.6B},
     xtick={fastText,LR,MiniLM,SVM,NB,DistilBERT,Qwen3-0.6B},
+    xticklabels={fastText,Reg. logistyczna,MiniLM,SVM,Naive Bayes,DistilBERT,Qwen3-0.6B},
     xticklabel style={font=\footnotesize, rotate=35, anchor=east},
     yticklabel style={font=\footnotesize}, label style={font=\small},
     ymajorgrids, grid style={plotGrid}, tick style={draw=none}, bar width=12pt,
@@ -187,7 +190,7 @@ def write_inference_outputs() -> None:
     xmin=5, xmax=20000, xlabel={Wiadomości na sekundę},
     symbolic y coords={Qwen,DistilBERT,MiniLM,fastText,SVM,LR,NB},
     ytick={Qwen,DistilBERT,MiniLM,fastText,SVM,LR,NB},
-    yticklabels={Qwen3 + LoRA,DistilBERT,MiniLM + LR,fastText,TF-IDF + SVM,TF-IDF + LR,TF-IDF + NB},
+    yticklabels={Qwen3 + LoRA,DistilBERT,MiniLM + reg. logistyczna,fastText,TF-IDF + SVM,TF-IDF + reg. logistyczna,TF-IDF + Naive Bayes},
     xtick={10,100,1000,10000}, xticklabels={$10$,$100$,$1000$,$10000$},
     xmajorgrids, grid style={plotGrid}, tick style={draw=none}, bar width=8pt,
     yticklabel style={font=\footnotesize}, xticklabel style={font=\footnotesize}, label style={font=\small},

@@ -21,8 +21,11 @@ __pycache__
 
 
 dataset/combined_datasets/
-dataset/raw_datasets/
+dataset/evaluation_splits/
+dataset/raw_datasets/*
+!dataset/raw_datasets/SHA256SUMS
 dataset/reports
+dataset/raw_datasets/
 **/.aim
 **/.aim-runtime
 

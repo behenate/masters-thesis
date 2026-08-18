@@ -25,7 +25,53 @@ The output path is deterministic for the same:
 
 So repeated calls reuse the same cached parquet file.
 
-`training_all` expands to all registered datasets except `enron`, `fraudulent_email_corpus`, and `spam_ham`.
+`training_all` expands to all registered datasets except `enron`, `fraudulent_email_corpus`, `spam_ham`, and `trec_2006`.
+The `trec_2006` corpus is reserved for final external evaluation and must not be used for training or model selection.
+
+## TREC 2006 overlap analysis
+
+After downloading the datasets, compare TREC 2006 with every previously registered source:
+
+```bash
+python dataset/analyze_trec_2006_duplicates.py
+```
+
+The script writes `summary.csv`, `matches.csv`, `metrics.json`, and the deduplicated
+`eligible_pool.parquet` under `dataset/reports/trec_2006_overlap`. Labels are not
+included in duplicate fingerprints. Exact matching uses normalized whitespace over
+the subject and body. Longer messages are additionally compared with the existing
+`high` body normalization; short messages require an exact subject-and-body match to
+avoid accidental matches such as `test` or `help`.
+
+## Frozen evaluation splits
+
+Prepare the historical external-validation samples and disjoint final-test samples
+directly from the public source datasets:
+
+```bash
+python dataset/prepare_evaluation_splits.py
+```
+
+The default output is `dataset/evaluation_splits/seed_67`. Its `manifest.json`
+contains row counts, class counts, source hashes, Parquet hashes, content hashes,
+and leakage checks. The final tests contain another 1000 records from `enron`,
+`fraudulent_email_corpus`, and `spam_ham`, plus a balanced 1000-record TREC 2006
+test. Final-test fingerprints are checked against the training dataset, external
+validation samples, and the other final-test sets.
+
+Evaluate the frozen final-test splits without resampling them:
+
+```bash
+python lora-fine-tuning/methods/03_causal_lm_next_token/notebooks/evaluate_checkpoints.py \
+  --method 03 \
+  --dataset-manifest dataset/evaluation_splits/seed_67/manifest.json \
+  --split-roles final_test \
+  --batch-size 16
+```
+
+Use `--split-roles external_validation final_test` to evaluate both roles in one
+run. The same evaluator supports methods `01`, `02`, `03`, and `04` through
+`--method`.
 
 ## Combination modes
 

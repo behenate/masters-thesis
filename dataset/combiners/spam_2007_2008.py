@@ -10,8 +10,7 @@ TARGET_PER_CLASS = 7500
 SEED = 42
 
 
-def extract_trec_2007() -> pd.DataFrame:
-    path = os.path.join(RAW, "trec_2007", "email_origin.csv")
+def _extract_trec(path: str, source: str) -> pd.DataFrame:
     df = pd.read_csv(path)
 
     records = []
@@ -40,9 +39,19 @@ def extract_trec_2007() -> pd.DataFrame:
             subject = ""
             body = raw
 
-        records.append({"subject": subject, "body": body, "label": int(row["label"]), "source": "trec_2007"})
+        records.append({"subject": subject, "body": body, "label": int(row["label"]), "source": source})
 
     return pd.DataFrame(records)
+
+
+def extract_trec_2006() -> pd.DataFrame:
+    path = os.path.join(RAW, "trec_2006", "email_origin.csv")
+    return _extract_trec(path, "trec_2006")
+
+
+def extract_trec_2007() -> pd.DataFrame:
+    path = os.path.join(RAW, "trec_2007", "email_origin.csv")
+    return _extract_trec(path, "trec_2007")
 
 
 def extract_ceas_2008() -> pd.DataFrame:

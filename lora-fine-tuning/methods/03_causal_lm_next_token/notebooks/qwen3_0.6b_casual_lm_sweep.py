@@ -737,19 +737,12 @@ def build_user_prompt(email_text: str) -> str:
 
 def apply_qwen_chat_template(tokenizer: Any, email_text: str) -> str:
     messages = [{"role": "user", "content": build_user_prompt(email_text.strip())}]
-    try:
-        return tokenizer.apply_chat_template(
-            messages,
-            tokenize=False,
-            add_generation_prompt=True,
-            enable_thinking=False,
-        )
-    except TypeError:
-        return tokenizer.apply_chat_template(
-            messages,
-            tokenize=False,
-            add_generation_prompt=True,
-        )
+    return tokenizer.apply_chat_template(
+        messages,
+        tokenize=False,
+        add_generation_prompt=True,
+        enable_thinking=False,
+    )
 
 
 def encode_text(tokenizer: Any, text: str) -> list[int]:

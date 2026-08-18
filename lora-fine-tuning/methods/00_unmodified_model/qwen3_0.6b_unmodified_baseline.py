@@ -121,6 +121,7 @@ POSITIVE_LABEL_TEXT = base.POSITIVE_LABEL_TEXT
 NEGATIVE_LABEL_TEXT = base.NEGATIVE_LABEL_TEXT
 IM_END_TOKEN = base.IM_END_TOKEN
 THINK_BLOCK_RE = re.compile(r"<think>.*?</think>", flags=re.DOTALL | re.IGNORECASE)
+FINAL_BLOCK_RE = re.compile(r"<final>\s*(\{.*?\})\s*</final>", flags=re.DOTALL | re.IGNORECASE)
 
 
 def default_results_root() -> Path:
@@ -220,6 +221,32 @@ def build_dataset_sample(dataset_name: str, sample_limit: int, seed: int) -> tup
 def build_baseline_user_prompt(email_text: str, prompt_style: str) -> str:
     if prompt_style == "training-compatible":
         return base.build_user_prompt(email_text)
+    if prompt_style == "thinking-structured":
+        return (
+            "Classify the following email according to the provided rules.\n\n"
+            "Email:\n"
+            f"{email_text}"
+        )
+    if prompt_style == "decision-checklist":
+        return (
+            "Classify the email as spam or ham.\n"
+            "SPAM: the main purpose is unsolicited selling or promotion; offers for loans, investments, prizes, "
+            "medications, sexual products, software, or discounts; bulk advertising; phishing; credential requests; "
+            "fraud; malware; or a suspicious call to click or pay. A promotion is spam even when the company or "
+            "product might be real.\n"
+            "HAM: direct personal or workplace correspondence, technical mailing-list discussion, academic "
+            "discussion, meeting arrangements, or a requested transactional, account, or order notice.\n"
+            "Judge the actual purpose of the message. Do not treat an advertisement as ham merely because it "
+            "describes a real business.\n"
+            "Decision order:\n"
+            "1. If the primary purpose is promotion, selling, a prize, a loan, an investment, credential collection, "
+            "or a suspicious link, choose spam.\n"
+            "2. Otherwise, if it is ordinary correspondence or a requested notice, choose ham.\n"
+            "Return only spam or ham.\n\n"
+            "Email:\n"
+            f"{email_text}\n\n"
+            "Decision:"
+        )
     if prompt_style != "defined-labels":
         raise ValueError(f"Unknown prompt_style={prompt_style!r}")
     return (
@@ -235,20 +262,52 @@ def build_baseline_user_prompt(email_text: str, prompt_style: str) -> str:
 
 
 def apply_baseline_chat_template(tokenizer: Any, email_text: str, prompt_style: str) -> str:
-    messages = [{"role": "user", "content": build_baseline_user_prompt(email_text.strip(), prompt_style)}]
-    try:
-        return tokenizer.apply_chat_template(
-            messages,
-            tokenize=False,
-            add_generation_prompt=True,
-            enable_thinking=False,
+    messages: list[dict[str, str]] = []
+    if prompt_style == "thinking-structured":
+        messages.append(
+            {
+                "role": "system",
+                "content": (
+                    "You are an email security analyst. Classify each email as spam or ham.\n\n"
+                    "Definitions:\n\n"
+                    "SPAM:\n"
+                    "- unsolicited advertising or bulk promotion;\n"
+                    "- offers involving loans, investments, prizes, medications, sexual products, software, "
+                    "discounts, or unusually profitable opportunities;\n"
+                    "- phishing, credential collection, impersonation, fraud, scams, or malware;\n"
+                    "- messages whose primary purpose is to make the recipient click, pay, register, disclose "
+                    "information, or purchase something they did not request.\n\n"
+                    "A message is still spam when the advertised company, service, or product might be real. "
+                    "Professional formatting, an unsubscribe link, contact details, or a plausible sender name "
+                    "do not by themselves make an unsolicited promotion ham.\n\n"
+                    "HAM:\n"
+                    "- direct personal or workplace correspondence;\n"
+                    "- technical or academic discussion;\n"
+                    "- mailing-list discussion related to its stated topic;\n"
+                    "- meeting arrangements;\n"
+                    "- a requested and plausible account, order, delivery, or transactional notice.\n\n"
+                    "Decision procedure:\n"
+                    "1. Identify the primary purpose of the message.\n"
+                    "2. Check for promotion, financial incentive, urgency, impersonation, credential requests, "
+                    "suspicious links, or malware.\n"
+                    "3. Distinguish unsolicited promotion from requested transactional mail.\n"
+                    "4. Do not default to either class when the evidence is uncertain.\n"
+                    "5. Base the decision on the message content and context.\n\n"
+                    "After completing the analysis, return exactly one final answer in this format:\n\n"
+                    "<final>{\"label\":\"spam\"}</final>\n\n"
+                    "or:\n\n"
+                    "<final>{\"label\":\"ham\"}</final>\n\n"
+                    "Do not include any additional text after the closing </final> tag."
+                ),
+            }
         )
-    except TypeError:
-        return tokenizer.apply_chat_template(
-            messages,
-            tokenize=False,
-            add_generation_prompt=True,
-        )
+    messages.append({"role": "user", "content": build_baseline_user_prompt(email_text.strip(), prompt_style)})
+    return tokenizer.apply_chat_template(
+        messages,
+        tokenize=False,
+        add_generation_prompt=True,
+        enable_thinking=prompt_style == "thinking-structured",
+    )
 
 
 def trim_email_to_fit(
@@ -480,6 +539,33 @@ def parse_generated_label(text: str) -> tuple[str | None, str]:
     return None, "unparsed"
 
 
+def parse_thinking_final_label(text: str) -> tuple[str | None, str]:
+    think_end = text.lower().find("</think>")
+    if think_end < 0:
+        return None, "missing_think_end"
+
+    final_text = text[think_end + len("</think>") :]
+    match = FINAL_BLOCK_RE.search(final_text)
+    if match is None:
+        return None, "missing_final_block"
+
+    try:
+        payload = json.loads(match.group(1))
+    except json.JSONDecodeError:
+        return None, "invalid_final_json"
+    if not isinstance(payload, dict) or set(payload) != {"label"}:
+        return None, "invalid_final_schema"
+
+    label = normalize_label(str(payload["label"]))
+    if label not in {NEGATIVE_LABEL_TEXT, POSITIVE_LABEL_TEXT}:
+        return None, "invalid_final_label"
+    trailing_text = final_text[match.end() :]
+    trailing_text = trailing_text.replace(IM_END_TOKEN, " ").replace("<|endoftext|>", " ").strip()
+    if trailing_text:
+        return None, "text_after_final"
+    return label, "thinking_final_json"
+
+
 def binary_metrics(
     predictions: list[int],
     labels: list[int],
@@ -489,8 +575,8 @@ def binary_metrics(
     del probabilities
     rows = len(labels)
     tp = sum(1 for pred, label in zip(predictions, labels, strict=False) if pred == 1 and label == 1)
-    fp = sum(1 for pred, label in zip(predictions, labels, strict=False) if pred == 1 and label == 0)
-    fn = sum(1 for pred, label in zip(predictions, labels, strict=False) if pred == 0 and label == 1)
+    fp = sum(1 for pred, label in zip(predictions, labels, strict=False) if (pred == 1 and label == 0) or (pred not in {0, 1} and label == 0))
+    fn = sum(1 for pred, label in zip(predictions, labels, strict=False) if (pred == 0 and label == 1) or (pred not in {0, 1} and label == 1))
     tn = sum(1 for pred, label in zip(predictions, labels, strict=False) if pred == 0 and label == 0)
     accuracy = (tp + tn) / max(rows, 1)
     precision = tp / max(tp + fp, 1)
@@ -561,12 +647,20 @@ def prediction_records_from_generation(
                 clean_up_tokenization_spaces=False,
             )
             for offset, (row, raw_generation) in enumerate(zip(rows, raw_generations, strict=False)):
-                parsed_label, parse_rule = parse_generated_label(raw_generation)
+                if args.prompt_style == "thinking-structured":
+                    parsed_label, parse_rule = parse_thinking_final_label(raw_generation)
+                else:
+                    parsed_label, parse_rule = parse_generated_label(raw_generation)
                 parse_failed = parsed_label is None
                 if parse_failed:
                     parse_failure_count += 1
-                    parsed_label = args.parse_failure_label
-                prediction = 1 if parsed_label == POSITIVE_LABEL_TEXT else 0
+                    if args.prompt_style == "thinking-structured":
+                        prediction = -1
+                    else:
+                        parsed_label = args.parse_failure_label
+                        prediction = 1 if parsed_label == POSITIVE_LABEL_TEXT else 0
+                else:
+                    prediction = 1 if parsed_label == POSITIVE_LABEL_TEXT else 0
                 actual = int(row["label"])
                 predictions.append(prediction)
                 labels.append(actual)
@@ -578,7 +672,7 @@ def prediction_records_from_generation(
                         "label": actual,
                         "prediction": prediction,
                         "label_text": label_names[actual],
-                        "prediction_text": label_names[prediction],
+                        "prediction_text": label_names[prediction] if prediction in {0, 1} else "unparsed",
                         "correct": prediction == actual,
                         "parse_failed": parse_failed,
                         "parse_rule": parse_rule,
@@ -750,6 +844,7 @@ def evaluate(args: argparse.Namespace) -> int:
     log(f"Datasets: {', '.join(args.datasets)}")
     log(f"Sample limit per dataset: {args.sample_limit}")
     log(f"Prompt style: {args.prompt_style}")
+    log(f"Attention implementation: {args.attn_implementation}")
 
     try:
         model = AutoModelForCausalLM.from_pretrained(
@@ -757,7 +852,7 @@ def evaluate(args: argparse.Namespace) -> int:
             dtype=dtype,
             trust_remote_code=True,
             low_cpu_mem_usage=True,
-            attn_implementation="eager",
+            attn_implementation=args.attn_implementation,
         )
     except TypeError:
         model = AutoModelForCausalLM.from_pretrained(
@@ -765,7 +860,7 @@ def evaluate(args: argparse.Namespace) -> int:
             torch_dtype=dtype,
             trust_remote_code=True,
             low_cpu_mem_usage=True,
-            attn_implementation="eager",
+            attn_implementation=args.attn_implementation,
         )
     model.to(device)
     model.eval()
@@ -850,6 +945,7 @@ def evaluate(args: argparse.Namespace) -> int:
         "batch_size": args.batch_size,
         "max_new_tokens": args.max_new_tokens,
         "prompt_style": args.prompt_style,
+        "attn_implementation": args.attn_implementation,
         "prompt_template": build_baseline_user_prompt("{email}", args.prompt_style),
         "parse_failure_default_label": args.parse_failure_label,
         "dataset_metadata": dataset_metadata,
@@ -878,9 +974,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--max-seq-length", type=int, default=DEFAULT_MAX_SEQ_LENGTH)
     parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--max-new-tokens", type=int, default=DEFAULT_MAX_NEW_TOKENS)
+    parser.add_argument("--attn-implementation", choices=["eager", "sdpa"], default="eager")
     parser.add_argument(
         "--prompt-style",
-        choices=["defined-labels", "training-compatible"],
+        choices=["defined-labels", "decision-checklist", "thinking-structured", "training-compatible"],
         default=DEFAULT_PROMPT_STYLE,
         help="Prompt used for the unmodified model. Use training-compatible to reproduce the method-03 prompt.",
     )

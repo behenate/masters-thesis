@@ -21,6 +21,7 @@ try:
         nazario,
         spam_assassin,
         spam_ham,
+        trec_2006,
         trec_2007,
     )
 except ImportError:  # pragma: no cover - allows package-style imports
@@ -33,6 +34,7 @@ except ImportError:  # pragma: no cover - allows package-style imports
         nazario,
         spam_assassin,
         spam_ham,
+        trec_2006,
         trec_2007,
     )
 
@@ -62,6 +64,7 @@ TRAINING_EXCLUDED_DATASETS = frozenset({
     "enron",
     "fraudulent_email_corpus",
     "spam_ham",
+    "trec_2006",
 })
 
 
@@ -120,6 +123,10 @@ def build_spam_assassin() -> pd.DataFrame:
 
 def build_trec_2007() -> pd.DataFrame:
     return spam_2007_2008.extract_trec_2007()
+
+
+def build_trec_2006() -> pd.DataFrame:
+    return spam_2007_2008.extract_trec_2006()
 
 
 def build_ceas_2008() -> pd.DataFrame:
@@ -200,6 +207,7 @@ ATOMIC_DATASET_BUILDERS = {
     "nazario": build_nazario,
     "spam_assassin": build_spam_assassin,
     "spam_ham": build_spam_ham,
+    "trec_2006": build_trec_2006,
     "trec_2007": build_trec_2007,
 }
 
@@ -211,6 +219,7 @@ ATOMIC_DATASET_DOWNLOADERS = {
     "nazario": nazario.download,
     "spam_assassin": spam_assassin.download,
     "spam_ham": spam_ham.download,
+    "trec_2006": trec_2006.download,
     "trec_2007": trec_2007.download,
 }
 

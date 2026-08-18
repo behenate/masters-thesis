@@ -5,6 +5,7 @@ from downloaders import (
     enron,
     fraudulent_email_corpus,
     spam_assassin,
+    trec_2006,
     trec_2007,
     ceas_2008,
 )
@@ -16,6 +17,7 @@ DOWNLOADERS = [
     ("enron", enron),
     ("fraudulent_email_corpus", fraudulent_email_corpus),
     ("spam_assassin", spam_assassin),
+    ("trec_2006", trec_2006),
     ("trec_2007", trec_2007),
     ("ceas_2008", ceas_2008),
 ]

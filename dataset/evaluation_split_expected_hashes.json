@@ -1,0 +1,14 @@
+{
+  "seed": 67,
+  "external_validation_size_per_source": 1000,
+  "final_test_size_per_source": 1000,
+  "content_sha256": {
+    "ext_valid_enron": "4dc3671544651d6a9dffc83c0079ea9cf9c2e1349d140e16be35b8b4fc41758c",
+    "ext_valid_fraudulent_email_corpus": "746c081fb5cbaa3d47d8d032945b07e241fa51f7e87fe475cc3f4b728cd9289e",
+    "ext_valid_spam_ham": "0483e6138b1dcf9bdd4a7af4a36dd0c82943007e85105c473a0935ceed036ff5",
+    "test_enron": "5cf054f653804972cdb584026097bdd0a5fe7bd1bd7f322984ed03058be8bc6f",
+    "test_fraudulent_email_corpus": "1b8eccaa80023e6ccb90c409925539eeb8c244a0af578caf3ff19b1afd9ab1c9",
+    "test_spam_ham": "166aac1968b2d0d0ccb7eb90debcf206c492bf8a2f4bce139a3e8ea6e872e5e8",
+    "test_trec_2006": "584dafdc7aa671ad0f99acdaaf1a149af076e6b8c9e5fc84d8a189451f98b70b"
+  }
+}

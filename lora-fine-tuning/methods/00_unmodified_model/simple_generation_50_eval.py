@@ -149,6 +149,7 @@ def evaluate(args: argparse.Namespace) -> int:
             current_dataset=dataset_name,
             max_new_tokens=args.max_new_tokens,
             parse_failure_label=args.parse_failure_label,
+            prompt_style=args.prompt_style,
         )
         metrics, records = baseline.prediction_records_from_generation(
             model=model,
@@ -189,7 +190,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--max-new-tokens", type=int, default=baseline.DEFAULT_MAX_NEW_TOKENS)
     parser.add_argument(
         "--prompt-style",
-        choices=["defined-labels", "training-compatible"],
+        choices=["defined-labels", "decision-checklist", "thinking-structured", "training-compatible"],
         default=baseline.DEFAULT_PROMPT_STYLE,
     )
     parser.add_argument(
