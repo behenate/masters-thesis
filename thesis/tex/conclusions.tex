@@ -5,48 +5,45 @@
 Praca dotyczyła wykorzystania modelu Qwen3-0.6B do wykrywania niechcianej
 poczty na podstawie tematu i treści wiadomości. Publiczne korpusy sprowadzono
 do wspólnego schematu, usunięto puste rekordy i duplikaty, a dane treningowe
-zbalansowano. Trzy źródła wyłączono z treningu i wykorzystano podczas wyboru
-konfiguracji do oceny wyników na wiadomościach o innej charakterystyce.
+zbalansowano. Trzy źródła wykorzystano do zewnętrznej walidacji podczas wyboru
+konfiguracji. Test końcowy obejmował po 2000 wiadomości z \texttt{enron},
+\texttt{fraudulent\_email\_corpus}, \texttt{spam\_ham} i \texttt{trec\_2006}.
 
-Model bez dostrajania przypisywał wszystkie oceniane wiadomości do klasy
-\texttt{ham}. Na zbalansowanym \texttt{train\_subset} oznaczało to 50,0\%
-\emph{accuracy} i F1 równe 0\% dla klasy pozytywnej. Po dostrojeniu najlepszy
-wynik uzyskała konfiguracja \texttt{K08}: kontekst 512 tokenów, współczynnik
-uczenia \(10^{-4}\), LoRA \(r=32\), \(\alpha=64\) oraz dropout 0,05. Siódmy
-oceniany punkt kontrolny osiągnął \(S_{\mathrm{ext}}=98{,}0\%\), F1 równe
-97,2\% na \texttt{spam\_ham}, \emph{specificity} 96,9\% na \texttt{enron} i
-\emph{recall} 99,9\% na \texttt{fraudulent\_email\_corpus}.
+Model bez dostrajania zbyt często wybierał klasę \texttt{spam}. Jego wynik
+końcowy wyniósł 57,61\% dla oceny następnego tokenu i 57,30\% dla generowania
+odpowiedzi. Po dostrojeniu najlepszy wynik walidacyjny uzyskała konfiguracja
+\texttt{K08}: kontekst 512 tokenów, współczynnik uczenia \(10^{-4}\), LoRA
+\(r=32\), \(\alpha=64\) oraz dropout 0,05. Siódmy oceniany punkt kontrolny
+osiągnął \(S_{\mathrm{ext}}=98{,}0\%\).
 
-Najlepsze warianty generowania etykiety, oceny następnego tokenu i odpowiedzi
-ustrukturyzowanej różniły się wynikiem zbiorczym o około 0,1 punktu
-procentowego. Najlepszą metodą bazową był DistilBERT z wynikiem
-\(S_{\mathrm{ext}}=92{,}3\%\). TF-IDF z Naive Bayes i SVM osiągnęły
-odpowiednio 90,7\% i 90,1\%.
+W teście końcowym najwyższy \(S_{\mathrm{final}}\) uzyskała metoda
+ustrukturyzowanej odpowiedzi: 97,27\%. Wybrana wcześniej metoda następnego
+tokenu osiągnęła 97,24\%, a przedział ufności dla różnicy obejmował zero. Wśród
+metod bazowych najlepszy był DistilBERT z wynikiem 93,20\%. TF-IDF z Naive
+Bayes i SVM osiągnęły odpowiednio 91,82\% i 90,98\%.
 
 \section{Odpowiedzi na pytania badawcze}
 
 \begin{enumerate}
     \item \textbf{Jakie wyniki osiąga mały model językowy dostrojony za pomocą
-    LoRA na próbce treningowej i w zewnętrznej walidacji obejmującej źródła
-    niewykorzystane do aktualizacji wag?}
+    LoRA na próbce treningowej, w zewnętrznej walidacji i w teście końcowym?}
 
-    W badanych warunkach dostrojenie za pomocą LoRA poprawiło klasyfikację
-    zarówno na próbce treningowej, jak i na trzech korpusach zewnętrznych.
-    Najlepszy wariant osiągnął F1 równe 99,9\% na \texttt{train\_subset} oraz
-    \(S_{\mathrm{ext}}=98{,}0\%\) w zewnętrznej walidacji. Druga wartość nie
-    jest wynikiem niezależnego testu końcowego, ponieważ służyła do wyboru
-    konfiguracji.
+    Dostrojony model osiągnął F1 równe 99,9\% na \texttt{train\_subset} oraz
+    \(S_{\mathrm{ext}}=98{,}0\%\) w zewnętrznej walidacji. W teście końcowym
+    cztery dostrojone warianty uzyskały od 96,49\% do 97,27\%. Dla wybranej
+    metody następnego tokenu \(S_{\mathrm{final}}\) wyniósł 97,24\%, przy
+    95-procentowym przedziale ufności 96,81--97,65\%. Model bez dostrajania
+    oceniany metodą następnego tokenu osiągnął 57,61\%.
 
     \item \textbf{Który z badanych sposobów użycia modelu językowego daje
     najkorzystniejsze połączenie skuteczności, niezależności decyzji od formatu
     generowanej odpowiedzi i prostoty inferencji?}
 
-    Wybrano metodę oceny następnego tokenu, chociaż jej przewaga liczbowa nad
-    generowaniem etykiety i odpowiedzi ustrukturyzowanej była niewielka. Model
-    porównywał prawdopodobieństwa etykiet \texttt{spam} i \texttt{ham}, bez
-    generowania pełnej odpowiedzi wymagającej późniejszego parsowania.
-    Klasyfikacja sekwencji również nie wymagała parsera, lecz uzyskała niższy
-    wynik zewnętrzny, równy 96,5\%.
+    Wybrano metodę oceny następnego tokenu, w której decyzja wynika bezpośrednio
+    z porównania logitów etykiet \texttt{spam} i \texttt{ham}. Odpowiedź
+    ustrukturyzowana osiągnęła w teście końcowym wynik wyższy o 0,02 punktu
+    procentowego, lecz przedział ufności dla tej różnicy obejmował zero.
+    Klasyfikacja sekwencji osiągnęła 96,49\%.
 
     \item \textbf{Jak parametry treningu oraz jego czas trwania wpływają
     na wynik modelu na korpusach niewykorzystanych w treningu?}
@@ -69,21 +66,17 @@ odpowiednio 90,7\% i 90,1\%.
     wynika z porównania dostrojonego modelu językowego z prostszymi
     klasyfikatorami?}
 
-    Qwen3 uzyskał wynik \(S_{\mathrm{ext}}\) wyższy o 5,7 punktu procentowego
-    od DistilBERT, ale przetwarzał wiadomości około 2,3 raza wolniej. Metody
-    TF-IDF działały jeszcze szybciej, przy niższych wynikach zewnętrznych.
+    Qwen3 dostrojony metodą następnego tokenu uzyskał
+    \(S_{\mathrm{final}}\) wyższy od DistilBERT o 4,0 punkty procentowe, ale
+    przetwarzał wiadomości około 2,3 raza wolniej. Metody TF-IDF działały
+    jeszcze szybciej, przy wynikach niższych o 5,4--13,9 punktu procentowego.
     Pomiar na karcie NVIDIA A100 dotyczył przetwarzania w partiach, nie określa
     więc opóźnienia pojedynczego żądania ani kosztu utrzymania serwera.
-    Porównanie ma charakter orientacyjny, ponieważ metody różniły się budżetem
-    strojenia oraz rozmiarem partii użytym podczas inferencji.
+    Różne budżety strojenia oraz rozmiary partii ograniczają bezpośrednią
+    porównywalność kosztu metod.
 \end{enumerate}
 
 \section{Ograniczenia pracy}
-
-Trzy zbiory zewnętrzne nie były używane do treningu Qwen3, ale ich wyniki
-służyły do wyboru konfiguracji i punktu kontrolnego. W metodach bazowych
-parametry dobierano wyłącznie na części walidacyjnej, a wymienione zbiory
-wykorzystano dopiero do oceny wybranego wariantu.
 
 Eksperymenty przeprowadzono na publicznych korpusach, z których część powstała
 wiele lat temu. Wiadomości z poszczególnych źródeł różnią się formatowaniem,
@@ -91,19 +84,22 @@ słownictwem i sposobem nadawania etykiet. Deduplikacja ograniczyła liczbę
 powtórzeń, lecz nie usunęła wszystkich cech pozwalających rozpoznać źródło
 wiadomości. Wyników nie potwierdzono na bieżącym strumieniu poczty.
 
-Każdy trening wykonano z jednym ziarnem losowym. Nie obliczano przedziałów
-ufności i nie powtarzano tych samych konfiguracji, dlatego różnice rzędu
-0,1--0,3 punktu procentowego mogą wynikać częściowo z losowości treningu lub
-próbkowania. Dotyczy to zwłaszcza kolejności najlepszych sposobów dostrajania.
+Praca nie obejmuje osobnego pomiaru \emph{in-distribution} na wewnętrznym
+podzbiorze testowym. Wyniki testu końcowego opisują przede wszystkim zachowanie
+modeli po zmianie źródła danych.
 
-Zakres strojenia różnił się między metodami.
-Szesnaście konfiguracji i pośrednie punkty kontrolne oceniono dla metody
-następnego tokenu. Dla klasyfikacji sekwencji, generowania etykiety i odpowiedzi
-ustrukturyzowanej sprawdzono po cztery konfiguracje wybrane na podstawie tego
-eksperymentu. Metody bazowe oceniono dla ograniczonych zbiorów parametrów i
+Każdy trening wykonano z jednym ziarnem losowym i nie powtarzano tych samych
+konfiguracji. Przedziały ufności testu końcowego opisują zmienność wynikającą z
+doboru wiadomości, ale nie obejmują losowości treningu. Różnice poniżej 0,3
+punktu procentowego nie pozwalają więc ustalić trwałej kolejności
+najlepszych sposobów dostrajania.
+
+Najszersze strojenie przeprowadzono dla metody następnego tokenu: oceniono 16
+konfiguracji i ich pośrednie punkty kontrolne. Dla klasyfikacji sekwencji,
+generowania etykiety i odpowiedzi ustrukturyzowanej sprawdzono po cztery
+konfiguracje wybrane na podstawie tego eksperymentu. Metody bazowe oceniono dla ograniczonych zbiorów parametrów i
 jednego podziału walidacyjnego. Naive Bayes nie podlegał strojeniu, a
-DistilBERT wytrenowano tylko z jednym zestawem parametrów. Przedstawione wyniki
-dotyczą więc wyłącznie sprawdzonych konfiguracji.
+DistilBERT wytrenowano tylko z jednym zestawem parametrów.
 
 Badanie objęło jeden model bazowy i jeden jego rozmiar. Pomiar wydajności
 wykonano w jednym środowisku sprzętowym, na próbce obejmującej 1000 wiadomości.
@@ -131,10 +127,9 @@ sekundę, szczytowe użycie pamięci 287~MiB, a rozmiar modelu z wektoryzatorem
 13~MiB.
 
 W układzie kaskadowym uwierzytelnianie nadawcy, reguły, reputacja i tańszy
-klasyfikator tekstu mogłyby obsługiwać przypadki jednoznaczne. Model językowy
-analizowałby wtedy tylko pozostałe wiadomości. Eksperymenty nie sprawdzały
-jednak, czy Qwen3 poprawia wyniki właśnie dla przykładów, co do których
-prostszy klasyfikator jest niepewny.
+klasyfikator tekstu mogłyby obsługiwać przypadki jednoznaczne. Qwen3
+analizowałby wiadomości, dla których pierwszy etap zwraca niepewną decyzję.
+Skuteczność takiego układu wymaga osobnej oceny.
 
 Model Qwen3-0.6B z adapterem LoRA klasyfikuje wyłącznie temat i treść
 wiadomości. W systemie produkcyjnym jego wynik byłby jednym z kilku sygnałów
@@ -143,13 +138,13 @@ dokładniejszej kontroli fałszywych alarmów i testów na danych produkcyjnych.
 
 \section{Kierunki dalszych badań}
 
-Kolejny eksperyment powinien oddzielić wybór konfiguracji Qwen3 od testu na
-zbiorach zewnętrznych. Walidacja \emph{leave-one-source-out} umożliwiłaby
-kolejne wyłączanie z treningu każdego źródła. Drugą możliwością jest podział
-czasowy, w którym do testu trafiają nowsze wiadomości. Te same konfiguracje
-należałoby również wytrenować z kilkoma ziarnami losowymi, aby oszacować
-zmienność wyników. Szersze strojenie Naive Bayes i DistilBERT wyrównałoby
-natomiast zakres poszukiwania parametrów między porównywanymi metodami.
+Walidacja \emph{leave-one-source-out} umożliwiłaby kolejne wyłączanie z treningu
+każdego źródła i dokładniejsze sprawdzenie odporności na zmianę korpusu. Innym
+kierunkiem jest podział czasowy, w którym do testu trafiają nowsze wiadomości.
+Te same konfiguracje należałoby również wytrenować z kilkoma ziarnami losowymi,
+aby oszacować zmienność wyników. Szersze strojenie Naive Bayes i DistilBERT
+wyrównałoby natomiast zakres poszukiwania parametrów między porównywanymi
+metodami.
 
 Pomiar na niezbalansowanym strumieniu pokazałby liczbę fałszywych alarmów przy
 proporcjach klas zbliżonych do ruchu produkcyjnego. Osobne etykiety spamu
@@ -161,7 +156,4 @@ Ocena wdrożeniowa wymaga porównania wariantów kwantyzacji, silników inferenc
 i ustawień przetwarzania partiami na sprzęcie serwerowym. Oprócz średniej
 przepustowości należy zmierzyć opóźnienie, użycie pamięci przy równoczesnych
 żądaniach oraz koszt przetworzenia określonej liczby wiadomości. Osobnego testu
-wymaga też układ kaskadowy z tanim klasyfikatorem pierwszego etapu.
-
-Qwen3 pozostaje kandydatem do roli klasyfikatora drugiego etapu. Skuteczności
-takiego układu nie sprawdzono w tej pracy.
+    wymaga też układ kaskadowy z tanim klasyfikatorem pierwszego etapu.

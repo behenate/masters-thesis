@@ -1,17 +1,18 @@
 \begin{tikzpicture}
 \begin{axis}[
     width=0.70\textwidth,
-    height=0.48\textwidth,
+    height=0.53\textwidth,
     xbar stacked,
     xmin=0,
     xmax=100,
     xlabel={Udział klasy w zbiorze [\%]},
-    symbolic y coords={enron,trec,ceas,assassin,spamham,fraudulent,nazario,ling},
+    symbolic y coords={enron,trec07,ceas,trec06,assassin,spamham,fraudulent,nazario,ling},
     ytick=data,
     yticklabels={
         \texttt{enron},
         \texttt{trec\_2007},
         \texttt{ceas\_2008},
+        \texttt{trec\_2006},
         \texttt{spam\_assassin},
         \texttt{spam\_ham},
         \texttt{fraudulent\_email\_corpus},
@@ -42,8 +43,9 @@
     bar width=7pt,
     ] coordinates {
         (100.0,enron)
-        (33.4,trec)
+        (33.4,trec07)
         (44.2,ceas)
+        (34.1,trec06)
         (67.3,assassin)
         (71.0,spamham)
         (0.0,fraudulent)
@@ -56,8 +58,9 @@
     bar width=7pt,
     ] coordinates {
         (0.0,enron)
-        (66.6,trec)
+        (66.6,trec07)
         (55.8,ceas)
+        (65.9,trec06)
         (32.7,assassin)
         (29.0,spamham)
         (100.0,fraudulent)

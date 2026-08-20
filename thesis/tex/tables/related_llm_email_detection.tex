@@ -1,0 +1,12 @@
+\begin{tabular}{p{0.18\textwidth}p{0.21\textwidth}p{0.23\textwidth}p{0.31\textwidth}}
+\hline
+\textbf{Praca} & \textbf{Modele i sposób użycia} & \textbf{Dane} & \textbf{Najważniejszy wynik i ograniczenie} \\
+\hline
+Labonne i Moran~\autocite{labonne-spam-t5-2023} & Spam-T5, RoBERTa, SetFit i metody klasyczne; trening pełny i few-shot & Ling-Spam, SMS Spam Collection, SpamAssassin i Enron & F1 Spam-T5 95--99\% przy pełnym treningu; przewaga przy 4--16 przykładach, lecz wyższy czas treningu i inferencji \\
+Si i in.~\autocite{si-chatgpt-spam-2024} & ChatGPT zero-, one- i five-shot; BERT oraz metody klasyczne & angielski ESD i mały zbiór chińskojęzyczny & macro F1 80\% dla ChatGPT i 98\% dla BERT-a na ESD; odwrotna relacja na małym zbiorze chińskim \\
+Rojas-Galeano~\autocite{rojas-galeano-zero-shot-spam-2024} & ChatGPT, GPT-4 i Flan-T5 bez dostrajania & SpamAssassin, 6047 wiadomości & F1 90\% dla Flan-T5 na treści i 95\% dla GPT-4 na streszczeniach; jeden korpus i dodatkowy etap generowania \\
+Koide i in.~\autocite{koide-chatspamdetector-2024} & GPT-4, GPT-3.5, Llama~2 i Gemini Pro; treść oraz nagłówki & 1010 wiadomości phishingowych i 1000 pożądanych & accuracy 99,70\% dla GPT-4; średnio 12,53~s na wiadomość i 265,80~USD za ocenę zbioru \\
+Desolda i in.~\autocite{desolda-apollo-2025} & GPT-4o, treść wiadomości i dane o adresach URL & 2000 wiadomości phishingowych i 2000 pożądanych & accuracy 97,4\% bez danych zewnętrznych i 99,9\% z poprawną reputacją URL; silna zależność od jakości tych danych \\
+Roumeliotis i in.~\autocite{roumeliotis-next-generation-spam-2024} & dostrajanie GPT-4, BERT-a, RoBERT-y i CNN & dwa zbiory z serwisu Kaggle & accuracy powyżej 98\% na własnych testach; spadek przy ocenie na drugim zbiorze \\
+\hline
+\end{tabular}

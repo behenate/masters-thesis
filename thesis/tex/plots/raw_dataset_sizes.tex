@@ -1,18 +1,19 @@
 \begin{tikzpicture}
 \begin{axis}[
     width=0.74\textwidth,
-    height=0.38\textwidth,
+    height=0.42\textwidth,
     xbar,
     xmode=log,
     xmin=2500,
     xmax=1000000,
     xlabel={Liczba wiadomości (skala logarytmiczna)},
-    symbolic y coords={enron,trec,ceas,assassin,spamham,fraudulent,nazario,ling},
+    symbolic y coords={enron,trec07,ceas,trec06,assassin,spamham,fraudulent,nazario,ling},
     ytick=data,
     yticklabels={
         \texttt{enron},
         \texttt{trec\_2007},
         \texttt{ceas\_2008},
+        \texttt{trec\_2006},
         \texttt{spam\_assassin},
         \texttt{spam\_ham},
         \texttt{fraudulent\_email\_corpus},
@@ -36,8 +37,9 @@
     bar width=7pt,
     ] coordinates {
         (517401,enron)
-        (75419,trec)
+        (75419,trec07)
         (39154,ceas)
+        (37822,trec06)
         (5796,assassin)
         (5171,spamham)
         (3978,fraudulent)

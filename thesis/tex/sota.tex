@@ -64,14 +64,13 @@ następnie trenuje klasyfikator taki jak Naive Bayes, regresja logistyczna lub
 SVM. Jest to stosunkowo proste podejście, które zapewnia tani trening i szybką
 inferencję, a przy odpowiednio dobranych danych może osiągać dobre wyniki.
 
-Bayesowskie filtrowanie spamu było badane już we wczesnych pracach nad
-automatycznym filtrowaniem poczty. Androutsopoulos i współautorzy porównali
-Naive Bayes z podejściem pamięciowym i pokazali, że automatycznie uczone filtry
-mogą wyraźnie przewyższać ręcznie konstruowane reguły słów kluczowych
-~\autocite{androutsopoulos-naive-bayes-spam}. Nowsze prace nadal porównują z nimi
-nowe rozwiązania. Janez-Martino i współautorzy porównali między innymi
-reprezentacje TF-IDF i bag-of-words z klasyfikatorami Naive Bayes,
-drzewami decyzyjnymi oraz SVM w zadaniu klasyfikacji wiadomości spamowych
+W pracy \emph{Learning to Filter Spam E-Mail: A Comparison of a Naive Bayesian
+and a Memory-Based Approach} porównano Naive Bayes z podejściem pamięciowym.
+Automatycznie uczone filtry wyraźnie przewyższały ręcznie konstruowane reguły
+słów kluczowych~\autocite{androutsopoulos-naive-bayes-spam}. Praca
+\emph{Classification of Spam Emails through Hierarchical Clustering and
+Supervised Learning} obejmowała porównanie reprezentacji TF-IDF i bag-of-words
+z klasyfikatorami Naive Bayes, drzewami decyzyjnymi oraz SVM
 ~\autocite{janez-martino-spam-supervised-2020}.
 
 Porównanie z klasycznymi metodami pozwala ocenić, ile z wyniku można uzyskać
@@ -133,24 +132,75 @@ kontekst i uogólniać poza dosłowne słownictwo zbioru treningowego. Dlatego w
 części badawczej oceniono również ich profil błędów na danych spoza zbioru
 treningowego.
 
-Nowsze prace sprawdzają także modele językowe bez dostrajania. Si i
-współautorzy porównali klasyfikację wykonywaną przez ChatGPT z Naive Bayes,
-SVM, regresją logistyczną, siecią feed-forward i BERT-em. Na dużym zbiorze
-anglojęzycznym metody nadzorowane uzyskały lepsze wyniki, natomiast ChatGPT był
-bardziej konkurencyjny dla mniejszego zbioru chińskojęzycznego
-~\autocite{si-chatgpt-spam-2024}. Rojas-Galeano ocenił ChatGPT, GPT-4 i
-Flan-T5 na korpusie SpamAssassin. Flan-T5 uzyskał F1 równe 90\% przy
-klasyfikacji skróconej treści, a GPT-4 95\% po wcześniejszym streszczeniu
-wiadomości. Autor zaznaczył jednocześnie ograniczenie badania do jednego
-korpusu oraz koszt inferencji większych modeli
-~\autocite{rojas-galeano-zero-shot-spam-2024}. Wyniki te pokazują, że sam
-prompt może wystarczyć w części warunków, lecz nie zastępuje oceny na kilku
-źródłach ani analizy kosztu działania.
+\subsection{Badania nad wykorzystaniem modeli językowych w filtrowaniu poczty}
 
-Przywołane badania nie porównują kilku sposobów dostrojenia tego samego małego
-modelu z otwartymi wagami. W tej pracy sprawdzono cztery sformułowania zadania
-klasyfikacji dla Qwen3-0.6B, a uzyskane wyniki zestawiono ze zużyciem zasobów i
-przepustowością prostszych klasyfikatorów.
+W badaniach nad użyciem modeli językowych do filtrowania poczty stosowano
+dostrajanie na oznaczonych wiadomościach, klasyfikację na podstawie promptu oraz
+analizę treści uzupełnionej o nagłówki lub reputację adresów URL.
+
+W pracy \emph{Spam-T5: Benchmarking Large Language Models for Few-Shot Email
+Spam Detection} porównano klasyczne klasyfikatory, RoBERTę, SetFit oraz Spam-T5,
+czyli Flan-T5 trenowany do generowania etykiety wiadomości. Eksperyment
+obejmował cztery korpusy i próby treningowe od 4 przykładów do pełnego zbioru.
+Spam-T5 uzyskał najlepsze wyniki przy 4--16 przykładach oraz najwyższy średni
+F1 liczony dla wszystkich badanych rozmiarów próby. Trening i inferencja trwały
+dłużej niż w przypadku klasycznych metod~\autocite{labonne-spam-t5-2023}.
+W pracy \emph{Next-Generation Spam Filtering: Comparative Fine-Tuning of LLMs,
+NLPs, and CNN Models for Email Spam Classification} dostrojono GPT-4, BERT-a i
+RoBERTę na dwóch zbiorach wiadomości. Po losowym podziale danych modele osiągały
+accuracy przekraczające 98\%. Ocena na drugim korpusie przyniosła niższe wyniki,
+szczególnie dla BERT-a i RoBERT-y
+~\autocite{roumeliotis-next-generation-spam-2024}.
+
+Klasyfikacja przez prompt wykorzystuje gotowy model wraz z instrukcją i
+przykładami umieszczonymi w kontekście. W pracy \emph{Evaluating the Performance
+of ChatGPT for Spam Email Detection} sprawdzono ChatGPT w trybie zero-shot,
+one-shot i five-shot. Na większym zbiorze anglojęzycznym najlepszy wariant
+ChatGPT uzyskał macro F1 równe 80\%, a nadzorowany BERT 98\%. Na małym zbiorze
+chińskojęzycznym różnica między ChatGPT a metodami nadzorowanymi była mniejsza
+~\autocite{si-chatgpt-spam-2024}. W pracy \emph{Zero-Shot Spam Email
+Classification Using Pre-trained Large Language Models} oceniono ChatGPT, GPT-4
+i Flan-T5 na całym korpusie SpamAssassin. Modele klasyfikowały skróconą treść
+albo streszczenie utworzone wcześniej przez ChatGPT. Etap streszczania podniósł
+F1 GPT-4 z 88\% do 95\% i wymagał dodatkowego wywołania modelu. Badanie objęło
+jeden korpus, SpamAssassin~\autocite{rojas-galeano-zero-shot-spam-2024}.
+
+W pracy \emph{ChatSpamDetector: Leveraging Large Language Models for Effective
+Phishing Email Detection} opisano system przetwarzający nagłówki i elementy
+HTML, który oprócz klasy zwracał wyjaśnienie decyzji. GPT-4 osiągnął accuracy
+równe 99,70\%. Średni czas jednego zapytania wyniósł 12,53~s, a ocena 2010
+wiadomości kosztowała 265,80~USD według cen API użytych w badaniu
+~\autocite{koide-chatspamdetector-2024}. W pracy \emph{APOLLO: A GPT-Based Tool
+to Detect Phishing Emails and Generate Explanations That Warn Users} połączono
+GPT-4o z reputacją adresów URL. Poprawne dane zewnętrzne podniosły accuracy z
+97,4\% do 99,9\%. Po podaniu błędnych informacji o adresach URL wynik spadł
+poniżej 46\%~\autocite{desolda-apollo-2025}.
+
+Wartości zestawione w tabeli~\ref{tab:related-llm-email-detection} pochodzą z
+różnych zbiorów, podziałów danych i zakresów informacji wejściowych. Ich
+bezpośrednie porównanie ma charakter orientacyjny.
+
+\begin{table}[!htbp]
+\centering
+\scriptsize
+\resizebox{\textwidth}{!}{\input{tex/tables/related_llm_email_detection}}
+\caption{Badania nad wykorzystaniem modeli transformerowych i językowych do
+klasyfikacji spamu oraz phishingu w poczcie elektronicznej.}
+\label{tab:related-llm-email-detection}
+\end{table}
+\FloatBarrier
+
+W analizowanych pracach małe modele generatywne z otwartymi wagami, liczące
+poniżej miliarda parametrów, pojawiają się rzadko. Badania skupiają się zwykle
+na jednym sposobie użycia modelu. Spośród zestawionych prac tylko
+\emph{Next-Generation Spam Filtering} obejmuje test przenoszenia modelu między
+korpusami.
+
+Wkład własny pracy obejmuje porównanie czterech sposobów realizacji
+klasyfikacji przez Qwen3-0.6B przy zachowaniu wspólnego modelu, danych i
+protokołu oceny. Porównanie przeprowadzono na kilku korpusach, a wyniki
+zestawiono z prostszymi klasyfikatorami oraz kosztem inferencji wszystkich
+metod.
 
 \section{Zakres porównania eksperymentalnego}
 

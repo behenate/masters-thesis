@@ -1,0 +1,36 @@
+\begin{tikzpicture}
+\begin{axis}[
+    width=0.80\textwidth,
+    height=0.72\textwidth,
+    xbar,
+    xmin=50,
+    xmax=100,
+    xtick={50,60,70,80,90,100},
+    xlabel={\(S_{\mathrm{final}}\) [\%]},
+    symbolic y coords={q04,q03,q02,q01,distil,nb,svm,lr,minilm,fasttext,base-token,base-gen},
+    ytick={q04,q03,q02,q01,distil,nb,svm,lr,minilm,fasttext,base-token,base-gen},
+    y dir=reverse,
+    yticklabels={Qwen3 + LoRA 04,Qwen3 + LoRA 03,Qwen3 + LoRA 02,Qwen3 + LoRA 01,DistilBERT,TF-IDF + NB,TF-IDF + SVM,TF-IDF + LR,MiniLM + LR,fastText,Qwen3 bazowy -- token,Qwen3 bazowy -- generowanie},
+    yticklabel style={font=\scriptsize},
+    xticklabel style={font=\footnotesize},
+    label style={font=\small},
+    xmajorgrids,
+    grid style={plotGrid},
+    tick style={draw=none},
+    bar width=7pt,
+    enlarge y limits=0.045,
+    legend image code/.code={\draw[#1] (0cm,-0.08cm) rectangle (0.28cm,0.08cm);},
+    legend style={at={(0.5,-0.16)}, anchor=north, legend columns=3, draw=none, font=\footnotesize},
+]
+\addplot[fill=plotSpam, draw=plotSpam!70!black, line width=0.25pt] coordinates {
+    (97.27,q04) (97.24,q03) (97.08,q02) (96.49,q01)
+};
+\addplot[fill=plotBlue, draw=plotBlue!80!black, line width=0.25pt] coordinates {
+    (93.20,distil) (91.82,nb) (90.98,svm) (83.34,lr) (83.05,minilm) (82.07,fasttext)
+};
+\addplot[fill=plotAccent, draw=plotAccent!80!black, line width=0.25pt] coordinates {
+    (57.61,base-token) (57.30,base-gen)
+};
+\legend{Qwen3 + LoRA,Metody bazowe,Qwen3 bez dostrajania}
+\end{axis}
+\end{tikzpicture}

@@ -54,7 +54,9 @@ Wyniki odniesiono do modelu bez dostrajania. Porównanie objęło Naive Bayes,
 regresję logistyczną i SVM korzystające z reprezentacji TF-IDF, a także
 \texttt{fastText}, MiniLM z regresją logistyczną oraz DistilBERT. Dla metod
 bazowych dobrano parametry i progi klasyfikacji na wydzielonym zbiorze
-walidacyjnym. Koszt inferencji zmierzono na wspólnej próbce 1000 wiadomości.
+walidacyjnym. Końcowe porównanie przeprowadzono na czterech zbiorach testowych,
+po 2000 wiadomości w każdym. Koszt inferencji zmierzono na wspólnej próbce 1000
+wiadomości.
 
 \section{Pytania badawcze}
 
@@ -62,8 +64,7 @@ Zakres pracy opisują następujące pytania badawcze:
 
 \begin{enumerate}
     \item Jakie wyniki osiąga mały model językowy dostrojony za pomocą LoRA na
-    próbce treningowej i w zewnętrznej walidacji obejmującej źródła
-    niewykorzystane do aktualizacji wag?
+    próbce treningowej, w zewnętrznej walidacji i w teście końcowym?
     \item Który z badanych sposobów użycia modelu językowego daje
     najkorzystniejsze połączenie skuteczności, niezależności decyzji od formatu
     generowanej odpowiedzi i prostoty inferencji?
@@ -85,6 +86,6 @@ klasyfikatory transformerowe.
 Część badawcza opisuje wybór modelu, przygotowanie zbiorów danych i
 przebieg eksperymentów. Kolejne sekcje dotyczą doboru parametrów LoRA, analizy
 punktów kontrolnych, porównania sposobów dostrajania oraz zestawienia
-najlepszego wariantu z metodami bazowymi. Rozdział końcowy odpowiada na pytania
-badawcze, omawia ograniczenia, możliwość wdrożenia klasyfikatora i dalsze
-kierunki badań.
+wariantów Qwen3 z metodami bazowymi i modelem bez dostrajania na wspólnym
+teście końcowym. Rozdział końcowy odpowiada na pytania badawcze, omawia
+ograniczenia, możliwość wdrożenia klasyfikatora i dalsze kierunki badań.

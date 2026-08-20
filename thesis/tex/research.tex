@@ -120,6 +120,14 @@ Zbiór \texttt{trec\_2007} zawiera 75 419 wiadomości, z czego 50 199 należy do
 klasy pozytywnej, a 25 220 do klasy negatywnej. Rozkład klas jest więc
 przesunięty w kierunku spamu, który stanowi około 66,6\% rekordów.
 
+\textsc{trec\_2006}
+
+Zbiór \texttt{trec\_2006} zawiera 37 822 wiadomości: 12 910 wiadomości
+pożądanych oraz 24 912 przykładów spamu. Jest to publiczny anglojęzyczny
+korpus przygotowany na potrzeby TREC 2006 Spam Track
+~\autocite{cormack-trec-2006-spam-track}. W eksperymentach wykorzystano go
+w teście końcowym.
+
 \textsc{ceas\_2008}
 
 Zbiór \texttt{ceas\_2008} zawiera 39 154 wiadomości i również ma przewagę klasy
@@ -142,14 +150,14 @@ Zbiory \texttt{spam\_assassin} i \texttt{spam\_ham} są mniejsze, ale dobrze
 pasują do klasycznego zadania klasyfikacji spam/ham. \texttt{spam\_assassin}
 zawiera 5 796 rekordów, a \texttt{spam\_ham} 5 171. W obu przypadkach klasa
 pozytywna jest mniejszością. Reprezentują inny format i historię przygotowania danych niż
-zbiory CEAS i TREC użyte w treningu.
+zbiory CEAS 2008 i TREC 2007 użyte w treningu.
 
 \subsubsection{Porównanie zbiorów}
 
 Do eksperymentów wykorzystano zbiory wymienione w tabeli~\ref{tab:raw-dataset-inventory}.
 W tabeli podano liczność każdego źródła, rozkład klas oraz krótką informację o
-charakterze danych. Ten podział jest istotny, ponieważ część zbiorów służyła do
-treningu, a część pozostawiono do zewnętrznej walidacji.
+charakterze danych. Poszczególne źródła służyły do treningu, wyboru konfiguracji
+albo testu końcowego.
 
 {\small
 \begin{longtable}{p{0.25\textwidth}rrrrp{0.22\textwidth}}
@@ -168,6 +176,7 @@ treningu, a część pozostawiono do zewnętrznej walidacji.
 \texttt{enron}~\autocite{kaggle-enron-email-dataset} & 517 401 & 517 401 & 0 & 0,0 & zbiór wiadomości pożądanych, traktowany jako klasa negatywna \\
 \texttt{trec\_2007}~\autocite{kaggle-trec-2007} & 75 419 & 25 220 & 50 199 & 66,6 & zbiór TREC 2007 \\
 \texttt{ceas\_2008}~\autocite{kaggle-ceas-2008} & 39 154 & 17 312 & 21 842 & 55,8 & dane CEAS 2008 \\
+\texttt{trec\_2006}~\autocite{kaggle-trec-2006} & 37 822 & 12 910 & 24 912 & 65,9 & końcowy zbiór testowy \\
 \texttt{spam\_assassin}~\autocite{kaggle-spam-assassin-email-classification} & 5 796 & 3 900 & 1 896 & 32,7 & \\
 \texttt{spam\_ham}~\autocite{kaggle-spam-mails-dataset} & 5 171 & 3 672 & 1 499 & 29,0 & \\
 \begin{tabular}[t]{@{}l@{}}\texttt{fraudulent\_email}\\\texttt{\_corpus}\end{tabular}~\autocite{kaggle-fraudulent-email-corpus} & 3 978 & 0 & 3 978 & 100,0 & zbiór wiadomości oszukańczych, w tym oszustw typu \emph{advance-fee fraud}~\autocite{longe-fraudulent-cyber-activities} \\
@@ -176,7 +185,7 @@ treningu, a część pozostawiono do zewnętrznej walidacji.
 \end{longtable}
 }
 
-Łącznie analizowane zbiory surowe obejmują 652 877 wiadomości. Nie wszystkie źródła zostały jednak
+Łącznie analizowane zbiory surowe obejmują 690 699 wiadomości. Nie wszystkie źródła zostały jednak
 bezpośrednio połączone w jeden zbiór treningowy. Największy zbiór, \texttt{enron}, zawiera
 wyłącznie wiadomości klasy negatywnej. Z kolei \texttt{fraudulent\_email\_corpus}
 zawiera wyłącznie przykłady klasy pozytywnej. Bezpośrednie wykorzystanie wszystkich danych
@@ -208,7 +217,8 @@ Rysunek~\ref{fig:raw-class-balance} przedstawia rozkład klas w źródłowych
 zbiorach. Widoczne są trzy typy zbiorów. Pierwszą grupę tworzą zbiory względnie
 zbalansowane, takie jak \texttt{nazario} oraz \texttt{ceas\_2008}. Drugą grupę
 tworzą zbiory o wyraźnej przewadze jednej z klas, na przykład
-\texttt{trec\_2007}, \texttt{ling}, \texttt{spam\_assassin} i \texttt{spam\_ham}.
+\texttt{trec\_2006}, \texttt{trec\_2007}, \texttt{ling},
+\texttt{spam\_assassin} i \texttt{spam\_ham}.
 Trzecią grupę stanowią zbiory jednoklasowe:
 \texttt{enron} oraz \texttt{fraudulent\_email\_corpus}. Dla modelowania
 klasyfikacyjnego najbezpieczniejsze są zbiory, które zawierają obie klasy i w
@@ -229,8 +239,8 @@ phishing lub wiadomość oszukańczą.}
 \subsubsection{Wybór głównego zbioru do eksperymentów}
 
 Podstawą podziału danych w eksperymentach był wariant zbudowany z połączenia
-wszystkich źródeł poza \texttt{enron}, \texttt{fraudulent\_email\_corpus} oraz
-\texttt{spam\_ham}. Zbiory celowo zostały wykluczone z treningów. \texttt{enron} pomijano ze
+wszystkich źródeł poza \texttt{enron}, \texttt{fraudulent\_email\_corpus},
+\texttt{spam\_ham} oraz \texttt{trec\_2006}. \texttt{enron} pomijano ze
 względu na bardzo dużą liczność i przyjęty jednoklasowy charakter. Jego włączenie mogłoby
 zdominować klasę negatywną oraz sprawić, że model uczyłby się specyfiki
 wewnętrznej korespondencji jednej organizacji zamiast ogólnych cech wiadomości
@@ -239,6 +249,7 @@ włączono go do treningu i wykorzystano do osobnej oceny wykrywania wiadomości
 oszukańczych.
 \texttt{spam\_ham} był traktowany podobnie: jako prosty, zewnętrzny punkt
 odniesienia dla klasycznego zadania spam/ham.
+\texttt{trec\_2006} zachowano do końcowej oceny wybranych modeli.
 
 Po zbalansowaniu najczęściej używany wariant treningowy zawierał 88 970
 wiadomości: 44 485 przykładów klasy negatywnej i 44 485 przykładów klasy
@@ -289,11 +300,26 @@ czy odpowiedzi były poprawnie parsowalne. W dalszej części pracy określenie
 
 \subsubsection{Zbiór testowy}
 
-Zbiór testowy stanowił 10\% danych. Nie był używany do aktualizacji parametrów ani do
-wyboru konfiguracji. W głównym porównaniu punktów kontrolnych posługiwano
-się jednak próbką treningową oraz trzema zbiorami zewnętrznymi. Z tego powodu
-rozdział nie przedstawia wspólnego wyniku końcowego na tym podziale dla
-wszystkich czterech metod dostrajania; jest to jedno z ograniczeń badania.
+Wewnętrzny podzbiór testowy stanowił 10\% danych przygotowanych do treningu.
+Pominięto go podczas aktualizacji parametrów, wyboru konfiguracji i końcowego
+porównania. Próbkę \texttt{train\_subset} wykorzystano wyłącznie do kontroli
+dopasowania modelu do danych treningowych.
+
+\subsubsection{Zewnętrzna walidacja i test końcowy}
+
+Podczas wyboru konfiguracji oceniano po 1000 wiadomości ze zbiorów
+\texttt{enron}, \texttt{fraudulent\_\allowbreak email\_\allowbreak corpus} i
+\texttt{spam\_ham}.
+Z pozostałych wiadomości każdego z tych źródeł wybrano po 2000 przykładów do
+testu końcowego. Test uzupełniono zbiorem \texttt{trec\_2006}, z
+którego wybrano 1000 wiadomości \texttt{ham} i 1000 wiadomości \texttt{spam}.
+Próbka \texttt{spam\_ham} zachowała proporcje klas i obejmowała 1431
+wiadomości \texttt{ham} oraz 569 wiadomości \texttt{spam}.
+
+Podział wykonano deterministycznie, a do kontroli powtórzeń użyto
+odcisków treści tworzonych po normalizacji tekstu. Końcowe zbiory testowe nie
+zawierały wiadomości występujących w danych treningowych, zewnętrznej
+walidacji ani w pozostałych zbiorach testowych.
 
 \subsection{Przygotowanie danych}
 
@@ -328,11 +354,11 @@ schematu.
 \input{tex/tables/raw_dataset_schema_inventory}
 
 Wykorzystane pliki pochodziły z kopii opublikowanych w serwisie Kaggle. Dla
-zbiorów Enron, TREC 2007, Ling-Spam, SpamAssassin i Nazario dostępna jest także
+zbiorów Enron, TREC 2006, TREC 2007, Ling-Spam, SpamAssassin i Nazario dostępna jest także
 dokumentacja źródeł, z których utworzono późniejsze kopie
-~\autocite{cmu-enron-email-dataset,cormack-trec-2007-spam-track,androutsopoulos-naive-bayes-spam,spamassassin-public-corpus,nazario-phishing-corpus}.
+~\autocite{cmu-enron-email-dataset,cormack-trec-2006-spam-track,cormack-trec-2007-spam-track,androutsopoulos-naive-bayes-spam,spamassassin-public-corpus,nazario-phishing-corpus}.
 Nazwy plików podano w tabeli, a sumy SHA-256 użytych kopii zapisano w pliku
-\texttt{dataset/raw\_datasets/SHA256SUMS}. Numery wersji zestawów Kaggle nie
+\path{dataset/raw_datasets/SHA256SUMS}. Numery wersji zestawów Kaggle nie
 zostały zapisane podczas pobierania, dlatego odtworzenie ich pochodzenia opiera
 się na adresie źródła, nazwie pliku i sumie kontrolnej.
 
@@ -377,8 +403,9 @@ tabeli~\ref{tab:deduplication-parameters}.
 \end{figure}
 
 
-W tej części analizowano zbiór utworzony z połączenia wszystkich źródeł poza
-\texttt{enron}. Po normalizacji
+W tej części analizowano wariant utworzony z \texttt{trec\_2007},
+\texttt{ceas\_2008}, \texttt{spam\_assassin}, \texttt{spam\_ham},
+\texttt{fraudulent\_email\_corpus}, \texttt{nazario} i \texttt{ling}. Po normalizacji
 otrzymano 135 476 rekordów. Następnie odrzucono 106 wiadomości z pustym
 tematem i pustą treścią, pozostawiając 135 370 przykładów do deduplikacji.
 Deduplikacja na poziomie \texttt{high} wykryła 5344 grupy duplikatów i usunęła
@@ -393,8 +420,7 @@ pierwszy rekord zgodnie z kolejnością źródeł. Jest to ograniczenie przyjęt
 deduplikacji i mogło zmienić rozkład danych przed balansowaniem.
 
 Rysunek~\ref{fig:deduplication-sample-counts} zestawia dwa poziomy analizy:
-osobne zbiory źródłowe oraz zbiór połączony ze wszystkich źródeł poza
-\texttt{enron}.
+osobne zbiory źródłowe oraz opisany wyżej zbiór połączony.
 Dzięki temu widać zarówno wpływ deduplikacji na dane używane do dalszego
 łączenia, jak i skalę powtórzeń w poszczególnych źródłach. Największą różnicę
 widać w osobno pokazanym zbiorze \texttt{enron}. Jest to archiwum poczty z jednej
@@ -411,8 +437,7 @@ podziale danych mogłyby zostać rozdzielone między trening i test.
 \begin{figure}[htbp]
 \centering
 \input{tex/plots/duplicate_group_sizes}
-\caption{Rozmiary grup duplikatów po połączeniu zbiorów danych poza
-\texttt{enron}.}
+\caption{Rozmiary grup duplikatów w analizowanym zbiorze połączonym.}
 \label{fig:duplicate-group-sizes}
 \figuresource{opracowanie własne.}
 \end{figure}
@@ -420,7 +445,7 @@ podziale danych mogłyby zostać rozdzielone między trening i test.
 \subsubsection{Balansowanie klas}
 
 Po oczyszczeniu i deduplikacji zastosowano balansowanie klas do proporcji 50/50.
-Po deduplikacji zbiór utworzony ze wszystkich źródeł poza \texttt{enron}
+Po deduplikacji analizowany zbiór połączony
 zawierał 51 418 wiadomości legalnych oraz 48 996 wiadomości niepożądanych.
 Balansowanie usunęło więc jedynie nadmiar przykładów z klasy negatywnej.
 Po balansowaniu zbiór ten zawierał 97 992 rekordy: 48 996 wiadomości pozytywnych i
@@ -575,18 +600,15 @@ Email:
 
 \subsection{Ocena modelu bazowego bez dostrajania}
 
-Przed rozpoczęciem właściwych eksperymentów sprawdzono, jak z zadaniem radzi
-sobie sam model \texttt{Qwen/Qwen3-0.6B}, bez aktualizacji wag i bez adapterów
-LoRA. Celem tego pomiaru było ustalenie, czy model bazowy ma już wystarczające
-właściwości zero-shot, czy dopiero dostrajanie pozwala wykorzystać go jako
-klasyfikator. Ewaluację wykonano na tych samych czterech zbiorach, które
-wykorzystano później do oceny punktów kontrolnych. Z każdego zbioru wybrano po
-1000 przykładów.
+Jako punkt odniesienia oceniono zdolność modelu \texttt{Qwen/Qwen3-0.6B} do
+klasyfikacji wiadomości w trybie zero-shot, bez aktualizacji wag i adapterów
+LoRA. Ewaluację wykonano na czterech zbiorach testu końcowego. Każdy z nich
+obejmował 2000 wiadomości.
 
 Sprawdzono dwa sposoby odczytywania decyzji modelu. W pierwszym model generował
-krótką odpowiedź tekstową. Żeby nie zaniżyć wyniku modelu bazowego przez zbyt
-ogólną instrukcję, w wariancie generowania i parsowania zastosowano prompt
-przedstawiony na listingu~\ref{lst:unmodified-baseline-prompt}.
+krótką odpowiedź tekstową. Zastosowany prompt szczegółowo określał znaczenie
+obu klas i oczekiwany format odpowiedzi. Jego treść przedstawiono na
+listingu~\ref{lst:unmodified-baseline-prompt}.
 
 \begin{lstlisting}[
     basicstyle=\ttfamily\footnotesize,
@@ -594,28 +616,27 @@ przedstawiony na listingu~\ref{lst:unmodified-baseline-prompt}.
     caption={Prompt wykorzystany do oceny modelu bazowego w wariancie generowania i parsowania.},
     label={lst:unmodified-baseline-prompt}
 ]
-You are an email security classifier.
-Classify the email as exactly one of two labels.
-
-Definitions:
-- spam: unsolicited advertising, scam, phishing, fraud, suspicious offer, malware, or otherwise unwanted email.
-- ham: legitimate non-spam email.
-
-Return only one lowercase word: spam or ham.
+Classify the email as spam or ham.
+SPAM: the main purpose is unsolicited selling or promotion; offers for loans, investments, prizes, medications, sexual products, software, or discounts; bulk advertising; phishing; credential requests; fraud; malware; or a suspicious call to click or pay. A promotion is spam even when the company or product might be real.
+HAM: direct personal or workplace correspondence, technical mailing-list discussion, academic discussion, meeting arrangements, or a requested transactional, account, or order notice.
+Judge the actual purpose of the message. Do not treat an advertisement as ham merely because it describes a real business.
+Decision order:
+1. If the primary purpose is promotion, selling, a prize, a loan, an investment, credential collection, or a suspicious link, choose spam.
+2. Otherwise, if it is ordinary correspondence or a requested notice, choose ham.
+Return only spam or ham.
 
 Email:
 {email}
+
+Decision:
 \end{lstlisting}
 
-W tym wariancie zastosowano możliwie tolerancyjny parser. Oprócz odpowiedzi
-\texttt{ham} i \texttt{spam} rozpoznawał on także obiekt JSON, zapis typu
-\texttt{label: spam}, krótkie odpowiedzi opisowe oraz zaprzeczenia, na przykład
-\texttt{not spam}. Generowanie było deterministyczne, ograniczone do 24 nowych
+Parser obsługiwał odpowiedzi \texttt{ham} i \texttt{spam}, obiekty JSON, zapis
+typu \texttt{label: spam}, krótkie odpowiedzi opisowe oraz zaprzeczenia, na
+przykład \texttt{not spam}. Generowanie było deterministyczne, ograniczone do 6 nowych
 tokenów i kończone po tokenie \texttt{<|im\_end|>} lub tokenie końca sekwencji.
-W przypadku niepowodzenia parsera domyślną etykietą było \texttt{ham}, ale w
-pomiarze 1000 wiadomości na zbiór nie wystąpił ani jeden taki przypadek.
-Ręczna kontrola dodatkowych 50 odpowiedzi z każdego zbioru pokazała zawsze
-postać \texttt{ham<|im\_end|>}.
+Parser poprawnie odczytał wszystkie odpowiedzi z testu końcowego. Na wypadek
+niepowodzenia przewidziano domyślną etykietę \texttt{ham}.
 
 W drugim wariancie zastosowano ten sam szablon czatu z
 \texttt{enable\_thinking=False} i porównywano logity pojedynczych tokenów
@@ -623,33 +644,23 @@ W drugim wariancie zastosowano ten sam szablon czatu z
 kandydatów. Pozwoliło to oddzielić problem formatu odpowiedzi od samej
 preferencji modelu przy wyborze etykiety.
 
+Wyniki obu wariantów przedstawiono w
+tabeli~\ref{tab:unmodified-baseline-metrics}.
+
 \begin{table}[htbp]
 \centering
 \small
 \resizebox{\textwidth}{!}{\input{tex/tables/unmodified_baseline_metrics}}
-\caption{Wyniki modelu bazowego bez dostrajania. Wartości podano w procentach.}
+\caption{Wyniki modelu bazowego bez dostrajania. Wartości podano w procentach;
+kreska oznacza metrykę nieokreśloną dla zbioru jednoklasowego.}
 \label{tab:unmodified-baseline-metrics}
 \end{table}
 
-Zera w kolumnie \textit{Spam pred.} oznaczają, że model bazowy nie wybrał klasy
-\texttt{spam} ani razu. Dlatego F1 i \emph{recall} dla klasy pozytywnej pozostają
-równe 0\%, mimo że część zbiorów zawiera wiadomości niepożądane.
-
-Wyniki w tabeli~\ref{tab:unmodified-baseline-metrics} pokazują, że oba warianty
-dały ten sam rezultat. Nie wynikało to z błędu parsera, ponieważ w wariancie
-generacyjnym wszystkie odpowiedzi zostały poprawnie odczytane.
-
-Na zbiorze \texttt{enron} model uzyskał 100\%, ponieważ wszystkie
-wiadomości w tej próbce należały do klasy \texttt{ham}. Podobnie wynik 71,6\%
-na zbiorze \texttt{spam\_ham} odpowiadał udziałowi wiadomości poprawnych w
-próbce, a nie rzeczywistej zdolności wykrywania spamu. Znacznie lepiej pokazują
-to metryki związane z klasą pozytywną: \emph{recall} oraz F1 dla spamu wyniosły
-0\% na każdym zbiorze zawierającym wiadomości niepożądane. Na zbiorze
-wiadomości oszukańczych \texttt{fraudulent\_email\_corpus} model nie wskazał
-poprawnie ani jednego przykładu.
-
-Wyniki modelu bazowego pokazują więc, że samo sformułowanie zadania w postaci
-instrukcji nie wystarczało w tej konfiguracji.
+Oba warianty wykrywały większość wiadomości niepożądanych, ale zbyt często
+wybierały klasę \texttt{spam}. W wariancie następnego tokenu udział takich
+decyzji wyniósł 77,4\% na \texttt{enron} i 81,4\% na zbilansowanym
+\texttt{trec\_2006}, co przełożyło się na \emph{specificity} równą odpowiednio
+22,6\% i 25,5\%. Wariant generacyjny miał zbliżony profil błędów.
 
 \section{Dobór parametrów treningu}
 
@@ -696,7 +707,7 @@ uczenia. Łącznie oceniono 160
 punktów treningu, po cztery zbiory danych dla każdego punktu. Daje to 640
 zakończonych pomiarów.
 
-\subsection{Zbiory użyte do ewaluacji}
+\subsection{Zbiory użyte do wyboru konfiguracji}
 
 Ewaluację przeprowadzono oddzielnie dla czterech zbiorów. Pierwszy zbiór,
 oznaczony jako \texttt{train\_subset}, wydzielono z części treningowej
@@ -705,7 +716,8 @@ sobie z przykładami pochodzącymi z tej samej dystrybucji co dane treningowe.
 Nie jest to jednak całkowicie niezależny test generalizacji, ponieważ dane te są blisko
 powiązane ze zbiorem używanym do aktualizacji wag adaptera.
 
-Poza podzbiorem \texttt{train\_subset} wykorzystano również trzy kolejne, niezależne zbiory.
+Poza podzbiorem \texttt{train\_subset} wykorzystano również trzy zbiory
+zewnętrzne.
 \texttt{enron} zawiera wyłącznie wiadomości klasy \texttt{ham}, dlatego wykorzystano go do
 oceny błędów typu \emph{false positive}. Zbiór \texttt{fraudulent\_email\_corpus}
 zawiera wyłącznie wiadomości oszukańcze, dlatego służy do oceny \emph{recall}
@@ -734,9 +746,8 @@ S_{\mathrm{ext}} =
 }{3}.
 \]
 
-W ten sposób zewnętrzna walidacja uwzględniała trzy różne typy danych, a nie
-tylko jedną metrykę z jednego zbioru. Symbol \(S_{\mathrm{ext}}\) oznacza dalej
-wynik zewnętrznej walidacji, nie wynik niezależnego testu końcowego.
+Wartość \(S_{\mathrm{ext}}\) łączyła wyniki z trzech źródeł i w dalszej części
+pracy oznacza wynik zewnętrznej walidacji.
 
 \subsection{Statystyki przebiegu treningu}
 
@@ -1157,30 +1168,22 @@ sekwencji.
 Najwyższy \(S_{\mathrm{ext}}\) uzyskała metoda \texttt{03}. Jej przewaga
 liczbowa nad metodami \texttt{02} i \texttt{04} jest mała, dlatego przy wyborze
 uwzględniono również brak generowania tekstu i parsera odpowiedzi. Metodę
-\texttt{03} wybrano do porównania z pozostałymi klasyfikatorami spamu.
+\texttt{03} wybrano do porównania kosztu inferencji z pozostałymi
+klasyfikatorami. Test końcowy objął wszystkie cztery warianty Qwen3.
 
-\section{Porównanie z metodami bazowymi}
+\section{Końcowe porównanie metod}
 
-Porównanie obejmowało metody klasyfikujące treść wiadomości jako
-\texttt{ham} albo \texttt{spam}, a więc korzystające z tego samego wejścia co
-model językowy. Pełne filtry pocztowe wykorzystują również reputację nadawcy,
-wyniki SPF/DKIM/DMARC, listy reputacyjne i nagłówki wiadomości, których nie
-zawierały badane zbiory danych.
-
-Metody bazowe trenowano na tym samym podziale danych co modele dostrajane. Do
-oceny wykorzystano \texttt{train\_subset}, \texttt{enron},
-\texttt{fraudulent\_email\_corpus} oraz \texttt{spam\_ham}.
-Zastosowano ten sam dobór metryk co wcześniej: F1 dla
-\texttt{train\_subset} i \texttt{spam\_ham}, \emph{specificity} dla
-\texttt{enron} oraz \emph{recall} dla \texttt{fraudulent\_email\_corpus}.
-Taki dobór metryk ogranicza wpływ zbiorów jednoklasowych, dla których accuracy
-łatwo prowadziłoby do mylącej interpretacji.
+Porównanie objęło cztery dostrojone warianty Qwen3-0.6B, sześć metod bazowych
+oraz dwa sposoby użycia modelu bez dostrajania. Każdy klasyfikator otrzymywał
+treść wiadomości i przypisywał jej etykietę \texttt{ham} albo \texttt{spam}.
+Pełne filtry pocztowe wykorzystują również reputację nadawcy, wyniki
+SPF/DKIM/DMARC, listy reputacyjne i nagłówki wiadomości, których nie zawierały
+badane zbiory danych.
 
 \subsection{Dobór parametrów metod bazowych}
 
 Parametry metod bazowych dobierano na 10-procentowej części walidacyjnej
-wydzielonej w opisanym wcześniej podziale 80/10/10. Trzy zbiory zewnętrzne
-wykorzystano dopiero po wyborze konfiguracji. Dla każdej sprawdzanej
+wydzielonej w opisanym wcześniej podziale 80/10/10. Dla każdej sprawdzanej
 konfiguracji dobierano próg decyzyjny maksymalizujący F1 na zbiorze
 walidacyjnym. Regresję logistyczną, SVM i
 \texttt{fastText} porządkowano według F1 obliczonego dla całej części
@@ -1228,60 +1231,93 @@ przeszukiwano hiperparametrów; na zbiorze walidacyjnym dobrano jedynie próg
 klasyfikacji. Trening jednej epoki zajął 7650 sekund, czyli około 2 godzin i
 8 minut.
 
-\subsection{Skuteczność klasyfikacji}
+\subsection{Zbiory i miara testu końcowego}
 
-Wyniki metod bazowych i wybranego wariantu Qwen3-0.6B zestawiono w
-tabeli~\ref{tab:sota-baseline-comparison}.
+Końcową ocenę modeli przeprowadzono na czterech rozłącznych zbiorach testowych,
+obejmujących wiadomości niewykorzystane podczas treningu ani wyboru
+konfiguracji. Sprawdzano w niej przenoszenie modeli na wiadomości pochodzące z
+innych źródeł. Skład zbiorów przedstawiono w
+tabeli~\ref{tab:final-test-sets}. Przygotowano je
+deterministycznie z ziarnem losowym 67. Odciski znormalizowanych treści
+testowych były rozłączne z odciskami danych treningowych i zewnętrznej
+walidacji.
+Wybór wariantów Qwen3 oparto na zewnętrznej walidacji, a parametry metod bazowych
+ustalono na wewnętrznej części walidacyjnej.
 
 \begin{table}[htbp]
 \centering
 \small
-\resizebox{\textwidth}{!}{\input{tex/tables/sota_baseline_comparison}}
-\caption{Porównanie metod bazowych z najlepszym wariantem modelu Qwen3-0.6B
-dostrojonym metodą LoRA. Wartość \(S_{\mathrm{ext}}\) obliczono na podstawie
-metryk ze zbiorów zewnętrznych: \texttt{enron},
-\texttt{fraudulent\_email\_corpus} i \texttt{spam\_ham}.}
-\label{tab:sota-baseline-comparison}
+\input{tex/tables/final_test_sets}
+\caption{Skład zbiorów wykorzystanych w teście końcowym.}
+\label{tab:final-test-sets}
 \end{table}
 
-Najwyższy wynik wśród metod bazowych uzyskał DistilBERT:
-\(S_{\mathrm{ext}}=92{,}3\%\). Wartość \emph{specificity} na \texttt{enron}
-wyniosła 89,3\%, \emph{recall} na
-\texttt{fraudulent\_email\_corpus} 99,9\%, a F1 na \texttt{spam\_ham} 87,8\%.
-TF-IDF z Naive Bayes osiągnął 90,7\%, a SVM 90,1\%. Różnica między tymi
-klasyfikatorami wyniosła 0,6 punktu procentowego. Naive Bayes uzyskał wyższą
-\emph{specificity} na \texttt{enron}, natomiast SVM miał nieco wyższe F1 na
-\texttt{spam\_ham}.
+Wynik końcowy obliczono jako średnią czterech metryk:
 
-Regresja logistyczna, \texttt{fastText} i MiniLM uzyskały od 79,1\% do 80,6\%.
-Wyniki na podzbiorze danych treningowych i F1 walidacyjne pozostawały wysokie,
-lecz na \texttt{enron} wartości \emph{specificity} wynosiły tylko 70,5--75,0\%.
-Na \texttt{spam\_ham} również dominowały fałszywe alarmy. Regresja logistyczna
-i \texttt{fastText} przepuściły odpowiednio 4 i 19 wiadomości spamowych, ale
-błędnie zatrzymały 518 i 534 wiadomości pożądane. MiniLM popełnił 451 takich
-błędów. Wysokie F1 na części walidacyjnej nie przełożyło się zatem na równie
-dobre wyniki dla wiadomości z innych źródeł.
+\begin{equation}
+S_{\mathrm{final}} =
+\frac{
+    \mathrm{specificity}_{\mathrm{enron}} +
+    \mathrm{recall}_{\mathrm{fraudulent}} +
+    \mathrm{F1}_{\mathrm{spam\_ham}} +
+    \mathrm{F1}_{\mathrm{trec\_2006}}
+}{4}.
+\end{equation}
 
-Różnice między wynikami zewnętrznymi porównano również na
-rysunku~\ref{fig:sota-baseline-external-score}.
+Dla jednoklasowego zbioru \texttt{enron} zastosowano \emph{specificity}.
+Wynik na \texttt{fraudulent\_\allowbreak email\_\allowbreak corpus} opisano za pomocą \emph{recall}.
+Na dwóch zbiorach zawierających obie klasy wykorzystano F1. Dla
+\(S_{\mathrm{final}}\) wyznaczono również 95-procentowe przedziały ufności na
+podstawie 10 tys. prób utworzonych metodą bootstrap, czyli przez wielokrotne
+losowanie ze zwracaniem ze zbiorów testowych. Przedziały różnic między metodami
+obliczono na podstawie niezależnych prób bootstrapowych.
+
+\subsection{Skuteczność klasyfikacji}
+
+Wyniki wszystkich wariantów zestawiono w
+tabeli~\ref{tab:final-test-comparison}.
+
+\begin{table}[htbp]
+\centering
+\scriptsize
+\resizebox{\textwidth}{!}{\input{tex/tables/final_test_comparison}}
+\caption{Wyniki testu końcowego. Przedziały ufności dotyczą
+\(S_{\mathrm{final}}\).}
+\label{tab:final-test-comparison}
+\end{table}
+
+Najwyższe wartości \(S_{\mathrm{final}}\) uzyskały metody \texttt{04} i
+\texttt{03}: odpowiednio 97,27\% i 97,24\%. Przedział ufności dla różnicy
+między ich wynikami obejmował zero i wyniósł od -0,55 do 0,61 punktu
+procentowego. Różnica była mała w stosunku do szerokości wyznaczonego przedziału.
+
+Profil wyników zależał od źródła wiadomości. Wśród wariantów Qwen3 metoda
+\texttt{02} najlepiej radziła sobie na \texttt{enron} i \texttt{spam\_ham}, natomiast metoda
+\texttt{01} osiągnęła najwyższe wyniki na
+\texttt{fraudulent\_email\_corpus} i \texttt{trec\_2006}, kosztem większej
+liczby fałszywych alarmów.
+
+Spośród metod bazowych najlepszy wynik uzyskał DistilBERT: 93,20\%. Naive Bayes
+osiągnął niższe F1 na \texttt{spam\_ham} i \texttt{trec\_2006}. W przypadku SVM
+większe różnice względem DistilBERT dotyczyły \emph{specificity} na \texttt{enron} oraz F1 na
+\texttt{trec\_2006}.
+Model Qwen3-0.6B bez dostrajania osiągnął około 57\% i wyraźnie preferował klasę
+\texttt{spam}.
+
+Wszystkie warianty zwróciły decyzje dla 8000 wiadomości, a parsery metod
+generacyjnych poprawnie odczytały każdą odpowiedź.
+
+Ranking \(S_{\mathrm{final}}\) przedstawiono również na
+rysunku~\ref{fig:final-test-score-ranking}.
 
 \begin{figure}[htbp]
 \centering
-\input{tex/plots/sota_baseline_external_score}
-\caption{Wynik zewnętrzny \(S_{\mathrm{ext}}\) dla metod bazowych oraz
-najlepszego wariantu Qwen3-0.6B + LoRA.}
-\label{fig:sota-baseline-external-score}
+\input{tex/plots/final_test_score_ranking}
+\caption{Ranking metod według punktowej wartości \(S_{\mathrm{final}}\).
+Przedziały ufności podano w tabeli~\ref{tab:final-test-comparison}.}
+\label{fig:final-test-score-ranking}
 \figuresource{opracowanie własne.}
 \end{figure}
-
-Qwen3-0.6B + LoRA uzyskał \(S_{\mathrm{ext}}=98{,}0\%\), o 5,7 punktu
-procentowego więcej niż DistilBERT. Różnica wynikała głównie z
-\emph{specificity} na \texttt{enron}, równego 96,9\%, oraz F1 na
-\texttt{spam\_ham}, równego 97,2\%. Na jednoklasowym zbiorze wiadomości
-oszukańczych oba modele osiągnęły \emph{recall} 99,9\%. Wynik Qwen3 trzeba
-jednak interpretować z uwzględnieniem sposobu wyboru modelu: te same zbiory
-zewnętrzne służyły wcześniej do wskazania jego konfiguracji i punktu
-kontrolnego, podczas gdy parametry metod bazowych dobierano bez ich użycia.
 
 \subsection{Koszt inferencji}
 
@@ -1355,10 +1391,14 @@ operacyjnej wyniosło około 2,53~GiB, a VRAM 2787~MiB. Model bazowy z adapterem
 zajmował 1526~MiB. Sam adapter LoRA miał 77,1~MiB i wymagał osobnego
 załadowania wag Qwen3-0.6B.
 
-Qwen3 uzyskał najwyższy \(S_{\mathrm{ext}}\), ale miał najniższą przepustowość
-i największy rozmiar modelu. DistilBERT był około 2,3 raza szybszy, lecz przy
-zastosowanym rozmiarze partii zużywał więcej VRAM, a jego wynik był niższy o
-5,7 punktu procentowego. Naive Bayes i SVM osiągnęły co najmniej 1,3 tys.
-wiadomości na sekundę, a ich modele zajmowały nie więcej niż 13~MiB. Ich wyniki
-zewnętrzne były jednak niższe od wyniku Qwen3 odpowiednio o 7,3 i 7,9 punktu
+W pojedynczym przebiegu testu końcowego metoda \texttt{03} przetworzyła 8000
+wiadomości w 90,1 sekundy, a metoda \texttt{04} w 220,6 sekundy.
+
+Wybrany wariant Qwen3, czyli metoda \texttt{03}, uzyskał
+\(S_{\mathrm{final}}=97{,}24\%\), ale miał najniższą przepustowość i największy
+rozmiar modelu spośród metod objętych pomiarem kosztu inferencji. DistilBERT był
+około 2,3 raza szybszy, lecz przy zastosowanym rozmiarze partii zużywał więcej
+VRAM, a jego wynik był niższy o 4 punkty procentowe. Naive Bayes i SVM osiągnęły co najmniej 1,3 tys.
+wiadomości na sekundę, a ich modele zajmowały nie więcej niż 13~MiB pamięci operacyjnej. Ich wyniki
+końcowe były niższe od wyniku Qwen3 odpowiednio o 5,4 i 6,3 punktu
 procentowego.
