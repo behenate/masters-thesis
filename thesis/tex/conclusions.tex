@@ -156,4 +156,29 @@ Ocena wdrożeniowa wymaga porównania wariantów kwantyzacji, silników inferenc
 i ustawień przetwarzania partiami na sprzęcie serwerowym. Oprócz średniej
 przepustowości należy zmierzyć opóźnienie, użycie pamięci przy równoczesnych
 żądaniach oraz koszt przetworzenia określonej liczby wiadomości. Osobnego testu
-    wymaga też układ kaskadowy z tanim klasyfikatorem pierwszego etapu.
+wymaga też układ kaskadowy z tanim klasyfikatorem pierwszego etapu.
+
+\section{Zakończenie}
+
+Celem pracy było sprawdzenie, czy mały model językowy dostrojony za pomocą LoRA
+może klasyfikować wiadomości jako \texttt{ham} albo \texttt{spam} oraz jak
+wypada w porównaniu z prostszymi klasyfikatorami tekstu. Przygotowano wspólny
+zbiór danych, porównano cztery sposoby sformułowania zadania dla Qwen3-0.6B i
+oceniono wybrane modele na wiadomościach pochodzących z czterech odrębnych
+źródeł.
+
+W badanych warunkach dostrojony Qwen3-0.6B osiągnął wyniki wyższe od metod
+bazowych. Najlepsze rezultaty uzyskały generowanie odpowiedzi
+ustrukturyzowanej i ocena następnego tokenu, przy czym zaobserwowana różnica
+mieściła się w granicach niepewności pomiaru. Do dalszych porównań wybrano
+ocenę następnego tokenu, która nie wymaga generowania pełnej odpowiedzi ani jej
+parsowania. Najwyższe wyniki walidacyjne często pojawiały się przed końcem
+treningu.
+
+Wyższa skuteczność Qwen3 wiązała się z większym kosztem inferencji niż w
+przypadku DistilBERT i klasyfikatorów opartych na TF-IDF. W środowisku
+produkcyjnym model językowy mógłby uzupełniać reguły, reputację nadawcy i
+tańszy klasyfikator tekstu, szczególnie dla wiadomości trudnych do
+jednoznacznego rozstrzygnięcia. Ocena takiego rozwiązania wymaga jednak danych
+z bieżącego ruchu pocztowego i pomiarów pod obciążeniem. W pracy przygotowano i
+oceniono klasyfikator tekstowy oparty na małym modelu z otwartymi wagami.

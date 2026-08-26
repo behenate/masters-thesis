@@ -1,0 +1,35 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{geometry}
+
+\geometry{margin=2.5cm}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.7em}
+\pagestyle{empty}
+
+\begin{document}
+
+\section*{Summary}
+
+This thesis examines fine-tuning small open-weight language models for binary
+email classification as legitimate or unwanted. After reviewing the available
+models, Qwen3-0.6B was selected for the experiments. Low-rank adaptation
+(LoRA) was used. Sixteen configurations and model states
+saved at successive training stages were compared. Four ways of using the
+model as a classifier were then evaluated. The comparison also included the
+unmodified model and six other classifiers. The final evaluation used four
+disjoint test sets containing 2,000 messages each. Across the four test sets,
+the best fine-tuned variant achieved a mean classification accuracy of 97.8\%.
+DistilBERT, the most accurate of the other classifiers, achieved a mean
+accuracy of 94.4\% and processed messages approximately 2.3 times faster than
+Qwen3.
+Using the fine-tuned model in an email filter requires accounting for the
+computational cost of classification and evaluating it on current email
+traffic.
+
+\end{document}

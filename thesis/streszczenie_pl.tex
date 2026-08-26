@@ -1,0 +1,37 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[polish]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{geometry}
+
+\geometry{margin=2.5cm}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.7em}
+\pagestyle{empty}
+
+\begin{document}
+
+\section*{Streszczenie}
+
+Praca dotyczy dostrajania małych modeli językowych z otwartymi wagami do
+binarnej klasyfikacji wiadomości jako pożądane albo niepożądane. Po przeglądzie
+dostępnych modeli do badań wybrano Qwen3-0.6B. Wykorzystano metodę niskorangowej
+adaptacji LoRA. Porównano 16 konfiguracji oraz stany modelu
+zapisane w kolejnych etapach treningu. Następnie sprawdzono cztery sposoby
+użycia modelu jako klasyfikatora. Porównanie objęło także model bez dostrajania
+i sześć innych klasyfikatorów. Końcową ocenę przeprowadzono na czterech
+rozłącznych zbiorach testowych, obejmujących po 2000 wiadomości. Na czterech
+zbiorach testowych najlepszy dostrojony wariant osiągnął średnią dokładność
+klasyfikacji równą 97,8\%. DistilBERT, najskuteczniejszy z pozostałych
+klasyfikatorów, osiągnął średnią dokładność 94,4\% i działał około 2,3 raza
+szybciej od Qwen3.
+Zastosowanie dostrojonego modelu w filtrze poczty wymaga uwzględnienia kosztu
+obliczeniowego klasyfikacji i sprawdzenia go na bieżącym ruchu pocztowym.
+
+\textbf{Słowa kluczowe:} niechciana poczta elektroniczna, klasyfikacja spamu,
+modele językowe, Qwen3, LoRA
+
+\end{document}

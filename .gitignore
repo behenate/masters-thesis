@@ -25,10 +25,10 @@ dataset/evaluation_splits/
 dataset/raw_datasets/*
 !dataset/raw_datasets/SHA256SUMS
 dataset/reports
-dataset/raw_datasets/
 **/.aim
 **/.aim-runtime
 
 fun_run
 results
 tmp/
+**/tokenized_samples/
